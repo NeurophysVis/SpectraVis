@@ -1,4 +1,4 @@
-cd /Users/Emily/Dropbox/Visualizations/Emily's Project
+cd ~/Documents/DataVis/SpectraVis
 
 python -m SimpleHTTPServer 8888 &
 
