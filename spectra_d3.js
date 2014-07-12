@@ -1,4 +1,4 @@
-
+// This is a test comment for github learning
 var margin = {top: 20, right: 10, bottom: 20, left: 10};
 var width = document.getElementById("Ch1Panel").offsetWidth - margin.left - margin.right,
     height = document.getElementById("Ch1Panel").offsetWidth*4/5 - margin.top - margin.bottom;
