@@ -51,6 +51,8 @@ function display(isError, spect1, spect2, coh) {
   drawHeatmap(svgCh2, spect2, powerScale);
   drawHeatmap(svgCoh, coh, cohScale);
 
+  drawTitles();
+
   function setupScales() {
     var powerMin, powerMax, cohMax, cohMin, colors;
 
@@ -171,5 +173,45 @@ function display(isError, spect1, spect2, coh) {
         .attr("text-anchor", "middle")
         .text("Frequency (Hz)");;
     freqAxisG.call(freqAxis);
+  }
+  function drawTitles() {
+    var titleCh1, titleCh2, titleCoh;
+    titleCh1 = svgCh1.selectAll("text.title").data(spect1["chLbl"]);
+    titleCh1.exit().remove();
+    titleCh1.enter()
+      .append("text")
+        .attr("x", timeScaleLinear(0))
+        .attr("y", 0)
+        .attr("dy", -0.5 + "em")
+        .attr("text-anchor", "middle")
+        .attr("class", "title")
+        .text(function(d) {
+          return "Spectra: Ch" + d;
+        });
+    titleCh2 = svgCh2.selectAll("text.title").data(spect2["chLbl"]);
+    titleCh2.exit().remove();
+    titleCh2.enter()
+      .append("text")
+        .attr("x", timeScaleLinear(0))
+        .attr("y", 0)
+        .attr("dy", -0.5 + "em")
+        .attr("text-anchor", "middle")
+        .attr("class", "title")
+        .text(function(d) {
+          return "Spectra: Ch" + d;
+        });
+    titleCoh = svgCoh.selectAll("text.title").data([coh]);
+    titleCoh.exit().remove();
+    titleCoh.enter()
+      .append("text")
+        .attr("x", timeScaleLinear(0))
+        .attr("y", 0)
+        .attr("dy", -0.5 + "em")
+        .attr("text-anchor", "middle")
+        .attr("class", "title")
+        .text(function(d) {
+          return "Coherence: Ch" + d.chLbl1 + "-Ch" + d.chLbl2;
+        });
+
   }
 }
