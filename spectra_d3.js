@@ -40,7 +40,10 @@ queue()
 // Draws heatmaps
 function display(isError, spect1_data, spect2_data, coh_data) {
 
-  var timeScale, freqScale, powerScale, cohScale;
+  var timeScale, freqScale, powerScale, cohScale, tAx, fAx, heatmapColor;
+
+  tAx = spect1_data.tax;
+  fAx = spect1_data.fax;
 
   setupScales();
 
@@ -49,7 +52,15 @@ function display(isError, spect1_data, spect2_data, coh_data) {
   drawSpect(svgCh2, spect2_data);
 
   function setupScales() {
-    var powerMin, powerMax, cohMax, cohMin;
+    var powerMin, powerMax, cohMax, cohMin, colors;
+
+    colors = ["#6363FF", "#6373FF", "#63A3FF", "#63E3FF", "#63FFFB", "#63FFCB",
+    "#63FF9B", "#63FF6B", "#7BFF63", "#BBFF63", "#DBFF63", "#FBFF63",
+    "#FFD363", "#FFB363", "#FF8363", "#FF7363", "#FF6364"];
+
+    heatmapColor = d3.scale.linear()
+      .domain(d3.range(0, 1, 1.0 / (colors.length - 1)))
+      .range(colors);
 
     powerMin = d3.min(
       [d3.min(spect1_data.data, function(d) {
@@ -77,25 +88,48 @@ function display(isError, spect1_data, spect2_data, coh_data) {
       return d3.max(d, function(e) {return e;});
     });
 
-    timeScale = d3.scale.linear()
-      .domain(d3.extent(spect1_data.tax))
-      .range([width, 0]);
+    timeScale = d3.scale.ordinal()
+      .domain(tAx)
+      .rangeBands([width, 0]);
 
-    freqScale = d3.scale.linear()
-      .domain(d3.extent(spect1_data.fax))
-      .range([0, height]);
+    freqScale = d3.scale.ordinal()
+      .domain(fAx)
+      .rangeBands([0, height]);
 
     powerScale = d3.scale.linear()
-      .domain([powerMin, powerMax]);
+      .domain([powerMin, powerMax])
+      .range([0, 1])
+      .nice();
 
     cohScale = d3.scale.linear()
-      .domain([cohMin, cohMax]);
-
-
+      .domain([cohMin, cohMax])
+      .range([0,1])
+      .nice;
 
   }
-  function drawSpect(spectGroup, spect_data) {
-
+  function drawSpect(spectG, spect_data) {
+    var heatmapG = spectG.selectAll("g.time").data(spect_data.data);
+    heatmapG.enter()
+      .append("g")
+        .attr("transform", function(d, i) {
+            return "translate(" + timeScale(tAx[i]) + ",0)";
+          })
+        .attr("class", "time");
+    var heatmapRect = heatmapG.selectAll("rect").data(function(d) {return d;});
+    heatmapRect.enter()
+      .append("rect")
+      .attr("x", freqScale.rangeBand() / 2)
+      .attr("y", function(d, i) {return freqScale(fAx[i]);})
+      .attr("height", freqScale.rangeBand() )
+      .attr("width", timeScale.rangeBand() )
+      .style("fill", "black");
+    heatmapRect
+      .style("fill", function(d) {
+          return heatmapColor(powerScale(d));
+        })
+      .style("stroke", function(d) {
+          return heatmapColor(powerScale(d));
+        })
   }
   function drawCoh(cohGroup, coh_data) {
 
