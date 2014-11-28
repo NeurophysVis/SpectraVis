@@ -191,8 +191,9 @@ function display(isError, spect1, spect2, coh) {
             .y(function(d) { return d; })
             .interpolate("linear"))
       .attr("stroke", "black")
-      .attr("stroke-width", 1)
-      .attr("fill", "none");
+      .attr("stroke-width", 2)
+      .attr("fill", "none")
+      .style("opacity", 0.7);
   }
   function drawTitles() {
     var titleCh1, titleCh2, titleCoh;
