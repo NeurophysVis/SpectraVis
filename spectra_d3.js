@@ -23,8 +23,8 @@ svgCoh = d3.select("#CoherencePanel").append("svg")
 
 // Load data
 var curSubject = "SIM03_B0.00T0.63",
-    curCh1 = "1",
-    curCh2 = "2";
+    curCh1 = 1,
+    curCh2 = 4;
 
 var spectCh1_file = "spectrogram_" + curSubject + "_" + "C" + curCh1 + ".json",
     spectCh2_file = "spectrogram_" + curSubject + "_" + "C" + curCh2 + ".json",
@@ -52,6 +52,7 @@ function display(isError, spect1, spect2, coh) {
   drawHeatmap(svgCoh, coh, cohScale);
 
   drawTitles();
+  drawLegends();
 
   function setupScales() {
     var powerMin, powerMax, cohMax, cohMin, colors;
@@ -212,6 +213,9 @@ function display(isError, spect1, spect2, coh) {
         .text(function(d) {
           return "Coherence: Ch" + d.chLbl1 + "-Ch" + d.chLbl2;
         });
+
+  }
+  function drawLegends() {
 
   }
 }
