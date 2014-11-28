@@ -1,4 +1,7 @@
-var heatmapColor, color;
+var heatmapPowerColor,
+    heatmapCohColor,
+    powerColors = colorbrewer.Blues[9],
+    cohColors = colorbrewer.Purples[9];
 var margin = {top: 40, right: 40, bottom: 40, left: 40};
 var width = document.getElementById("Ch1Panel").offsetWidth - margin.left - margin.right,
     height = document.getElementById("Ch1Panel").offsetWidth*4/5 - margin.top - margin.bottom;
@@ -52,29 +55,29 @@ queue()
 function display(isError, spect1, spect2, coh) {
 
   var timeScale, timeScaleLinear, freqScale, powerScale, cohScale,
-      tAx, fAx, heatmapColor;
+      tAx, fAx, heatmapPowerColor;
 
   tAx = spect1.tax; // Time Axis
   fAx = spect1.fax; // Frequency Axis
 
   setupScales();
 
-  drawHeatmap(svgCh1, spect1, powerScale);
-  drawHeatmap(svgCh2, spect2, powerScale);
-  drawHeatmap(svgCoh, coh, cohScale);
+  drawHeatmap(svgCh1, spect1, powerScale, heatmapPowerColor);
+  drawHeatmap(svgCh2, spect2, powerScale, heatmapPowerColor);
+  drawHeatmap(svgCoh, coh, cohScale, heatmapCohColor);
 
   drawTitles();
   drawLegends();
 
   function setupScales() {
     var powerMin, powerMax, cohMax, cohMin;
-    colors = ["#6363FF", "#6373FF", "#63A3FF", "#63E3FF", "#63FFFB", "#63FFCB",
-    "#63FF9B", "#63FF6B", "#7BFF63", "#BBFF63", "#DBFF63", "#FBFF63",
-    "#FFD363", "#FFB363", "#FF8363", "#FF7363", "#FF6364"];
 
-    heatmapColor = d3.scale.linear()
-      .domain(d3.range(0, 1, 1.0 / (colors.length - 1)))
-      .range(colors);
+    heatmapPowerColor = d3.scale.linear()
+      .domain(d3.range(0, 1, 1.0 / (powerColors.length - 1)))
+      .range(powerColors);
+    heatmapCohColor = d3.scale.linear()
+      .domain(d3.range(0, 1, 1.0 / (cohColors.length - 1)))
+      .range(cohColors);
 
     powerMin = d3.min(
       [d3.min(spect1.data, function(d) {
@@ -125,7 +128,7 @@ function display(isError, spect1, spect2, coh) {
       .nice();
 
   }
-  function drawHeatmap(curPlot, curData, intensityScale) {
+  function drawHeatmap(curPlot, curData, intensityScale, colorScale) {
 
     var heatmapG, heatmapRect, timeAxis, freqAxis, zeroG, zeroLine;
 
@@ -146,10 +149,10 @@ function display(isError, spect1, spect2, coh) {
       .style("fill", "white");
     heatmapRect
       .style("fill", function(d) {
-          return heatmapColor(intensityScale(d));
+          return colorScale(intensityScale(d));
         })
       .style("stroke", function(d) {
-          return heatmapColor(intensityScale(d));
+          return colorScale(intensityScale(d));
         });
 
     timeAxis = d3.svg.axis()
@@ -246,16 +249,22 @@ function display(isError, spect1, spect2, coh) {
 
   }
   function drawLegends() {
-    var powerLegendRect, legendScale, colorInd, powerAxisG, powerAxis, formatter;
+    var powerG, powerLegendRect, legendScale, colorInd, powerAxisG, powerAxis, formatter,
+        cohG, cohLegendRect, cohAxisG, cohAxis;
 
     formatter = d3.format(".2f");
-    colorInd = d3.range(0, 1, 1.0 / (colors.length - 1));
+    colorInd = d3.range(0, 1, 1.0 / (powerColors.length - 1));
 
     legendScale = d3.scale.ordinal()
       .domain(colorInd)
       .rangeBands([0, legendWidth]);
-
-    powerLegendRect = svgLegend.selectAll("rect.power").data(colorInd);
+    // Power Legend
+    powerG = svgLegend.selectAll("g#powerLegend").data([{}]);
+    powerG.enter()
+      .append("g")
+      .attr("id", "powerLegend")
+      .attr("transform", "translate(15, 0)");
+    powerLegendRect = powerG.selectAll("rect.power").data(colorInd);
     powerLegendRect.enter()
       .append("rect")
         .attr("class", "power")
@@ -264,7 +273,7 @@ function display(isError, spect1, spect2, coh) {
         .attr("height", 10)
         .attr("width", legendScale.rangeBand());
     powerLegendRect
-      .style("fill", function(d) {return heatmapColor(d);});
+      .style("fill", function(d) {return heatmapPowerColor(d);});
     powerAxis = d3.svg.axis()
       .scale(legendScale)
       .orient("bottom")
@@ -274,7 +283,7 @@ function display(isError, spect1, spect2, coh) {
         return formatter(powerScale.invert(+d));
       })
       .tickSize(0,0,0);
-    powerAxisG = svgLegend.selectAll("g.powerAxis").data([{}]);
+    powerAxisG = powerG.selectAll("g.powerAxis").data([{}]);
     powerAxisG.enter()
       .append("g")
         .attr("transform", "translate(0," + 10 + ")")
@@ -287,11 +296,44 @@ function display(isError, spect1, spect2, coh) {
           .attr("font-size", 10 + "px")
           .text("Power");;
     powerAxisG.call(powerAxis);
-
-
-    svgLegend.selectAll("text").data([{}]).enter()
-
-
+    // Coh Legend
+    cohG = svgLegend.selectAll("g#cohLegend").data([{}]);
+    cohG.enter()
+      .append("g")
+      .attr("id", "cohLegend")
+      .attr("transform", "translate(15, 30)");
+    cohLegendRect = cohG.selectAll("rect.coh").data(colorInd);
+    cohLegendRect.enter()
+      .append("rect")
+        .attr("class", "coh")
+        .attr("x", function(d) {return legendScale(d);})
+        .attr("y", 0)
+        .attr("height", 10)
+        .attr("width", legendScale.rangeBand());
+    cohLegendRect
+      .style("fill", function(d) {return heatmapCohColor(d);});
+    cohAxis = d3.svg.axis()
+      .scale(legendScale)
+      .orient("bottom")
+      .ticks(2)
+      .tickValues([colorInd[0], colorInd[colorInd.length-1]])
+      .tickFormat(function (d) {
+        return formatter(cohScale.invert(+d));
+      })
+      .tickSize(0,0,0);
+    cohAxisG = cohG.selectAll("g.cohAxis").data([{}]);
+    cohAxisG.enter()
+      .append("g")
+        .attr("transform", "translate(0," + 10 + ")")
+        .attr("class", "cohAxis")
+      .append("text")
+        .attr("x", 0)
+        .attr("y", 0)
+        .attr("dy", 0.000 + "em")
+        .attr("text-anchor", "end")
+        .attr("font-size", 10 + "px")
+        .text("Coherence");
+    cohAxisG.call(cohAxis);
 
   }
 }

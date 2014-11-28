@@ -1,14 +1,14 @@
 
-.timeAxis text, .freqAxis text, .powerAxis text {
-  font: 12px;
+.timeAxis text, .freqAxis text, .powerAxis text, .cohAxis text {
+  font-size: 11px;
   stroke: #aaa;
 }
 
-.timeAxis line, .freqAxis line, .powerAxis line {
+.timeAxis line, .freqAxis line, .powerAxis line, .cohAxis line {
   fill: none;
   stroke: #000;
   shape-rendering: crispEdges;
 }
-.timeAxis path, .freqAxis path, .powerAxis path {
+.timeAxis path, .freqAxis path, .powerAxis path, .cohAxis path {
   display: none;
 }
