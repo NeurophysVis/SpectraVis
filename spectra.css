@@ -1,15 +1,13 @@
 
-.axis text {
-  font: 10px sans-serif;
+.timeAxis text, .freqAxis text {
+  font: 12px sans-serif;
 }
 
-.axis path,
-.axis line {
+.timeAxis line, .freqAxis line {
   fill: none;
   stroke: #000;
   shape-rendering: crispEdges;
 }
-
-.axis path {
+.timeAxis path, .freqAxis path {
   display: none;
 }
