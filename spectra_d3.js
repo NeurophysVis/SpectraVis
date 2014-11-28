@@ -1,4 +1,4 @@
-var margin = {top: 40, right: 40, bottom: 40, left: 55};
+var margin = {top: 40, right: 40, bottom: 40, left: 40};
 var width = document.getElementById("Ch1Panel").offsetWidth - margin.left - margin.right,
     height = document.getElementById("Ch1Panel").offsetWidth*4/5 - margin.top - margin.bottom;
 
