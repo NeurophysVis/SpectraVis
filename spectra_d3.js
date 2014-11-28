@@ -40,10 +40,11 @@ queue()
 // Draws heatmaps
 function display(isError, spect1, spect2, coh) {
 
-  var timeScale, timeScaleLinear, freqScale, powerScale, cohScale, tAx, fAx, heatmapColor;
+  var timeScale, timeScaleLinear, freqScale, powerScale, cohScale,
+      tAx, fAx, heatmapColor;
 
-  tAx = spect1.tax;
-  fAx = spect1.fax;
+  tAx = spect1.tax; // Time Axis
+  fAx = spect1.fax; // Frequency Axis
 
   setupScales();
 
@@ -116,7 +117,7 @@ function display(isError, spect1, spect2, coh) {
   }
   function drawHeatmap(curPlot, curData, intensityScale) {
 
-    var heatmapG, heatmapRect, timeAxis, freqAxis;
+    var heatmapG, heatmapRect, timeAxis, freqAxis, zeroG, zeroLine;
 
     heatmapG = curPlot.selectAll("g.time").data(curData.data);
     heatmapG.enter()
@@ -144,11 +145,13 @@ function display(isError, spect1, spect2, coh) {
     timeAxis = d3.svg.axis()
                   .scale(timeScaleLinear)
                   .orient("bottom")
-                  .ticks(5)
-                  .tickValues([d3.min(tAx), 0, d3.max(tAx)]);
+                  .ticks(3)
+                  .tickValues([d3.min(tAx), 0, d3.max(tAx)])
+                  .tickSize(0,0,0);
     freqAxis = d3.svg.axis()
                   .scale(freqScale)
-                  .orient("left");
+                  .orient("left")
+                  .tickSize(0,0,0);
 
     timeAxisG = curPlot.selectAll("g.timeAxis").data([{}]);
     timeAxisG.enter()
@@ -159,7 +162,7 @@ function display(isError, spect1, spect2, coh) {
           .attr("x", timeScaleLinear(0))
           .attr("y", 0)
           .attr("text-anchor", "middle")
-          .attr("dy", 3 + "em")
+          .attr("dy", 2 + "em")
           .text("Time (s)");
     timeAxisG.call(timeAxis);
 
@@ -169,11 +172,27 @@ function display(isError, spect1, spect2, coh) {
       .attr("class", "freqAxis")
       .append("text")
         .attr("x", -height/2)
-        .attr("dy", -3 + "em")
+        .attr("dy", -2 + "em")
         .attr("transform", "rotate(-90)")
         .attr("text-anchor", "middle")
         .text("Frequency (Hz)");;
     freqAxisG.call(freqAxis);
+
+    zeroG = curPlot.selectAll("g.zeroLine").data([[[0, height]]]);
+    zeroG.enter()
+      .append("g")
+      .attr("class", "zeroLine");
+    zeroLine = zeroG.selectAll("path").data(function(d) {return d;});
+    zeroLine.enter()
+      .append("path");
+    zeroLine
+      .attr("d", d3.svg.line()
+            .x(timeScaleLinear(0))
+            .y(function(d) { return d; })
+            .interpolate("linear"))
+      .attr("stroke", "black")
+      .attr("stroke-width", 1)
+      .attr("fill", "none");
   }
   function drawTitles() {
     var titleCh1, titleCh2, titleCoh;
