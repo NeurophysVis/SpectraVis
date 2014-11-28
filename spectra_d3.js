@@ -1,3 +1,4 @@
+var heatmapColor, color;
 var margin = {top: 40, right: 40, bottom: 40, left: 40};
 var width = document.getElementById("Ch1Panel").offsetWidth - margin.left - margin.right,
     height = document.getElementById("Ch1Panel").offsetWidth*4/5 - margin.top - margin.bottom;
@@ -21,10 +22,20 @@ svgCoh = d3.select("#CoherencePanel").append("svg")
     .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
+var legendWidth = 110,
+    legendHeight = 100;
+
+svgLegend = d3.select("#legendRow").append("svg")
+      .attr("width", legendWidth + margin.left + margin.right)
+      .attr("height", legendHeight + margin.top + margin.bottom)
+    .append("g")
+      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+
 // Load data
 var curSubject = "SIM03_B0.00T0.63",
     curCh1 = 1,
-    curCh2 = 4;
+    curCh2 = 2;
 
 var spectCh1_file = "spectrogram_" + curSubject + "_" + "C" + curCh1 + ".json",
     spectCh2_file = "spectrogram_" + curSubject + "_" + "C" + curCh2 + ".json",
@@ -56,8 +67,7 @@ function display(isError, spect1, spect2, coh) {
   drawLegends();
 
   function setupScales() {
-    var powerMin, powerMax, cohMax, cohMin, colors;
-
+    var powerMin, powerMax, cohMax, cohMin;
     colors = ["#6363FF", "#6373FF", "#63A3FF", "#63E3FF", "#63FFFB", "#63FFCB",
     "#63FF9B", "#63FF6B", "#7BFF63", "#BBFF63", "#DBFF63", "#FBFF63",
     "#FFD363", "#FFB363", "#FF8363", "#FF7363", "#FF6364"];
@@ -236,6 +246,52 @@ function display(isError, spect1, spect2, coh) {
 
   }
   function drawLegends() {
+    var powerLegendRect, legendScale, colorInd, powerAxisG, powerAxis, formatter;
+
+    formatter = d3.format(".2f");
+    colorInd = d3.range(0, 1, 1.0 / (colors.length - 1));
+
+    legendScale = d3.scale.ordinal()
+      .domain(colorInd)
+      .rangeBands([0, legendWidth]);
+
+    powerLegendRect = svgLegend.selectAll("rect.power").data(colorInd);
+    powerLegendRect.enter()
+      .append("rect")
+        .attr("class", "power")
+        .attr("x", function(d) {return legendScale(d);})
+        .attr("y", 0)
+        .attr("height", 10)
+        .attr("width", legendScale.rangeBand());
+    powerLegendRect
+      .style("fill", function(d) {return heatmapColor(d);});
+    powerAxis = d3.svg.axis()
+      .scale(legendScale)
+      .orient("bottom")
+      .ticks(2)
+      .tickValues([colorInd[0], colorInd[colorInd.length-1]])
+      .tickFormat(function (d) {
+        return formatter(powerScale.invert(+d));
+      })
+      .tickSize(0,0,0);
+    powerAxisG = svgLegend.selectAll("g.powerAxis").data([{}]);
+    powerAxisG.enter()
+      .append("g")
+        .attr("transform", "translate(0," + 10 + ")")
+        .attr("class", "powerAxis")
+        .append("text")
+          .attr("x", 0)
+          .attr("y", 0)
+          .attr("dy", 0.000 + "em")
+          .attr("text-anchor", "end")
+          .attr("font-size", 10 + "px")
+          .text("Power");;
+    powerAxisG.call(powerAxis);
+
+
+    svgLegend.selectAll("text").data([{}]).enter()
+
+
 
   }
 }

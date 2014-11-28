@@ -29,13 +29,13 @@
   <div class="container">
     <!-- Brain Panel -->
     <div class="row">
-      <div class="col-md-2 center-block" id="SubjectPanel">
-        <div class="dropdown text-center" id="SubjectDropdown">
+      <div class="col-md-2" id="SubjectPanel">
+        <div class="dropdown" id="SubjectDropdown">
           <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown">
             Subjects
             <span class="caret"></span>
           </button>
-          <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
+          <ul class="dropdown-menu" role="menu" aria-labelledby="subjectDropdown">
             <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Subject1</a></li>
             <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Subject2</a></li>
             <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Something else here</a></li>
@@ -44,15 +44,16 @@
       </div>
       <div class="col-md-10" id="BrainPanel">Brain Image</div>
     </div>
-
     <!-- Heatmap Panel -->
     <div class="row" id="heatmapRow">
       <div class="col-md-4" id="Ch1Panel"></div>
       <div class="col-md-4" id="CoherencePanel"></div>
       <div class="col-md-4" id="Ch2Panel"></div>
     </div>
-
-  </div>
+    <!-- Legend Panel -->
+    <div class="row" id="legendRow">
+    </div>
+  </div> <!-- end container div-->
   <script src="spectra_d3.js"></script>
 
 </body>
