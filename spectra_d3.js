@@ -1,4 +1,4 @@
-var margin = {top: 20, right: 30, bottom: 20, left: 30};
+var margin = {top: 40, right: 40, bottom: 40, left: 55};
 var width = document.getElementById("Ch1Panel").offsetWidth - margin.left - margin.right,
     height = document.getElementById("Ch1Panel").offsetWidth*4/5 - margin.top - margin.bottom;
 
@@ -151,13 +151,25 @@ function display(isError, spect1, spect2, coh) {
     timeAxisG.enter()
         .append("g")
         .attr("class", "timeAxis")
-        .attr("transform", "translate(0," + height + ")");
+        .attr("transform", "translate(0," + height + ")")
+        .append("text")
+          .attr("x", timeScaleLinear(0))
+          .attr("y", 0)
+          .attr("text-anchor", "middle")
+          .attr("dy", 3 + "em")
+          .text("Time (s)");
     timeAxisG.call(timeAxis);
 
     freqAxisG = curPlot.selectAll("g.freqAxis").data([{}]);
     freqAxisG.enter()
       .append("g")
-      .attr("class", "freqAxis");
+      .attr("class", "freqAxis")
+      .append("text")
+        .attr("x", -height/2)
+        .attr("dy", -3 + "em")
+        .attr("transform", "rotate(-90)")
+        .attr("text-anchor", "middle")
+        .text("Frequency (Hz)");;
     freqAxisG.call(freqAxis);
   }
 }
