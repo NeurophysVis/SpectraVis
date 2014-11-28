@@ -1,7 +1,7 @@
 var heatmapPowerColor,
     heatmapCohColor,
     powerColors = colorbrewer.Blues[9],
-    cohColors = colorbrewer.Purples[9];
+    cohColors = colorbrewer.Greens[9];
 var margin = {top: 40, right: 40, bottom: 40, left: 40};
 var width = document.getElementById("Ch1Panel").offsetWidth - margin.left - margin.right,
     height = document.getElementById("Ch1Panel").offsetWidth*4/5 - margin.top - margin.bottom;
@@ -25,8 +25,8 @@ svgCoh = d3.select("#CoherencePanel").append("svg")
     .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-var legendWidth = 110,
-    legendHeight = 100;
+var legendWidth = document.getElementById("legendRow").offsetWidth - margin.left - margin.right,
+    legendHeight = 90 - margin.top - margin.bottom;
 
 svgLegend = d3.select("#legendRow").append("svg")
       .attr("width", legendWidth + margin.left + margin.right)
@@ -38,7 +38,7 @@ svgLegend = d3.select("#legendRow").append("svg")
 // Load data
 var curSubject = "SIM03_B0.00T0.63",
     curCh1 = 1,
-    curCh2 = 2;
+    curCh2 = 4;
 
 var spectCh1_file = "spectrogram_" + curSubject + "_" + "C" + curCh1 + ".json",
     spectCh2_file = "spectrogram_" + curSubject + "_" + "C" + curCh2 + ".json",
@@ -250,20 +250,31 @@ function display(isError, spect1, spect2, coh) {
   }
   function drawLegends() {
     var powerG, powerLegendRect, legendScale, colorInd, powerAxisG, powerAxis, formatter,
-        cohG, cohLegendRect, cohAxisG, cohAxis;
+        cohG, cohLegendRect, cohAxisG, cohAxis, chartKeyText;
 
     formatter = d3.format(".2f");
     colorInd = d3.range(0, 1, 1.0 / (powerColors.length - 1));
 
+    chartKeyText = svgLegend.selectAll("g#ChartText").data([{}]);
+    chartKeyText.enter()
+      .append("text")
+      .attr("id", "ChartText")
+      .attr("transform", "translate(10," + 9 + ")")
+      .attr("x", 0)
+      .attr("y", 0)
+      .attr("text-anchor", "end")
+      .attr("font-size", 11 + "px")
+      .text("Chart Key");
+
     legendScale = d3.scale.ordinal()
       .domain(colorInd)
-      .rangeBands([0, legendWidth]);
+      .rangeBands([0, 175]);
     // Power Legend
     powerG = svgLegend.selectAll("g#powerLegend").data([{}]);
     powerG.enter()
       .append("g")
       .attr("id", "powerLegend")
-      .attr("transform", "translate(15, 0)");
+      .attr("transform", "translate(60, 0)");
     powerLegendRect = powerG.selectAll("rect.power").data(colorInd);
     powerLegendRect.enter()
       .append("rect")
@@ -286,14 +297,12 @@ function display(isError, spect1, spect2, coh) {
     powerAxisG = powerG.selectAll("g.powerAxis").data([{}]);
     powerAxisG.enter()
       .append("g")
-        .attr("transform", "translate(0," + 10 + ")")
+        .attr("transform", "translate(0," + 9 + ")")
         .attr("class", "powerAxis")
         .append("text")
           .attr("x", 0)
           .attr("y", 0)
-          .attr("dy", 0.000 + "em")
           .attr("text-anchor", "end")
-          .attr("font-size", 10 + "px")
           .text("Power");;
     powerAxisG.call(powerAxis);
     // Coh Legend
@@ -301,7 +310,7 @@ function display(isError, spect1, spect2, coh) {
     cohG.enter()
       .append("g")
       .attr("id", "cohLegend")
-      .attr("transform", "translate(15, 30)");
+      .attr("transform", "translate(" + 300 + ", 0)");
     cohLegendRect = cohG.selectAll("rect.coh").data(colorInd);
     cohLegendRect.enter()
       .append("rect")
@@ -324,14 +333,12 @@ function display(isError, spect1, spect2, coh) {
     cohAxisG = cohG.selectAll("g.cohAxis").data([{}]);
     cohAxisG.enter()
       .append("g")
-        .attr("transform", "translate(0," + 10 + ")")
+        .attr("transform", "translate(0," + 9 + ")")
         .attr("class", "cohAxis")
       .append("text")
         .attr("x", 0)
         .attr("y", 0)
-        .attr("dy", 0.000 + "em")
         .attr("text-anchor", "end")
-        .attr("font-size", 10 + "px")
         .text("Coherence");
     cohAxisG.call(cohAxis);
 
