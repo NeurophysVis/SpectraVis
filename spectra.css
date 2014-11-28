@@ -1,7 +1,8 @@
 
 .timeAxis text, .freqAxis text, .powerAxis text, .cohAxis text {
-  font-size: 11px;
-  stroke: #aaa;
+  font: 11px sans-serif;
+  color: #777;
+  font-weight: 400;
 }
 
 .timeAxis line, .freqAxis line, .powerAxis line, .cohAxis line {

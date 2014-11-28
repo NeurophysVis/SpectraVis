@@ -258,13 +258,13 @@ function display(isError, spect1, spect2, coh) {
     chartKeyText = svgLegend.selectAll("g#ChartText").data([{}]);
     chartKeyText.enter()
       .append("text")
-      .attr("id", "ChartText")
-      .attr("transform", "translate(10," + 9 + ")")
-      .attr("x", 0)
-      .attr("y", 0)
-      .attr("text-anchor", "end")
-      .attr("font-size", 11 + "px")
-      .text("Chart Key");
+        .attr("id", "ChartText")
+        .attr("transform", "translate(10," + 9 + ")")
+        .attr("x", 0)
+        .attr("y", 0)
+        .attr("text-anchor", "end")
+        .attr("font-size", 11 + "px")
+        .text("Chart Key");
 
     legendScale = d3.scale.ordinal()
       .domain(colorInd)
