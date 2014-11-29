@@ -1,39 +1,51 @@
 var heatmapPowerColor,
     heatmapCohColor,
     powerColors = colorbrewer.Blues[9],
-    cohColors = colorbrewer.Greens[9];
+    cohColors = colorbrewer.Greens[9],
+    powerLineFun, cohLineFun, freqSlicePowerScale, freqSliceCohScale,
+    spect1Line, spect2Line, cohLine;
 var margin = {top: 40, right: 40, bottom: 40, left: 40};
 var width = document.getElementById("Ch1Panel").offsetWidth - margin.left - margin.right,
     height = document.getElementById("Ch1Panel").offsetWidth*4/5 - margin.top - margin.bottom;
 
 
-svgCh1 = d3.select("#Ch1Panel").append("svg")
+svgCh1 = d3.select("#Ch1Panel")
+    .append("svg")
       .attr("width", width + margin.left + margin.right)
       .attr("height", height + margin.top + margin.bottom)
     .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-svgCh2 = d3.select("#Ch2Panel").append("svg")
+svgCh2 = d3.select("#Ch2Panel")
+    .append("svg")
       .attr("width", width + margin.left + margin.right)
       .attr("height", height + margin.top + margin.bottom)
     .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-svgCoh = d3.select("#CoherencePanel").append("svg")
+svgCoh = d3.select("#CoherencePanel")
+    .append("svg")
       .attr("width", width + margin.left + margin.right)
       .attr("height", height + margin.top + margin.bottom)
     .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-var legendWidth = document.getElementById("legendRow").offsetWidth - margin.left - margin.right,
+var legendWidth = document.getElementById("legendKey").offsetWidth - margin.left - margin.right,
     legendHeight = 90 - margin.top - margin.bottom;
 
-svgLegend = d3.select("#legendRow").append("svg")
+svgLegend = d3.select("#legendKey")
+    .append("svg")
       .attr("width", legendWidth + margin.left + margin.right)
       .attr("height", legendHeight + margin.top + margin.bottom)
     .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
+svgFreqSlice = d3.select("#freqSlice")
+    .append("svg")
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 // Load data
 var curSubject = "SIM03_B0.00T0.63",
@@ -68,6 +80,7 @@ function display(isError, spect1, spect2, coh) {
 
   drawTitles();
   drawLegends();
+  setupFreqSlice();
 
   function setupScales() {
     var powerMin, powerMax, cohMax, cohMin;
@@ -127,6 +140,16 @@ function display(isError, spect1, spect2, coh) {
       .range([0,1])
       .nice();
 
+    freqSlicePowerScale = d3.scale.linear()
+      .domain([powerMin, powerMax])
+      .range([height, 0])
+      .nice();
+
+    freqSliceCohScale = d3.scale.linear()
+      .domain([cohMin, cohMax])
+      .range([height, 0])
+      .nice();
+
   }
   function drawHeatmap(curPlot, curData, intensityScale, colorScale) {
 
@@ -154,6 +177,7 @@ function display(isError, spect1, spect2, coh) {
       .style("stroke", function(d) {
           return colorScale(intensityScale(d));
         });
+    heatmapRect.on("mouseover", rectMouseover)
 
     timeAxis = d3.svg.axis()
                   .scale(timeScaleLinear)
@@ -188,7 +212,7 @@ function display(isError, spect1, spect2, coh) {
         .attr("dy", -2 + "em")
         .attr("transform", "rotate(-90)")
         .attr("text-anchor", "middle")
-        .text("Frequency (Hz)");;
+        .text("Frequency (Hz)");
     freqAxisG.call(freqAxis);
 
     zeroG = curPlot.selectAll("g.zeroLine").data([[[0, height]]]);
@@ -263,7 +287,9 @@ function display(isError, spect1, spect2, coh) {
         .attr("x", 0)
         .attr("y", 0)
         .attr("text-anchor", "end")
-        .attr("font-size", 11 + "px")
+        .attr("font-size", 10 + "px")
+        .attr("font-weight", "700")
+        .attr("color", "#333")
         .text("Chart Key");
 
     legendScale = d3.scale.ordinal()
@@ -303,7 +329,7 @@ function display(isError, spect1, spect2, coh) {
           .attr("x", 0)
           .attr("y", 0)
           .attr("text-anchor", "end")
-          .text("Power");;
+          .text("Power");
     powerAxisG.call(powerAxis);
     // Coh Legend
     cohG = svgLegend.selectAll("g#cohLegend").data([{}]);
@@ -342,5 +368,130 @@ function display(isError, spect1, spect2, coh) {
         .text("Coherence");
     cohAxisG.call(cohAxis);
 
+  }
+  function setupFreqSlice() {
+    var freqAxis, freqG, freqSlicePowerAxis, powerG,
+        cohAxis, cohG, freqScale;
+
+    freqScale = d3.scale.ordinal()
+        .domain(fAx)
+        .rangeBands([0, width]);
+
+    powerLineFun = d3.svg.line()
+        .x(function(d, i) { return freqScale(fAx[i]) + freqScale.rangeBand()/2;})
+        .y(function(d) {return freqSlicePowerScale(d);});
+    cohLineFun = d3.svg.line()
+        .x(function(d, i) { return freqScale(fAx[i]) + freqScale.rangeBand()/2;})
+        .y(function(d) {return freqSliceCohScale(d);});
+
+    freqAxis = d3.svg.axis()
+        .scale(freqScale)
+        .orient("bottom")
+        .tickSize(0,0,0);
+    cohAxis = d3.svg.axis()
+        .scale(freqSliceCohScale)
+        .orient("right")
+        .ticks(2)
+        .tickValues(freqSliceCohScale.domain())
+        .tickSize(0,0,0);
+    powerAxis = d3.svg.axis()
+        .scale(freqSlicePowerScale)
+        .orient("left")
+        .ticks(2)
+        .tickValues(freqSlicePowerScale.domain())
+        .tickSize(0,0,0);
+
+    freqG = svgFreqSlice.selectAll("g.freqAxis").data([{}]);
+    freqG.enter()
+        .append("g")
+          .attr("class", "freqAxis")
+          .attr("transform", "translate(0," + height + ")")
+        .append("text")
+          .attr("x", width/2)
+          .attr("y", 0)
+          .attr("text-anchor", "middle")
+          .attr("dy", 2 + "em")
+          .text("Frequency (Hz)");
+     freqG.call(freqAxis);
+
+     cohG = svgFreqSlice.selectAll("g.cohAxis").data([{}]);
+     cohG.enter()
+        .append("g")
+          .attr("class", "cohAxis")
+          .attr("transform", "translate(" + width + ",0)")
+        .append("text")
+          .attr("x",height/2)
+          .attr("y", 0)
+          .attr("dy", -2.5 + "em")
+          .attr("transform", "rotate(90)")
+          .attr("text-anchor", "middle")
+          .text("Coherence (a.u)");
+     cohG.call(cohAxis)
+
+     powerG = svgFreqSlice.selectAll("g.powerAxis").data([{}]);
+     powerG.enter()
+        .append("g")
+          .attr("class", "powerAxis")
+        .append("text")
+          .attr("x",height/2)
+          .attr("y", 0)
+          .attr("dy", -2.5 + "em")
+          .attr("transform", "rotate(-90)")
+          .attr("text-anchor", "middle")
+          .text("Coherence (a.u)");
+    powerG.call(powerAxis);
+
+
+
+
+  }
+  function rectMouseover(d, freqInd, timeInd) {
+
+    spect1Line = svgFreqSlice.selectAll("path.spect1").data([spect1.data[timeInd]]);
+    spect1Line.enter()
+      .append("path")
+      .attr("class", "spect1")
+      .attr("stroke", "blue")
+      .attr("stroke-width", 2)
+      .attr("fill", "none");
+    spect1Line
+      .transition()
+        .duration(5)
+        .ease("linear")
+      .attr("d", powerLineFun);
+    spect2Line = svgFreqSlice.selectAll("path.spect2").data([spect2.data[timeInd]]);
+    spect2Line.enter()
+      .append("path")
+      .attr("class", "spect2")
+      .attr("stroke", "blue")
+      .attr("stroke-width", 2)
+      .attr("fill", "none");
+    spect2Line
+      .transition()
+        .duration(5)
+        .ease("linear")
+      .attr("d", powerLineFun);
+    cohLine = svgFreqSlice.selectAll("path.coh").data([coh.data[timeInd]]);
+    cohLine.enter()
+      .append("path")
+        .attr("class", "coh")
+        .attr("stroke", "green")
+        .attr("stroke-width", 2)
+        .attr("fill", "none");
+    cohLine
+      .transition()
+        .duration(5)
+        .ease("linear")
+      .attr("d", cohLineFun);
+    timeTitle = svgFreqSlice.selectAll("text.title").data([tAx[timeInd]]);
+    timeTitle.enter()
+      .append("text")
+      .attr("text-anchor", "middle")
+      .attr("class", "title")
+      .attr("x", width/2)
+      .attr("y", 0)
+      .attr("dy", -1 + "em");
+    timeTitle
+      .text(function(d) {return "Frequency Slice @ Time " + d + " s";});
   }
 }
