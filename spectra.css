@@ -1,15 +1,24 @@
 
-.timeAxis text, .freqAxis text, .powerAxis text, .cohAxis text {
+.timeAxis text, .freqAxis text,
+.powerAxis text, .cohAxis text,
+.powerSliceAxis text, .cohSliceAxis text,
+.freqSliceAxis text
+{
   font: 11px sans-serif;
   color: #777;
   font-weight: 400;
 }
-
-.timeAxis line, .freqAxis line, .powerAxis line, .cohAxis line {
+.timeAxis line, .freqAxis line,
+.powerAxis line, .cohAxis line,
+.powerSliceAxis line, .cohSliceAxis line,
+.freqSliceAxis line,
+.powerSliceAxis path, .cohSliceAxis path,
+.freqSliceAxis path {
   fill: none;
   stroke: #000;
   shape-rendering: crispEdges;
 }
-.timeAxis path, .freqAxis path, .powerAxis path, .cohAxis path {
+.timeAxis path, .freqAxis path,
+.powerAxis path, .cohAxis path {
   display: none;
 }

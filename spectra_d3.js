@@ -31,7 +31,7 @@ svgCoh = d3.select("#CoherencePanel")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 var legendWidth = document.getElementById("legendKey").offsetWidth - margin.left - margin.right,
-    legendHeight = 90 - margin.top - margin.bottom;
+    legendHeight = 180 - margin.top - margin.bottom;
 
 svgLegend = d3.select("#legendKey")
     .append("svg")
@@ -40,10 +40,13 @@ svgLegend = d3.select("#legendKey")
     .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
+var freqSliceWidth = document.getElementById("freqSlice").offsetWidth - margin.left - margin.right;
+    freqSliceHeight =  180 - margin.top - margin.bottom;
+
 svgFreqSlice = d3.select("#freqSlice")
     .append("svg")
-      .attr("width", width + margin.left + margin.right)
-      .attr("height", height + margin.top + margin.bottom)
+      .attr("width", freqSliceWidth + margin.left + margin.right)
+      .attr("height", freqSliceHeight + margin.top + margin.bottom)
     .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
@@ -132,23 +135,19 @@ function display(isError, spect1, spect2, coh) {
 
     powerScale = d3.scale.linear()
       .domain([powerMin, powerMax])
-      .range([0, 1])
-      .nice();
+      .range([0, 1]);
 
     cohScale = d3.scale.linear()
       .domain([cohMin, cohMax])
-      .range([0,1])
-      .nice();
+      .range([0,1]);
 
     freqSlicePowerScale = d3.scale.linear()
       .domain([powerMin, powerMax])
-      .range([height, 0])
-      .nice();
+      .range([freqSliceHeight, 0]);
 
     freqSliceCohScale = d3.scale.linear()
       .domain([cohMin, cohMax])
-      .range([height, 0])
-      .nice();
+      .range([freqSliceHeight, 0]);
 
   }
   function drawHeatmap(curPlot, curData, intensityScale, colorScale) {
@@ -375,7 +374,7 @@ function display(isError, spect1, spect2, coh) {
 
     freqScale = d3.scale.ordinal()
         .domain(fAx)
-        .rangeBands([0, width]);
+        .rangeBands([0, freqSliceWidth]);
 
     powerLineFun = d3.svg.line()
         .x(function(d, i) { return freqScale(fAx[i]) + freqScale.rangeBand()/2;})
@@ -387,6 +386,7 @@ function display(isError, spect1, spect2, coh) {
     freqAxis = d3.svg.axis()
         .scale(freqScale)
         .orient("bottom")
+        .ticks(3)
         .tickSize(0,0,0);
     cohAxis = d3.svg.axis()
         .scale(freqSliceCohScale)
@@ -401,49 +401,45 @@ function display(isError, spect1, spect2, coh) {
         .tickValues(freqSlicePowerScale.domain())
         .tickSize(0,0,0);
 
-    freqG = svgFreqSlice.selectAll("g.freqAxis").data([{}]);
+    freqG = svgFreqSlice.selectAll("g.freqSliceAxis").data([{}]);
     freqG.enter()
         .append("g")
-          .attr("class", "freqAxis")
-          .attr("transform", "translate(0," + height + ")")
+          .attr("class", "freqSliceAxis")
+          .attr("transform", "translate(0," + freqSliceHeight + ")")
         .append("text")
-          .attr("x", width/2)
+          .attr("x", freqSliceWidth/2)
           .attr("y", 0)
           .attr("text-anchor", "middle")
           .attr("dy", 2 + "em")
           .text("Frequency (Hz)");
      freqG.call(freqAxis);
 
-     cohG = svgFreqSlice.selectAll("g.cohAxis").data([{}]);
+     cohG = svgFreqSlice.selectAll("g.cohSliceAxis").data([{}]);
      cohG.enter()
         .append("g")
-          .attr("class", "cohAxis")
-          .attr("transform", "translate(" + width + ",0)")
+          .attr("class", "cohSliceAxis")
+          .attr("transform", "translate(" + freqSliceWidth + ",0)")
         .append("text")
-          .attr("x",height/2)
+          .attr("x", freqSliceHeight/2)
           .attr("y", 0)
-          .attr("dy", -2.5 + "em")
+          .attr("dy", -0.5 + "em")
           .attr("transform", "rotate(90)")
           .attr("text-anchor", "middle")
           .text("Coherence (a.u)");
      cohG.call(cohAxis)
 
-     powerG = svgFreqSlice.selectAll("g.powerAxis").data([{}]);
+     powerG = svgFreqSlice.selectAll("g.powerSliceAxis").data([{}]);
      powerG.enter()
         .append("g")
-          .attr("class", "powerAxis")
+          .attr("class", "powerSliceAxis")
         .append("text")
-          .attr("x",height/2)
+          .attr("x", -freqSliceHeight/2)
           .attr("y", 0)
-          .attr("dy", -2.5 + "em")
+          .attr("dy", -0.5 + "em")
           .attr("transform", "rotate(-90)")
           .attr("text-anchor", "middle")
-          .text("Coherence (a.u)");
+          .text("Power (a.u)");
     powerG.call(powerAxis);
-
-
-
-
   }
   function rectMouseover(d, freqInd, timeInd) {
 
@@ -488,7 +484,7 @@ function display(isError, spect1, spect2, coh) {
       .append("text")
       .attr("text-anchor", "middle")
       .attr("class", "title")
-      .attr("x", width/2)
+      .attr("x", freqSliceWidth/2)
       .attr("y", 0)
       .attr("dy", -1 + "em");
     timeTitle
