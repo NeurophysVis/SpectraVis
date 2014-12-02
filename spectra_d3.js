@@ -386,7 +386,7 @@ function display(isError, spect1, spect2, coh) {
     freqAxis = d3.svg.axis()
         .scale(freqScale)
         .orient("bottom")
-        .ticks(3)
+        .tickValues(["10", "20", "40", "60", "90"])
         .tickSize(0,0,0);
     cohAxis = d3.svg.axis()
         .scale(freqSliceCohScale)
