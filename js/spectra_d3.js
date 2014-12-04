@@ -152,7 +152,8 @@ function display(isError, spect1, spect2, coh) {
   }
   function drawHeatmap(curPlot, curData, intensityScale, colorScale) {
 
-    var heatmapG, heatmapRect, timeAxis, freqAxis, zeroG, zeroLine;
+    var heatmapG, heatmapRect, timeAxis, freqAxis, zeroG, zeroLine,
+        hoverLine, hoverLineG;
 
     heatmapG = curPlot.selectAll("g.time").data(curData.data);
     heatmapG.enter()
@@ -230,6 +231,19 @@ function display(isError, spect1, spect2, coh) {
       .attr("stroke-width", 2)
       .attr("fill", "none")
       .style("opacity", 0.7);
+
+    // add a 'hover' line that we'll show as a user moves their mouse (or finger)
+		// so we can use it to show detailed values of each line
+		hoverLineG = curPlot.append("g.hover-line")
+							.attr("class", "hover-line");
+		// add the line to the group
+		hoverLine = hoverLineG
+			.append("line")
+				.attr("x1", 10).attr("x2", 10) // vertical line so same value on each
+				.attr("y1", 0).attr("y2", height); // top to bottom
+
+		// hide it by default
+		hoverLine.classed("hide", true);
   }
   function drawTitles() {
     var titleCh1, titleCh2, titleCoh;
