@@ -64,13 +64,15 @@ var curSubject = "SIM03_B0.00T0.63",
     curCh1 = 1,
     curCh2 = 4;
 
+// Load Files
+function loadData() {
+
 var spectCh1_file = "spectrogram_" + curSubject + "_" + "C" + curCh1 + ".json",
     spectCh2_file = "spectrogram_" + curSubject + "_" + "C" + curCh2 + ".json",
     coh_file = "coherogram_" + curSubject + "_" + "C" + curCh1 + "_C" + curCh2 + ".json",
     channel_file = "channels_" + curSubject + ".json"
     edge_file = "edges_" + curSubject + ".json";
 
-// Wait until files are loaded before drawing heatmaps
 queue()
     .defer(d3.json, "DATA/" + spectCh1_file)
     .defer(d3.json, "DATA/" + spectCh2_file)
@@ -78,8 +80,9 @@ queue()
     .defer(d3.json, "DATA/" + channel_file)
     .defer(d3.json, "DATA/" + edge_file)
     .await(display);
-
-// Draws heatmaps
+}
+loadData();
+// Draw
 function display(isError, spect1, spect2, coh, channel, edge) {
 
   var timeScale, timeScaleLinear, freqScale, powerScale, cohScale,
@@ -166,13 +169,7 @@ function display(isError, spect1, spect2, coh, channel, edge) {
 
   }
   function drawNetwork(curPlot, nodes, edges) {
-    var force, edge, node, toolTip;
-
-    toolTip = d3.select("body").selectAll("div#tooltip").data([{}]);
-        toolTip.enter()
-            .append("div")
-            .attr("id", "tooltip")
-            .style("opacity", 1e-6);
+    var force, edge, node, nodesG;
 
     // Replace source name by source object
     edges = edges.map(function(e) {
@@ -196,17 +193,32 @@ function display(isError, spect1, spect2, coh, channel, edge) {
       .append('line')
         .attr('class', 'edge')
         .style("stroke-width", 1);
+    edge
+      .on("mouseover", edgeMouseOver)
+      .on("mouseout", edgeMouseOut)
+      .on("click", edgeMouseClick);
 
-    node = curPlot.selectAll('.node').data(nodes, function(d) {return d.name;});
+    nodesG = curPlot.selectAll("g.gnode").data(nodes, function(d) {return d.name;});
+    nodesG.enter()
+      .append("g")
+      .attr("class", "gnode")
+      .call(force.drag);
+
+    node = nodesG.selectAll('circle.node').data(function(d) {return [d];});
     node.enter()
       .append('circle')
         .attr('class', 'node')
         .attr("cx", function(d) {return (d.x);})
         .attr("cy", function(d) {return (d.y);})
-        .attr("r", 5)
-        .call(force.drag);
-    node.on("mouseover", nodeMouseOver)
-        .on("mouseout", nodeMouseOut)
+        .attr("r", 20)
+        .attr("fill", "#ddd")
+        .attr("opacity", 0.7);
+
+    nodeText = nodesG.selectAll("text.nodeLabel").data(function(d) {return [d];});
+    nodeText.enter()
+      .append('text')
+        .attr("class", "nodeLabel")
+        .text(function(d) {return d.name;});
 
     force.on("tick", function() {
       edge.attr("x1", function(d) {return (d.source.x); })
@@ -214,25 +226,39 @@ function display(isError, spect1, spect2, coh, channel, edge) {
           .attr("x2", function(d) { return (d.target.x); })
           .attr("y2", function(d) { return(d.target.y); });
 
-      node.attr("cx", function(d) { return (d.x); })
-          .attr("cy", function(d) { return (d.y); });
+       // Translate the groups
+    nodesG.attr("transform", function(d) {
+      return 'translate(' + [d.x, d.y] + ')';
+    });
    });
 
-   function nodeMouseOver(d) {
-       // Pop up tooltip
-                toolTip
-                    .style("opacity", 1)
-                    .style("left", (d3.event.pageX + 10) + "px")
-                    .style("top", (d3.event.pageY + 10) + "px")
-                    .html(function() {
-                        return "<b>" + d.name + "</b><br>";
-                    });
-   };
-  function nodeMouseOut(d) {
-      toolTip
-        .style("opacity", 1e-9);
-  };
+   function edgeMouseOver(e) {
 
+     var curEdge = d3.select(this);
+     curEdge
+       .style("stroke-width", 3);
+    d3.selectAll("circle.node")
+      .filter(function(n) {
+        return (n.name === e.source.name) || (n.name === e.target.name);
+      })
+        .attr("fill", "red");
+   }
+   function edgeMouseOut(e) {
+     var curEdge = d3.select(this);
+     curEdge
+       .style("stroke-width", 1);
+     d3.selectAll("circle.node")
+      .filter(function(n) {
+        return (n.name === e.source.name) || (n.name === e.target.name);
+      })
+        .attr("fill", "#ddd");
+   }
+   function edgeMouseClick(e) {
+     var re = /\d+/;
+     curCh1 = re.exec(e.source.name)[0];
+     curCh2 = re.exec(e.target.name)[0];
+     loadData();
+   }
   };
   function drawHeatmap(curPlot, curData, intensityScale, colorScale) {
 
@@ -339,7 +365,8 @@ function display(isError, spect1, spect2, coh, channel, edge) {
         .attr("y", 0)
         .attr("dy", -0.5 + "em")
         .attr("text-anchor", "middle")
-        .attr("class", "title")
+        .attr("class", "title");
+    titleCh1
         .text(function(d) {
           return "Spectra: Ch" + d;
         });
@@ -351,7 +378,8 @@ function display(isError, spect1, spect2, coh, channel, edge) {
         .attr("y", 0)
         .attr("dy", -0.5 + "em")
         .attr("text-anchor", "middle")
-        .attr("class", "title")
+        .attr("class", "title");
+    titleCh2
         .text(function(d) {
           return "Spectra: Ch" + d;
         });
@@ -363,7 +391,8 @@ function display(isError, spect1, spect2, coh, channel, edge) {
         .attr("y", 0)
         .attr("dy", -0.5 + "em")
         .attr("text-anchor", "middle")
-        .attr("class", "title")
+        .attr("class", "title");
+    titleCoh
         .text(function(d) {
           return "Coherence: Ch" + d.chLbl1 + "-Ch" + d.chLbl2;
         });
