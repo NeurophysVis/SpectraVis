@@ -26,6 +26,10 @@
   stroke: #999;
   stroke-opacity: .6;
 }
+.node {
+  stroke: #ddd;
+  stroke-opacity: .6;
+}
 #tooltip {
   position: absolute;
   text-align: left;
@@ -44,4 +48,10 @@
   -moz-box-shadow:    3px 3px 3px #888;
 	-webkit-box-shadow: 3px 3px 3px #888;
 	box-shadow:         3px 3px 3px #888;
+}
+.nodeLabel {
+	font-family: sans-serif;
+	font-size: 11px;
+  text-align: center;
+  line-height: 100%;
 }
