@@ -22,3 +22,7 @@
 .powerAxis path, .cohAxis path {
   display: none;
 }
+.edge {
+  stroke: #999;
+  stroke-opacity: .6;
+}

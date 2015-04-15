@@ -50,6 +50,15 @@ svgFreqSlice = d3.select("#freqSlice")
     .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
+var networkWidth = document.getElementById("NetworkPanel").offsetWidth - margin.left - margin.right;
+    networkHeight =  document.getElementById("NetworkPanel").offsetWidth*3/5 - margin.top - margin.bottom;
+svgNetworkMap = d3.select("#NetworkPanel")
+    .append("svg")
+      .attr("width", networkWidth + margin.left + margin.right)
+      .attr("height", networkHeight + margin.top + margin.bottom)
+    .append("g")
+      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
 // Load data
 var curSubject = "SIM03_B0.00T0.63",
     curCh1 = 1,
@@ -57,17 +66,21 @@ var curSubject = "SIM03_B0.00T0.63",
 
 var spectCh1_file = "spectrogram_" + curSubject + "_" + "C" + curCh1 + ".json",
     spectCh2_file = "spectrogram_" + curSubject + "_" + "C" + curCh2 + ".json",
-    coh_file = "coherogram_" + curSubject + "_" + "C" + curCh1 + "_C" + curCh2 + ".json";
+    coh_file = "coherogram_" + curSubject + "_" + "C" + curCh1 + "_C" + curCh2 + ".json",
+    channel_file = "channels_" + curSubject + ".json"
+    edge_file = "edges_" + curSubject + ".json";
 
 // Wait until files are loaded before drawing heatmaps
 queue()
     .defer(d3.json, "DATA/" + spectCh1_file)
     .defer(d3.json, "DATA/" + spectCh2_file)
     .defer(d3.json, "DATA/" + coh_file)
+    .defer(d3.json, "DATA/" + channel_file)
+    .defer(d3.json, "DATA/" + edge_file)
     .await(display);
 
 // Draws heatmaps
-function display(isError, spect1, spect2, coh) {
+function display(isError, spect1, spect2, coh, channel, edge) {
 
   var timeScale, timeScaleLinear, freqScale, powerScale, cohScale,
       tAx, fAx, heatmapPowerColor;
@@ -77,6 +90,7 @@ function display(isError, spect1, spect2, coh) {
 
   setupScales();
 
+  drawNetwork(svgNetworkMap, channel, edge);
   drawHeatmap(svgCh1, spect1, powerScale, heatmapPowerColor);
   drawHeatmap(svgCh2, spect2, powerScale, heatmapPowerColor);
   drawHeatmap(svgCoh, coh, cohScale, heatmapCohColor);
@@ -86,7 +100,8 @@ function display(isError, spect1, spect2, coh) {
   setupFreqSlice();
 
   function setupScales() {
-    var powerMin, powerMax, cohMax, cohMin;
+    var powerMin, powerMax, cohMax, cohMin, networkXMax, networkXMin,
+        networkYMax, networkYMin;
 
     heatmapPowerColor = d3.scale.linear()
       .domain(d3.range(0, 1, 1.0 / (powerColors.length - 1)))
@@ -150,6 +165,50 @@ function display(isError, spect1, spect2, coh) {
       .range([freqSliceHeight, 0]);
 
   }
+  function drawNetwork(curPlot, nodes, edges) {
+    var force, edge, node;
+    // Replace source name by source object
+    edges = edges.map(function(e) {
+      e.source = nodes.filter(function(n) {return n.name === e.source;});
+      e.source = e.source[0];
+      e.target = nodes.filter(function(n) {return n.name === e.target;});
+      e.target = e.target[0];
+      return e;
+    })
+
+    force = d3.layout.force()
+      .nodes(nodes)
+      .links(edges)
+      .charge(-120)
+      .linkDistance(200)
+      .size([networkWidth, networkHeight])
+      .start();
+
+    edge = curPlot.selectAll('.edge').data(edges);
+    edge.enter()
+      .append('line')
+        .attr('class', 'edge')
+        .style("stroke-width", 1);
+
+    node = curPlot.selectAll('.node').data(nodes, function(d) {return d.name;});
+    node.enter()
+      .append('circle')
+        .attr('class', 'node')
+        .attr("cx", function(d) {return (d.x);})
+        .attr("cy", function(d) {return (d.y);})
+        .attr("r", 5)
+        .call(force.drag);
+
+    force.on("tick", function() {
+      edge.attr("x1", function(d) {return (d.source.x); })
+          .attr("y1", function(d) { return (d.source.y); })
+          .attr("x2", function(d) { return (d.target.x); })
+          .attr("y2", function(d) { return(d.target.y); });
+
+      node.attr("cx", function(d) { return (d.x); })
+          .attr("cy", function(d) { return (d.y); });
+   });
+  };
   function drawHeatmap(curPlot, curData, intensityScale, colorScale) {
 
     var heatmapG, heatmapRect, timeAxis, freqAxis, zeroG, zeroLine,
