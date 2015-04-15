@@ -183,12 +183,12 @@ function display(isError, spect1, spect2, coh, channel, edge) {
     force = d3.layout.force()
       .nodes(nodes)
       .links(edges)
-      .charge(-120)
-      .linkDistance(200)
+      .charge(-200)
+      .linkDistance(300)
       .size([networkWidth, networkHeight])
       .start();
 
-    edge = curPlot.selectAll('.edge').data(edges);
+    edge = curPlot.selectAll('.edge').data(edges, function(e) {return e.source.name + "_" + e.target.name});
     edge.enter()
       .append('line')
         .attr('class', 'edge')
@@ -212,7 +212,7 @@ function display(isError, spect1, spect2, coh, channel, edge) {
         .attr("cy", function(d) {return (d.y);})
         .attr("r", 20)
         .attr("fill", "#ddd")
-        .attr("opacity", 0.7);
+        .attr("opacity", 0.9);
 
     nodeText = nodesG.selectAll("text.nodeLabel").data(function(d) {return [d];});
     nodeText.enter()
