@@ -166,7 +166,14 @@ function display(isError, spect1, spect2, coh, channel, edge) {
 
   }
   function drawNetwork(curPlot, nodes, edges) {
-    var force, edge, node;
+    var force, edge, node, toolTip;
+
+    toolTip = d3.select("body").selectAll("div#tooltip").data([{}]);
+        toolTip.enter()
+            .append("div")
+            .attr("id", "tooltip")
+            .style("opacity", 1e-6);
+
     // Replace source name by source object
     edges = edges.map(function(e) {
       e.source = nodes.filter(function(n) {return n.name === e.source;});
@@ -198,6 +205,8 @@ function display(isError, spect1, spect2, coh, channel, edge) {
         .attr("cy", function(d) {return (d.y);})
         .attr("r", 5)
         .call(force.drag);
+    node.on("mouseover", nodeMouseOver)
+        .on("mouseout", nodeMouseOut)
 
     force.on("tick", function() {
       edge.attr("x1", function(d) {return (d.source.x); })
@@ -208,6 +217,22 @@ function display(isError, spect1, spect2, coh, channel, edge) {
       node.attr("cx", function(d) { return (d.x); })
           .attr("cy", function(d) { return (d.y); });
    });
+
+   function nodeMouseOver(d) {
+       // Pop up tooltip
+                toolTip
+                    .style("opacity", 1)
+                    .style("left", (d3.event.pageX + 10) + "px")
+                    .style("top", (d3.event.pageY + 10) + "px")
+                    .html(function() {
+                        return "<b>" + d.name + "</b><br>";
+                    });
+   };
+  function nodeMouseOut(d) {
+      toolTip
+        .style("opacity", 1e-9);
+  };
+
   };
   function drawHeatmap(curPlot, curData, intensityScale, colorScale) {
 
