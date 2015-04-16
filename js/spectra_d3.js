@@ -62,7 +62,9 @@ svgNetworkMap = d3.select("#NetworkPanel")
 // Load data
 var curSubject = "SIM03_B0.00T0.63",
     curCh1 = 1,
-    curCh2 = 4;
+    curCh2 = 4,
+    curFreq_ind = 0,
+    curTime_ind = 0;
 
 // Load Files
 function loadData() {
@@ -86,14 +88,14 @@ loadData();
 function display(isError, spect1, spect2, coh, channel, edge) {
 
   var timeScale, timeScaleLinear, freqScale, powerScale, cohScale,
-      tAx, fAx, heatmapPowerColor, networkXScale, networkYScale;
+      tAx, fAx, heatmapPowerColor, networkXScale, networkYScale, force;
 
   tAx = spect1.tax; // Time Axis
   fAx = spect1.fax; // Frequency Axis
 
   setupScales();
-
-  drawNetwork(svgNetworkMap, channel, edge);
+  setupNodesEdges();
+  drawNetwork();
   drawHeatmap(svgCh1, spect1, powerScale, heatmapPowerColor);
   drawHeatmap(svgCh2, spect2, powerScale, heatmapPowerColor);
   drawHeatmap(svgCoh, coh, cohScale, heatmapCohColor);
@@ -102,6 +104,31 @@ function display(isError, spect1, spect2, coh, channel, edge) {
   drawLegends();
   setupFreqSlice();
 
+  function setupNodesEdges() {
+    // Replace source name by source object
+    edge = edge.map(function(e) {
+      e.source = channel.filter(function(n) {return n.name === e.source;});
+      e.source = e.source[0];
+      e.target = channel.filter(function(n) {return n.name === e.target;});
+      e.target = e.target[0];
+      return e;
+    });
+
+    // Replace x and y coordinates of nodes with properly scaled x,y
+    channel = channel.map(function(n) {
+      n.x = networkXScale(n.x);
+      n.y = networkYScale(n.y)
+      return n;
+    });
+
+    force = d3.layout.force()
+      .nodes(channel)
+      .links(edge)
+      .charge(-200)
+      .linkDistance(300)
+      .size([networkWidth, networkHeight])
+      .start();
+  }
   function setupScales() {
     var powerMin, powerMax, cohMax, cohMin, networkXExtent,
         networkYExtent;
@@ -178,84 +205,63 @@ function display(isError, spect1, spect2, coh, channel, edge) {
       .range([networkHeight, 0]);
 
   }
-  function drawNetwork(curPlot, nodes, edges) {
-    var force, edge, node, nodesG;
+  function drawNetwork() {
+    var nodeG;
 
-    // Replace source name by source object
-    edges = edges.map(function(e) {
-      e.source = nodes.filter(function(n) {return n.name === e.source;});
-      e.source = e.source[0];
-      e.target = nodes.filter(function(n) {return n.name === e.target;});
-      e.target = e.target[0];
-      return e;
-    })
-
-    // Replace x and y coordinates of nodes with properly scaled x,y
-    nodes = nodes.map(function(n) {
-      n.x = networkXScale(n.x);
-      n.y = networkYScale(n.y)
-      return n;
-    });
-
-    force = d3.layout.force()
-      .nodes(nodes)
-      .links(edges)
-      .charge(-200)
-      .linkDistance(300)
-      .size([networkWidth, networkHeight])
-      .start();
-
-    edge = curPlot.selectAll('.edge').data(edges, function(e) {return e.source.name + "_" + e.target.name});
-    edge.enter()
-      .append('line')
-        .attr('class', 'edge')
+    edgeLine = svgNetworkMap.selectAll(".edge").data(edge, function(e) {return e.source.name + "_" + e.target.name});
+    edgeLine.enter()
+      .append("line")
+        .attr("class", "edge")
         .style("stroke-width", 1);
-    edge
+    edgeLine
+      .style("stroke", function(d) {
+          return heatmapCohColor(cohScale(d.data[curTime_ind][curFreq_ind]));
+        })
+    edgeLine
       .on("mouseover", edgeMouseOver)
       .on("mouseout", edgeMouseOut)
       .on("click", edgeMouseClick);
 
-    nodesG = curPlot.selectAll("g.gnode").data(nodes, function(d) {return d.name;});
-    nodesG.enter()
+    nodeG = svgNetworkMap.selectAll("g.gnode").data(channel, function(d) {return d.name;});
+    nodeG.enter()
       .append("g")
       .attr("class", "gnode")
       .attr("transform", function(d) {
         return 'translate(' + [d.x, d.y] + ')';
       });
 
-    node = nodesG.selectAll('circle.node').data(function(d) {return [d];});
-    node.enter()
-      .append('circle')
-        .attr('class', 'node')
-        .attr("cx", 0)
-        .attr("cy", 0)
+    nodeCircle = nodeG.selectAll("circle.node").data(function(d) {return [d];});
+    nodeCircle.enter()
+      .append("circle")
+        .attr("class", "node")
         .attr("r", 20)
         .attr("fill", "#ddd")
         .attr("opacity", 0.9);
 
-    nodeText = nodesG.selectAll("text.nodeLabel").data(function(d) {return [d];});
+    nodeText = nodeG.selectAll("text.nodeLabel").data(function(d) {return [d];});
     nodeText.enter()
       .append('text')
         .attr("class", "nodeLabel")
         .text(function(d) {return d.name;});
 
     force.on("tick", function() {
-      edge.attr("x1", function(d) {return (d.source.x); })
+      edgeLine.attr("x1", function(d) {return (d.source.x); })
           .attr("y1", function(d) { return (d.source.y); })
           .attr("x2", function(d) { return (d.target.x); })
           .attr("y2", function(d) { return(d.target.y); });
 
        // Translate the groups
-    nodesG.attr("transform", function(d) {
-      return 'translate(' + [d.x, d.y] + ')';
-    });
+      nodeG.attr("transform", function(d) {
+        return 'translate(' + [d.x, d.y] + ')';
+      });
    });
 
    function edgeMouseOver(e) {
 
      var curEdge = d3.select(this);
      curEdge
-       .style("stroke-width", 3);
+       .style("stroke-width", 3)
+       .style("stroke", heatmapCohColor(d3.max(heatmapCohColor.domain())));
     d3.selectAll("circle.node")
       .filter(function(n) {
         return (n.name === e.source.name) || (n.name === e.target.name);
@@ -265,7 +271,10 @@ function display(isError, spect1, spect2, coh, channel, edge) {
    function edgeMouseOut(e) {
      var curEdge = d3.select(this);
      curEdge
-       .style("stroke-width", 1);
+       .style("stroke-width", 1)
+       .style("stroke", function(d) {
+           return heatmapCohColor(cohScale(d.data[curTime_ind][curFreq_ind]));
+         });
      d3.selectAll("circle.node")
       .filter(function(n) {
         return (n.name === e.source.name) || (n.name === e.target.name);
@@ -306,7 +315,8 @@ function display(isError, spect1, spect2, coh, channel, edge) {
       .style("stroke", function(d) {
           return colorScale(intensityScale(d));
         });
-    heatmapRect.on("mouseover", rectMouseover)
+    heatmapRect
+      .on("mouseover", rectMouseOver);
 
     timeAxis = d3.svg.axis()
                   .scale(timeScaleLinear)
@@ -587,7 +597,9 @@ function display(isError, spect1, spect2, coh, channel, edge) {
           .text("Power (a.u)");
     powerG.call(powerAxis);
   }
-  function rectMouseover(d, freqInd, timeInd) {
+  function rectMouseOver(d, freqInd, timeInd) {
+    curFreq_ind = freqInd;
+    curTime_ind = timeInd;
 
     spect1Line = svgFreqSlice.selectAll("path.spect1").data([spect1.data[timeInd]]);
     spect1Line.enter()
@@ -635,5 +647,7 @@ function display(isError, spect1, spect2, coh, channel, edge) {
       .attr("dy", -1 + "em");
     timeTitle
       .text(function(d) {return "Frequency Slice @ Time " + d + " s";});
+    drawNetwork();
   }
+
 }
