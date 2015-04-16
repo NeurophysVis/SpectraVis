@@ -50,7 +50,7 @@ svgFreqSlice = d3.select("#freqSlice")
     .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-var networkWidth = document.getElementById("NetworkPanel").offsetWidth - margin.left - margin.right;
+var networkWidth = document.getElementById("NetworkPanel").offsetWidth*3/5 - margin.left - margin.right;
     networkHeight =  document.getElementById("NetworkPanel").offsetWidth*3/5 - margin.top - margin.bottom;
 svgNetworkMap = d3.select("#NetworkPanel")
     .append("svg")
@@ -86,7 +86,7 @@ loadData();
 function display(isError, spect1, spect2, coh, channel, edge) {
 
   var timeScale, timeScaleLinear, freqScale, powerScale, cohScale,
-      tAx, fAx, heatmapPowerColor;
+      tAx, fAx, heatmapPowerColor, networkXScale, networkYScale;
 
   tAx = spect1.tax; // Time Axis
   fAx = spect1.fax; // Frequency Axis
@@ -103,8 +103,8 @@ function display(isError, spect1, spect2, coh, channel, edge) {
   setupFreqSlice();
 
   function setupScales() {
-    var powerMin, powerMax, cohMax, cohMin, networkXMax, networkXMin,
-        networkYMax, networkYMin;
+    var powerMin, powerMax, cohMax, cohMin, networkXExtent,
+        networkYExtent;
 
     heatmapPowerColor = d3.scale.linear()
       .domain(d3.range(0, 1, 1.0 / (powerColors.length - 1)))
@@ -139,6 +139,9 @@ function display(isError, spect1, spect2, coh, channel, edge) {
       return d3.max(d, function(e) {return e;});
     });
 
+    networkXExtent = d3.extent(channel, function(c) {return c.x;});
+    networkYExtent = d3.extent(channel, function(c) {return c.y;});
+
     timeScale = d3.scale.ordinal()
       .domain(tAx)
       .rangeBands([0, width]);
@@ -167,6 +170,13 @@ function display(isError, spect1, spect2, coh, channel, edge) {
       .domain([cohMin, cohMax])
       .range([freqSliceHeight, 0]);
 
+    networkXScale = d3.scale.linear()
+      .domain(networkXExtent)
+      .range([0, networkWidth]);
+    networkYScale = d3.scale.linear()
+      .domain(networkYExtent)
+      .range([networkHeight, 0]);
+
   }
   function drawNetwork(curPlot, nodes, edges) {
     var force, edge, node, nodesG;
@@ -179,6 +189,13 @@ function display(isError, spect1, spect2, coh, channel, edge) {
       e.target = e.target[0];
       return e;
     })
+
+    // Replace x and y coordinates of nodes with properly scaled x,y
+    nodes = nodes.map(function(n) {
+      n.x = networkXScale(n.x);
+      n.y = networkYScale(n.y)
+      return n;
+    });
 
     force = d3.layout.force()
       .nodes(nodes)
@@ -202,14 +219,16 @@ function display(isError, spect1, spect2, coh, channel, edge) {
     nodesG.enter()
       .append("g")
       .attr("class", "gnode")
-      .call(force.drag);
+      .attr("transform", function(d) {
+        return 'translate(' + [d.x, d.y] + ')';
+      });
 
     node = nodesG.selectAll('circle.node').data(function(d) {return [d];});
     node.enter()
       .append('circle')
         .attr('class', 'node')
-        .attr("cx", function(d) {return (d.x);})
-        .attr("cy", function(d) {return (d.y);})
+        .attr("cx", 0)
+        .attr("cy", 0)
         .attr("r", 20)
         .attr("fill", "#ddd")
         .attr("opacity", 0.9);
