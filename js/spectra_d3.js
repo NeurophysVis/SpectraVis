@@ -64,7 +64,8 @@ var curSubject = "SIM03_B0.00T0.63",
     curCh1 = 1,
     curCh2 = 4,
     curFreq_ind = 0,
-    curTime_ind = 0;
+    curTime_ind = 0
+    mouseFlag = true;
 
 // Load Files
 function loadData() {
@@ -316,7 +317,8 @@ function display(isError, spect1, spect2, coh, channel, edge) {
           return colorScale(intensityScale(d));
         });
     heatmapRect
-      .on("mouseover", rectMouseOver);
+      .on("mouseover", rectMouseOver)
+      .on("click", rectMouseClick);
 
     timeAxis = d3.svg.axis()
                   .scale(timeScaleLinear)
@@ -647,7 +649,9 @@ function display(isError, spect1, spect2, coh, channel, edge) {
       .attr("dy", -1 + "em");
     timeTitle
       .text(function(d) {return "Frequency Slice @ Time " + d + " s";});
-    drawNetwork();
+    if (mouseFlag) {drawNetwork()};
   }
-
+  function rectMouseClick() {
+    mouseFlag = !mouseFlag;
+  }
 }
