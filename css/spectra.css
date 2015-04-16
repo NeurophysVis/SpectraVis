@@ -30,28 +30,9 @@
   stroke: #ddd;
   stroke-opacity: .6;
 }
-#tooltip {
-  position: absolute;
-  text-align: left;
-  display: block;
-  padding: 10px;
-  left: 200px;
-	top: 200px;
-  font: 11px sans-serif;
-  background: white;
-
-  border-width: 2px;
-  border-style: solid;
-  border-radius: 5px;
-  border-color: #777;
-  pointer-events: none;
-  -moz-box-shadow:    3px 3px 3px #888;
-	-webkit-box-shadow: 3px 3px 3px #888;
-	box-shadow:         3px 3px 3px #888;
-}
-.nodeLabel {
+text.nodeLabel {
 	font-family: sans-serif;
 	font-size: 11px;
-  text-align: center;
+  text-anchor: middle;
   line-height: 100%;
 }
