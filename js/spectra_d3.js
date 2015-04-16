@@ -286,6 +286,7 @@ function display(isError, spect1, spect2, coh, channel, edge) {
      var re = /\d+/;
      curCh1 = re.exec(e.source.name)[0];
      curCh2 = re.exec(e.target.name)[0];
+     mouseFlag = true;
      loadData();
    }
   };
