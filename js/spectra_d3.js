@@ -207,7 +207,7 @@ function display(isError, spect1, spect2, coh, channel, edge) {
 
   }
   function drawNetwork() {
-    var nodeG;
+    var nodeG, strokeStyle;
 
     edgeLine = svgNetworkMap.selectAll(".edge").data(edge, function(e) {return e.source.name + "_" + e.target.name});
     edgeLine.enter()
@@ -244,7 +244,7 @@ function display(isError, spect1, spect2, coh, channel, edge) {
       .append('text')
         .attr("class", "nodeLabel")
         .text(function(d) {return d.name;});
-
+    // For every iteration of force simulation "tick"
     force.on("tick", function() {
       edgeLine.attr("x1", function(d) {return (d.source.x); })
           .attr("y1", function(d) { return (d.source.y); })
@@ -260,6 +260,7 @@ function display(isError, spect1, spect2, coh, channel, edge) {
    function edgeMouseOver(e) {
 
      var curEdge = d3.select(this);
+     strokeStyle = curEdge.style("stroke");
      curEdge
        .style("stroke-width", 3)
        .style("stroke", heatmapCohColor(d3.max(heatmapCohColor.domain())));
@@ -273,9 +274,7 @@ function display(isError, spect1, spect2, coh, channel, edge) {
      var curEdge = d3.select(this);
      curEdge
        .style("stroke-width", 1)
-       .style("stroke", function(d) {
-           return heatmapCohColor(cohScale(d.data[curTime_ind][curFreq_ind]));
-         });
+       .style("stroke", strokeStyle);
      d3.selectAll("circle.node")
       .filter(function(n) {
         return (n.name === e.source.name) || (n.name === e.target.name);
