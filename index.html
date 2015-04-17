@@ -29,20 +29,39 @@
   <div class="container">
     <!-- Brain Panel -->
     <div class="row">
-      <div class="col-md-2" id="SubjectPanel">
+      <div id="SubjectPanel" class="col-md-2">
         <div class="dropdown" id="SubjectDropdown">
           <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown">
             Subjects
             <span class="caret"></span>
           </button>
           <ul class="dropdown-menu" role="menu" aria-labelledby="subjectDropdown">
-            <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Subject1</a></li>
-            <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Subject2</a></li>
-            <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Something else here</a></li>
+            <li role="presentation"><a role="menuitem" tabindex="-1" href="#">SIM03_B0.00T0.63</a></li>
+            <li role="presentation"><a role="menuitem" tabindex="-1" href="#">SIM03_B1.00T1.00</a></li>
           </ul>
         </div>
       </div>
-      <div class="col-md-10" id="NetworkPanel">Network</div>
+      <div class="col-md-4">
+        <p>
+          <label for="timeSlider"
+                 style="display: inline-block; width: 240px; text-align: right">
+                 Time = <span id="timeSlider-value">…</span> s
+          </label>
+          <input type="range" id="timeSlider">
+        </p>
+     </div>
+     <div class="col-md-4">
+       <p>
+         <label for="freqSlider"
+                style="display: inline-block; width: 240px; text-align: right">
+                Frequency = <span id="freqSlider-value">…</span> Hz
+         </label>
+         <input type="range" id="freqSlider">
+       </p>
+    </div>
+    </div>
+    <div class="row text-center">
+      <div id="NetworkPanel">Network</div>
     </div>
     <!-- Heatmap Panel -->
     <div class="row" id="heatmapRow">

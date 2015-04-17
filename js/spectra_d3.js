@@ -50,8 +50,8 @@ svgFreqSlice = d3.select("#freqSlice")
     .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-var networkWidth = document.getElementById("NetworkPanel").offsetWidth*3/5 - margin.left - margin.right;
-    networkHeight =  document.getElementById("NetworkPanel").offsetWidth*3/5 - margin.top - margin.bottom;
+var networkWidth = document.getElementById("NetworkPanel").offsetWidth*2/5 - margin.left - margin.right;
+    networkHeight =  document.getElementById("NetworkPanel").offsetWidth*2/5 - margin.top - margin.bottom;
 svgNetworkMap = d3.select("#NetworkPanel")
     .append("svg")
       .attr("width", networkWidth + margin.left + margin.right)
@@ -89,13 +89,15 @@ loadData();
 function display(isError, spect1, spect2, coh, channel, edge) {
 
   var timeScale, timeScaleLinear, freqScale, powerScale, cohScale,
-      tAx, fAx, heatmapPowerColor, networkXScale, networkYScale, force;
+      tAx, fAx, heatmapPowerColor, networkXScale, networkYScale, force, timeSlider,
+      freqSlider, timeSliderText, freqSliderText;
 
   tAx = spect1.tax; // Time Axis
   fAx = spect1.fax; // Frequency Axis
 
   setupScales();
   setupNodesEdges();
+  setupSliders();
   drawNetwork();
   drawHeatmap(svgCh1, spect1, powerScale, heatmapPowerColor);
   drawHeatmap(svgCh2, spect2, powerScale, heatmapPowerColor);
@@ -105,6 +107,37 @@ function display(isError, spect1, spect2, coh, channel, edge) {
   drawLegends();
   setupFreqSlice();
 
+  function setupSliders() {
+    timeSlider = d3.select("#timeSlider");
+    timeSliderText = d3.select("#timeSlider-value");
+    freqSlider = d3.select("#freqSlider");
+    freqSliderText = d3.select("#freqSlider-value");
+
+    timeSlider.property("min", d3.min(tAx));
+    timeSlider.property("max", d3.max(tAx));
+    timeSlider.property("step", d3.round(tAx[1] - tAx[0], 4));
+    timeSlider.property("value", tAx[curTime_ind]);
+    timeSlider.on("input", updateTimeSlider);
+    timeSliderText.text(tAx[curTime_ind]);
+
+    freqSlider.property("min", d3.min(fAx));
+    freqSlider.property("max", d3.max(fAx));
+    freqSlider.property("step", fAx[1] - fAx[0]);
+    freqSlider.property("value", fAx[curFreq_ind]);
+    freqSlider.on("input", updateFreqSlider)
+    freqSliderText.text(fAx[curFreq_ind]);
+
+    function updateTimeSlider(){
+      curTime_ind = tAx.indexOf(+this.value);
+      timeSliderText.text(tAx[curTime_ind]);
+      drawNetwork();
+    }
+    function updateFreqSlider(){
+      curFreq_ind = fAx.indexOf(+this.value);
+      drawNetwork();
+      freqSliderText.text(fAx[curFreq_ind]);
+    }
+  }
   function setupNodesEdges() {
     // Replace source name by source object
     edge = edge.map(function(e) {
@@ -649,6 +682,11 @@ function display(isError, spect1, spect2, coh, channel, edge) {
       .attr("dy", -1 + "em");
     timeTitle
       .text(function(d) {return "Frequency Slice @ Time " + d + " s";});
+
+    timeSlider.property("value", tAx[curTime_ind]);
+    timeSliderText.text(tAx[curTime_ind]);
+    freqSlider.property("value", fAx[curFreq_ind]);
+    freqSliderText.text(fAx[curFreq_ind]);
     if (mouseFlag) {drawNetwork()};
   }
   function rectMouseClick() {
