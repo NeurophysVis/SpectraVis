@@ -90,7 +90,7 @@ function display(isError, spect1, spect2, coh, channel, edge) {
 
   var timeScale, timeScaleLinear, freqScale, powerScale, cohScale,
       tAx, fAx, heatmapPowerColor, networkXScale, networkYScale, force, timeSlider,
-      freqSlider, timeSliderText, freqSliderText;
+      freqSlider, timeSliderText, freqSliderText, subjectDropdown;
 
   tAx = spect1.tax; // Time Axis
   fAx = spect1.fax; // Frequency Axis
@@ -98,6 +98,7 @@ function display(isError, spect1, spect2, coh, channel, edge) {
   setupScales();
   setupNodesEdges();
   setupSliders();
+
   drawNetwork();
   drawHeatmap(svgCh1, spect1, powerScale, heatmapPowerColor);
   drawHeatmap(svgCh2, spect2, powerScale, heatmapPowerColor);
@@ -106,6 +107,7 @@ function display(isError, spect1, spect2, coh, channel, edge) {
   drawTitles();
   drawLegends();
   setupFreqSlice();
+  handleSubjectChange()
 
   function setupSliders() {
     timeSlider = d3.select("#timeSlider");
@@ -691,5 +693,13 @@ function display(isError, spect1, spect2, coh, channel, edge) {
   }
   function rectMouseClick() {
     mouseFlag = !mouseFlag;
+  }
+  function handleSubjectChange() {
+    subjectDropdown = d3.select("#SubjectDropdown");
+    subjectDropdown.selectAll("li")
+      .on("click", function() {
+        curSubject = this.id;
+        loadData();
+        })
   }
 }
