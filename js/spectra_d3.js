@@ -66,6 +66,20 @@ var curSubject = "SIM03_B0.00T0.63",
     curFreq_ind = 0,
     curTime_ind = 0
     mouseFlag = true;
+d3.json("DATA/subjects.json", createSubjectMenu)
+
+
+//
+function createSubjectMenu(isError, subjects) {
+    var dropDown = d3.select(".dropdown-menu");
+    var subjectMenu = dropDown.selectAll("li").data(subjects);
+    subjectMenu.enter()
+      .append("li")
+        .attr("id", function(d) {return d.subjectID;})
+        .attr("role", "presentation")
+        .html(function(d) {return "<a role='menuitem' tabindex='-1' href='#'>" + d.subjectID + "</a>";});
+    loadData();
+}
 
 // Load Files
 function loadData() {
@@ -84,7 +98,7 @@ queue()
     .defer(d3.json, "DATA/" + edge_file)
     .await(display);
 }
-loadData();
+
 // Draw
 function display(isError, spect1, spect2, coh, channel, edge) {
 
