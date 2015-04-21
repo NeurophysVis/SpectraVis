@@ -5,28 +5,28 @@ var heatmapPowerColor,
     powerLineFun, cohLineFun, freqSlicePowerScale, freqSliceCohScale,
     spect1Line, spect2Line, cohLine;
 var margin = {top: 40, right: 40, bottom: 40, left: 40};
-var width = document.getElementById("Ch1Panel").offsetWidth - margin.left - margin.right,
-    height = document.getElementById("Ch1Panel").offsetWidth*4/5 - margin.top - margin.bottom;
+var panelWidth = document.getElementById("Ch1Panel").offsetWidth - margin.left - margin.right,
+    panelHeight = document.getElementById("Ch1Panel").offsetWidth*4/5 - margin.top - margin.bottom;
 
 
 svgCh1 = d3.select("#Ch1Panel")
     .append("svg")
-      .attr("width", width + margin.left + margin.right)
-      .attr("height", height + margin.top + margin.bottom)
+      .attr("width", panelWidth + margin.left + margin.right)
+      .attr("height", panelHeight + margin.top + margin.bottom)
     .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 svgCh2 = d3.select("#Ch2Panel")
     .append("svg")
-      .attr("width", width + margin.left + margin.right)
-      .attr("height", height + margin.top + margin.bottom)
+      .attr("width", panelWidth + margin.left + margin.right)
+      .attr("height", panelHeight + margin.top + margin.bottom)
     .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 svgCoh = d3.select("#CoherencePanel")
     .append("svg")
-      .attr("width", width + margin.left + margin.right)
-      .attr("height", height + margin.top + margin.bottom)
+      .attr("width", panelWidth + margin.left + margin.right)
+      .attr("height", panelHeight + margin.top + margin.bottom)
     .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
@@ -60,7 +60,7 @@ svgNetworkMap = d3.select("#NetworkPanel")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 // Load data
-var curSubject = "SIM03_B0.00T0.63",
+var curSubject,
     curCh1 = 1,
     curCh2 = 4,
     curFreq_ind = 0,
@@ -69,7 +69,7 @@ var curSubject = "SIM03_B0.00T0.63",
 d3.json("DATA/subjects.json", createSubjectMenu)
 
 
-//
+// Functions
 function createSubjectMenu(isError, subjects) {
     var dropDown = d3.select(".dropdown-menu");
     var subjectMenu = dropDown.selectAll("li").data(subjects);
@@ -78,6 +78,7 @@ function createSubjectMenu(isError, subjects) {
         .attr("id", function(d) {return d.subjectID;})
         .attr("role", "presentation")
         .html(function(d) {return "<a role='menuitem' tabindex='-1' href='#'>" + d.subjectID + "</a>";});
+    curSubject = subjects[0].subjectID;
     loadData();
 }
 
@@ -222,15 +223,15 @@ function display(isError, spect1, spect2, coh, channel, edge) {
 
     timeScale = d3.scale.ordinal()
       .domain(tAx)
-      .rangeBands([0, width]);
+      .rangeBands([0, panelWidth]);
 
     timeScaleLinear = d3.scale.linear()
       .domain(d3.extent(tAx))
-      .range([0, width]);
+      .range([0, panelWidth]);
 
     freqScale = d3.scale.ordinal()
       .domain(fAx)
-      .rangeBands([height, 0]);
+      .rangeBands([panelHeight, 0]);
 
     powerScale = d3.scale.linear()
       .domain([powerMin, powerMax])
@@ -385,7 +386,7 @@ function display(isError, spect1, spect2, coh, channel, edge) {
     timeAxisG.enter()
         .append("g")
         .attr("class", "timeAxis")
-        .attr("transform", "translate(0," + height + ")")
+        .attr("transform", "translate(0," + panelHeight + ")")
         .append("text")
           .attr("x", timeScaleLinear(0))
           .attr("y", 0)
@@ -399,14 +400,14 @@ function display(isError, spect1, spect2, coh, channel, edge) {
       .append("g")
       .attr("class", "freqAxis")
       .append("text")
-        .attr("x", -height/2)
+        .attr("x", -panelHeight/2)
         .attr("dy", -2 + "em")
         .attr("transform", "rotate(-90)")
         .attr("text-anchor", "middle")
         .text("Frequency (Hz)");
     freqAxisG.call(freqAxis);
 
-    zeroG = curPlot.selectAll("g.zeroLine").data([[[0, height]]]);
+    zeroG = curPlot.selectAll("g.zeroLine").data([[[0, panelHeight]]]);
     zeroG.enter()
       .append("g")
       .attr("class", "zeroLine");
@@ -431,7 +432,7 @@ function display(isError, spect1, spect2, coh, channel, edge) {
 		hoverLine = hoverLineG
 			.append("line")
 				.attr("x1", 10).attr("x2", 10) // vertical line so same value on each
-				.attr("y1", 0).attr("y2", height); // top to bottom
+				.attr("y1", 0).attr("y2", panelHeight); // top to bottom
 
 		// hide it by default
 		hoverLine.classed("hide", true);
