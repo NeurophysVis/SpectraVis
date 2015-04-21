@@ -332,7 +332,7 @@ SPECTRA = (function() {
        strokeStyle = curEdge.style("stroke");
        curEdge
          .style("stroke-width", 3)
-         .style("stroke", heatmapCohColor(d3.max(heatmapCohColor.domain())));
+         .style("stroke", networkStatColor(d3.max(networkStatColor.domain())));
       d3.selectAll("circle.node")
         .filter(function(n) {
           return (n.name === e.source.name) || (n.name === e.target.name);
