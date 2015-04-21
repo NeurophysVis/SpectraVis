@@ -131,8 +131,9 @@ function display(isError, spect1, spect2, coh, channel, edge) {
 
     function updateTimeSlider(){
       curTime_ind = tAx.indexOf(+this.value);
-      timeSliderText.text(tAx[curTime_ind]);
       drawNetwork();
+      drawFreqSlice();
+      timeSliderText.text(tAx[curTime_ind]);
     }
     function updateFreqSlider(){
       curFreq_ind = fAx.indexOf(+this.value);
@@ -658,7 +659,7 @@ function display(isError, spect1, spect2, coh, channel, edge) {
         .duration(5)
         .ease("linear")
       .attr("d", powerLineFun);
-    cohLine = svgFreqSlice.selectAll("path.coh").data([coh.data[curFreq_ind]]);
+    cohLine = svgFreqSlice.selectAll("path.coh").data([coh.data[curTime_ind]]);
     cohLine.enter()
       .append("path")
         .attr("class", "coh")
