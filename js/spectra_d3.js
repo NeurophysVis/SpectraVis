@@ -1,7 +1,9 @@
 var heatmapPowerColor,
     heatmapCohColor,
+    networkStatColor,
     powerColors = colorbrewer.Blues[9],
     cohColors = colorbrewer.Greens[9],
+    networkColors = colorbrewer.Greens[9],
     powerLineFun, cohLineFun, freqSlicePowerScale, freqSliceCohScale,
     spect1Line, spect2Line, cohLine;
 var margin = {top: 40, right: 40, bottom: 40, left: 40};
@@ -105,7 +107,7 @@ function display(isError, spect1, spect2, coh, channel, edge) {
 
   var timeScale, timeScaleLinear, freqScale, powerScale, cohScale,
       tAx, fAx, heatmapPowerColor, networkXScale, networkYScale, force, timeSlider,
-      freqSlider, timeSliderText, freqSliderText, subjectDropdown;
+      freqSlider, timeSliderText, freqSliderText, subjectDropdown, networkStatScale;
 
   tAx = spect1.tax; // Time Axis
   fAx = spect1.fax; // Frequency Axis
@@ -122,7 +124,7 @@ function display(isError, spect1, spect2, coh, channel, edge) {
   drawTitles();
   drawLegends();
   drawFreqSlice();
-  handleSubjectChange()
+  subjectLoad()
 
   function setupSliders() {
     timeSlider = d3.select("#timeSlider");
@@ -183,7 +185,7 @@ function display(isError, spect1, spect2, coh, channel, edge) {
   }
   function setupScales() {
     var powerMin, powerMax, cohMax, cohMin, networkXExtent,
-        networkYExtent;
+        networkYExtent, edgeStatMin, edgeStatMax;
 
     heatmapPowerColor = d3.scale.linear()
       .domain(d3.range(0, 1, 1.0 / (powerColors.length - 1)))
@@ -191,6 +193,9 @@ function display(isError, spect1, spect2, coh, channel, edge) {
     heatmapCohColor = d3.scale.linear()
       .domain(d3.range(0, 1, 1.0 / (cohColors.length - 1)))
       .range(cohColors);
+    networkStatColor = d3.scale.linear()
+      .domain(d3.range(0, 1, 1.0 / (networkColors.length - 1)))
+      .range(networkColors);
 
     powerMin = d3.min(
       [d3.min(spect1.data, function(d) {
@@ -220,6 +225,17 @@ function display(isError, spect1, spect2, coh, channel, edge) {
 
     networkXExtent = d3.extent(channel, function(c) {return c.x;});
     networkYExtent = d3.extent(channel, function(c) {return c.y;});
+
+    edgeStatMin = d3.min(edge, function(d) {
+      return d3.min(d.data, function(e) {
+        return d3.min(e, function(f) {return f;})
+      });
+    });
+    edgeStatMax = d3.max(edge, function(d) {
+      return d3.max(d.data, function(e) {
+        return d3.max(e, function(f) {return f;})
+      });
+    });
 
     timeScale = d3.scale.ordinal()
       .domain(tAx)
@@ -255,7 +271,9 @@ function display(isError, spect1, spect2, coh, channel, edge) {
     networkYScale = d3.scale.linear()
       .domain(networkYExtent)
       .range([networkHeight, 0]);
-
+    networkStatScale = d3.scale.linear()
+      .domain([edgeStatMin, edgeStatMax])
+      .range([0,1]);
   }
   function drawNetwork() {
     var nodeG, strokeStyle;
@@ -267,7 +285,7 @@ function display(isError, spect1, spect2, coh, channel, edge) {
         .style("stroke-width", 1);
     edgeLine
       .style("stroke", function(d) {
-          return heatmapCohColor(cohScale(d.data[curTime_ind][curFreq_ind]));
+          return networkStatColor(networkStatScale(d.data[curTime_ind][curFreq_ind]));
         })
     edgeLine
       .on("mouseover", edgeMouseOver)
@@ -715,7 +733,7 @@ function display(isError, spect1, spect2, coh, channel, edge) {
   function rectMouseClick() {
     mouseFlag = !mouseFlag;
   }
-  function handleSubjectChange() {
+  function subjectLoad() {
     subjectDropdown = d3.select("#SubjectDropdown");
     subjectDropdown.selectAll("li")
       .on("click", function() {
