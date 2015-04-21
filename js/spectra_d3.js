@@ -106,7 +106,7 @@ function display(isError, spect1, spect2, coh, channel, edge) {
 
   drawTitles();
   drawLegends();
-  setupFreqSlice();
+  drawFreqSlice();
   handleSubjectChange()
 
   function setupSliders() {
@@ -561,7 +561,7 @@ function display(isError, spect1, spect2, coh, channel, edge) {
     cohAxisG.call(cohAxis);
 
   }
-  function setupFreqSlice() {
+  function drawFreqSlice() {
     var freqAxis, freqG, freqSlicePowerAxis, powerG,
         cohAxis, cohG, freqScale;
 
@@ -633,12 +633,8 @@ function display(isError, spect1, spect2, coh, channel, edge) {
           .attr("text-anchor", "middle")
           .text("Power (a.u)");
     powerG.call(powerAxis);
-  }
-  function rectMouseOver(d, freqInd, timeInd) {
-    curFreq_ind = freqInd;
-    curTime_ind = timeInd;
 
-    spect1Line = svgFreqSlice.selectAll("path.spect1").data([spect1.data[timeInd]]);
+    spect1Line = svgFreqSlice.selectAll("path.spect1").data([spect1.data[curTime_ind]]);
     spect1Line.enter()
       .append("path")
       .attr("class", "spect1")
@@ -650,7 +646,7 @@ function display(isError, spect1, spect2, coh, channel, edge) {
         .duration(5)
         .ease("linear")
       .attr("d", powerLineFun);
-    spect2Line = svgFreqSlice.selectAll("path.spect2").data([spect2.data[timeInd]]);
+    spect2Line = svgFreqSlice.selectAll("path.spect2").data([spect2.data[curTime_ind]]);
     spect2Line.enter()
       .append("path")
       .attr("class", "spect2")
@@ -662,7 +658,7 @@ function display(isError, spect1, spect2, coh, channel, edge) {
         .duration(5)
         .ease("linear")
       .attr("d", powerLineFun);
-    cohLine = svgFreqSlice.selectAll("path.coh").data([coh.data[timeInd]]);
+    cohLine = svgFreqSlice.selectAll("path.coh").data([coh.data[curFreq_ind]]);
     cohLine.enter()
       .append("path")
         .attr("class", "coh")
@@ -674,7 +670,7 @@ function display(isError, spect1, spect2, coh, channel, edge) {
         .duration(5)
         .ease("linear")
       .attr("d", cohLineFun);
-    timeTitle = svgFreqSlice.selectAll("text.title").data([tAx[timeInd]]);
+    timeTitle = svgFreqSlice.selectAll("text.title").data([tAx[curTime_ind]]);
     timeTitle.enter()
       .append("text")
       .attr("text-anchor", "middle")
@@ -685,11 +681,20 @@ function display(isError, spect1, spect2, coh, channel, edge) {
     timeTitle
       .text(function(d) {return "Frequency Slice @ Time " + d + " s";});
 
-    timeSlider.property("value", tAx[curTime_ind]);
-    timeSliderText.text(tAx[curTime_ind]);
-    freqSlider.property("value", fAx[curFreq_ind]);
-    freqSliderText.text(fAx[curFreq_ind]);
-    if (mouseFlag) {drawNetwork()};
+
+  }
+  function rectMouseOver(d, freqInd, timeInd) {
+    curFreq_ind = freqInd;
+    curTime_ind = timeInd;
+    // Mouse click can freeze visualization in place
+    if (mouseFlag) {
+        drawNetwork();
+        drawFreqSlice();
+        timeSlider.property("value", tAx[curTime_ind]);
+        timeSliderText.text(tAx[curTime_ind]);
+        freqSlider.property("value", fAx[curFreq_ind]);
+        freqSliderText.text(fAx[curFreq_ind]);
+      };
   }
   function rectMouseClick() {
     mouseFlag = !mouseFlag;
