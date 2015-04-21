@@ -276,7 +276,7 @@ SPECTRA = (function() {
         .range([0,1]);
     }
     function drawNetwork() {
-      var nodeG, strokeStyle;
+      var nodeG, strokeStyle, nodeClickNames = [], NODE_RADIUS = 20;
 
       edgeLine = svgNetworkMap.selectAll(".edge").data(edge, function(e) {return e.source.name + "_" + e.target.name});
       edgeLine.enter()
@@ -304,9 +304,10 @@ SPECTRA = (function() {
       nodeCircle.enter()
         .append("circle")
           .attr("class", "node")
-          .attr("r", 20)
+          .attr("r", NODE_RADIUS)
           .attr("fill", "#ddd")
-          .attr("opacity", 0.9);
+          .attr("opacity", 0.9)
+          .on("click", nodeMouseClick);
 
       nodeText = nodeG.selectAll("text.nodeLabel").data(function(d) {return [d];});
       nodeText.enter()
@@ -333,11 +334,11 @@ SPECTRA = (function() {
        curEdge
          .style("stroke-width", 3)
          .style("stroke", networkStatColor(d3.max(networkStatColor.domain())));
-      d3.selectAll("circle.node")
+      var curNodes = d3.selectAll("circle.node")
         .filter(function(n) {
           return (n.name === e.source.name) || (n.name === e.target.name);
         })
-          .attr("fill", "red");
+        .attr("r", NODE_RADIUS * 1.2)
      }
      function edgeMouseOut(e) {
        var curEdge = d3.select(this);
@@ -348,7 +349,7 @@ SPECTRA = (function() {
         .filter(function(n) {
           return (n.name === e.source.name) || (n.name === e.target.name);
         })
-          .attr("fill", "#ddd");
+          .attr("r", NODE_RADIUS)
      }
      function edgeMouseClick(e) {
        var re = /\d+/;
@@ -356,6 +357,37 @@ SPECTRA = (function() {
        curCh2 = re.exec(e.target.name)[0];
        mouseFlag = true;
        loadData();
+     }
+     function nodeMouseClick(e) {
+       var curNode = d3.select(this),
+           node_ind = nodeClickNames.indexOf(e.name);
+
+       if (node_ind > -1) {
+         // If clicked on node is in the array, remove
+         curNode
+           .attr("fill", "#ddd");
+         nodeClickNames.splice(node_ind, 1);
+       } else {
+         // Else add to array
+         curNode
+           .attr("fill", "red");
+        nodeClickNames.push(e.name);
+       }
+       if (nodeClickNames.length === 2) {
+         nodeClickNames = nodeClickNames.sort();
+         console.log(nodeClickNames);
+         var re = /\d+/;
+         curCh1 = re.exec(nodeClickNames[0])[0];
+         curCh2 = re.exec(nodeClickNames[1])[0];
+         mouseFlag = true;
+         d3.selectAll("circle.node")
+           .filter(function(n) {
+             return (n.name === nodeClickNames[0]) || (n.name === nodeClickNames[1]);
+           })
+           .attr("fill", "#ddd")
+         nodeClickNames = [];
+         loadData();
+       }
      }
     };
     function drawHeatmap(curPlot, curData, intensityScale, colorScale) {
