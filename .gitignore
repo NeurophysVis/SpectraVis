@@ -1,5 +1,5 @@
-.asv
-.json
-.mat
+*.asv
+*.json
+*.mat
 DATA/
 .DS_Store
