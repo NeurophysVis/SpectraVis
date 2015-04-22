@@ -191,7 +191,7 @@ SPECTRA = (function() {
     }
     function setupScales() {
       var powerMin, powerMax, powerExtent, cohMax, cohMin, cohExtent,
-          networkXExtent, networkYExtent, edgeStatMin, edgeStatMax;
+          networkXExtent, networkYExtent, edgeStatMin, edgeStatMax, edgeStatExtent;
 
       heatmapPowerColor = d3.scale.linear()
         .domain(d3.range(0, 1, 1.0 / (powerColors.length - 1)))
@@ -259,6 +259,8 @@ SPECTRA = (function() {
         });
       });
 
+      edgeStatExtent = symmetricExtent(edgeStatMin, edgeStatMax);
+
       timeScale = d3.scale.ordinal()
         .domain(tAx)
         .rangeBands([0, panelWidth]);
@@ -294,7 +296,7 @@ SPECTRA = (function() {
         .domain(networkYExtent)
         .range([networkHeight, 0]);
       networkStatScale = d3.scale.linear()
-        .domain([edgeStatMin, edgeStatMax])
+        .domain(edgeStatExtent)
         .range([0, 1]);
 
       function symmetricExtent(min, max)  {
