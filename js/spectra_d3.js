@@ -494,7 +494,7 @@ SPECTRA = (function() {
   		hoverLine.classed("hide", true);
     }
     function drawTitles() {
-      var titleCh1, titleCh2, titleCoh;
+      var titleCh1, titleCh2, titleCoh, titleSubjectEdge, titlePanel;
       titleCh1 = svgCh1.selectAll("text.title").data(spect1["name"]);
       titleCh1.exit().remove();
       titleCh1.enter()
@@ -534,7 +534,16 @@ SPECTRA = (function() {
           .text(function(d) {
             return "Coherence: Ch" + d.source + "-Ch" + d.target;
           });
-
+      titlePanel = d3.select("#TitlePanel");
+      titleSubjectEdge = titlePanel.selectAll("text.title").data([{}]);
+      titleSubjectEdge.enter()
+        .append("text")
+          .attr("x", 0)
+          .attr("y", 0)
+          .attr("text-anchor", "middle")
+          .attr("class", "title");
+      titleSubjectEdge
+        .text(curSubject + " - " + edgeType);
     }
     function drawLegends() {
       var powerG, powerLegendRect, legendScale, colorInd, powerAxisG, powerAxis, formatter,
