@@ -190,8 +190,8 @@ SPECTRA = (function() {
         .start();
     }
     function setupScales() {
-      var powerMin, powerMax, cohMax, cohMin, networkXExtent,
-          networkYExtent, edgeStatMin, edgeStatMax;
+      var powerMin, powerMax, powerExtent, cohMax, cohMin, cohExtent,
+          networkXExtent, networkYExtent, edgeStatMin, edgeStatMax;
 
       heatmapPowerColor = d3.scale.linear()
         .domain(d3.range(0, 1, 1.0 / (powerColors.length - 1)))
@@ -221,6 +221,8 @@ SPECTRA = (function() {
         })]
       );
 
+      powerExtent = symmetricExtent(powerMin, powerMax);
+
       cohMin = d3.min(coh.data, function(d) {
         return d3.min(d, function(e) {return e;});
       });
@@ -228,6 +230,8 @@ SPECTRA = (function() {
       cohMax = d3.max(coh.data, function(d) {
         return d3.max(d, function(e) {return e;});
       });
+
+      cohExtent = symmetricExtent(cohMin, cohMax);
 
       networkXExtent = d3.extent(channel, function(c) {return c.x;});
       networkYExtent = d3.extent(channel, function(c) {return c.y;});
@@ -256,12 +260,12 @@ SPECTRA = (function() {
         .rangeBands([panelHeight, 0]);
 
       powerScale = d3.scale.linear()
-        .domain([powerMin, powerMax])
+        .domain(powerExtent)
         .range([0, 1]);
 
       cohScale = d3.scale.linear()
-        .domain([cohMin, cohMax])
-        .range([0,1]);
+        .domain(cohExtent)
+        .range([0, 1]);
 
       freqSlicePowerScale = d3.scale.linear()
         .domain([powerMin, powerMax])
@@ -279,7 +283,16 @@ SPECTRA = (function() {
         .range([networkHeight, 0]);
       networkStatScale = d3.scale.linear()
         .domain([edgeStatMin, edgeStatMax])
-        .range([0,1]);
+        .range([0, 1]);
+
+      function symmetricExtent(min, max)  {
+        if (Math.abs(min) >= Math.abs(max)) {
+          max = Math.abs(min);
+        } else {
+          min = -1*max;
+        }
+        return [min, max];
+      }
     }
     function drawNetwork() {
       var nodeG, strokeStyle, nodeClickNames = [], NODE_RADIUS = 20;
