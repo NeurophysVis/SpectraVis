@@ -67,7 +67,8 @@ SPECTRA = (function() {
       curCh2 = 4,
       curFreq_ind = 0,
       curTime_ind = 0
-      mouseFlag = true;
+      mouseFlag = true,
+      edgeType = "C2s_coh";
   d3.json("DATA/subjects.json", createSubjectMenu)
 
 
@@ -87,11 +88,11 @@ SPECTRA = (function() {
   // Load Files
   function loadData() {
 
-  var spectCh1_file = "spectrogram_" + curSubject + "_" + "C" + curCh1 + ".json",
-      spectCh2_file = "spectrogram_" + curSubject + "_" + "C" + curCh2 + ".json",
-      coh_file = "coherogram_" + curSubject + "_" + "C" + curCh1 + "_C" + curCh2 + ".json",
+  var spectCh1_file = "spectrogram_" + curSubject + "_" + curCh1 + ".json",
+      spectCh2_file = "spectrogram_" + curSubject + "_" + curCh2 + ".json",
+      coh_file = "coherogram_" + curSubject + "_" + curCh1 + "_" + curCh2 + ".json",
       channel_file = "channels_" + curSubject + ".json"
-      edge_file = "edges_" + curSubject + ".json";
+      edge_file = "edges_" + curSubject + "_" + edgeType + ".json";
 
   queue()
       .defer(d3.json, "DATA/" + spectCh1_file)
@@ -489,7 +490,7 @@ SPECTRA = (function() {
     }
     function drawTitles() {
       var titleCh1, titleCh2, titleCoh;
-      titleCh1 = svgCh1.selectAll("text.title").data(spect1["chLbl"]);
+      titleCh1 = svgCh1.selectAll("text.title").data(spect1["name"]);
       titleCh1.exit().remove();
       titleCh1.enter()
         .append("text")
@@ -502,7 +503,7 @@ SPECTRA = (function() {
           .text(function(d) {
             return "Spectra: Ch" + d;
           });
-      titleCh2 = svgCh2.selectAll("text.title").data(spect2["chLbl"]);
+      titleCh2 = svgCh2.selectAll("text.title").data(spect2["name"]);
       titleCh2.exit().remove();
       titleCh2.enter()
         .append("text")
@@ -526,7 +527,7 @@ SPECTRA = (function() {
           .attr("class", "title");
       titleCoh
           .text(function(d) {
-            return "Coherence: Ch" + d.chLbl1 + "-Ch" + d.chLbl2;
+            return "Coherence: Ch" + d.source + "-Ch" + d.target;
           });
 
     }
