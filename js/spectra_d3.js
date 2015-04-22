@@ -236,6 +236,18 @@ SPECTRA = (function() {
       networkXExtent = d3.extent(channel, function(c) {return c.x;});
       networkYExtent = d3.extent(channel, function(c) {return c.y;});
 
+      if (networkXExtent[0] < networkYExtent[0]) {
+        networkYExtent[0] = networkXExtent[0];
+      } else {
+        networkXExtent[0] = networkYExtent[0];
+      }
+
+      if (networkXExtent[1] >= networkYExtent[1]) {
+        networkYExtent[1] = networkXExtent[1];
+      } else {
+        networkXExtent[1] = networkYExtent[1];
+      }
+
       edgeStatMin = d3.min(edge, function(d) {
         return d3.min(d.data, function(e) {
           return d3.min(e, function(f) {return f;})
