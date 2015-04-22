@@ -63,8 +63,8 @@ SPECTRA = (function() {
 
   // Load data
   var curSubject,
-      curCh1 = 1,
-      curCh2 = 4,
+      curCh1 = 27,
+      curCh2 = 58,
       curFreq_ind = 0,
       curTime_ind = 0
       mouseFlag = true,
