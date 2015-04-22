@@ -5,7 +5,7 @@ SPECTRA = (function() {
       NUM_COLORS = 11,
       powerColors = colorbrewer.PiYG[NUM_COLORS].reverse(),
       cohColors = colorbrewer.RdBu[NUM_COLORS].reverse(),
-      networkColors = colorbrewer.PRGn[NUM_COLORS].reverse(),
+      networkColors = colorbrewer.RdBu[NUM_COLORS].reverse(),
       powerLineFun, cohLineFun, freqSlicePowerScale, freqSliceCohScale,
       spect1Line, spect2Line, cohLine,
       margin = {top: 40, right: 40, bottom: 40, left: 40},
@@ -120,7 +120,8 @@ SPECTRA = (function() {
 
     var timeScale, timeScaleLinear, freqScale, powerScale, cohScale,
         tAx, fAx, heatmapPowerColor, networkXScale, networkYScale, force, timeSlider,
-        freqSlider, timeSliderText, freqSliderText, subjectDropdown, networkStatScale;
+        freqSlider, timeSliderText, freqSliderText, subjectDropdown, networkStatScale,
+        edgeTypeDropdown;
 
     tAx = spect1.tax; // Time Axis
     fAx = spect1.fax; // Frequency Axis
@@ -137,7 +138,8 @@ SPECTRA = (function() {
     drawTitles();
     drawLegends();
     drawFreqSlice();
-    subjectLoad()
+    subjectLoad();
+    edgeTypeLoad();
 
     function setupSliders() {
       timeSlider = d3.select("#timeSlider");
@@ -320,13 +322,13 @@ SPECTRA = (function() {
       }
     }
     function drawNetwork() {
-      var nodeG, strokeStyle, nodeClickNames = [], NODE_RADIUS = 10;
+      var nodeG, strokeStyle, nodeClickNames = [], NODE_RADIUS = 10, EDGE_WIDTH = 2;
 
       edgeLine = svgNetworkMap.selectAll(".edge").data(edge, function(e) {return e.source.name + "_" + e.target.name});
       edgeLine.enter()
         .append("line")
           .attr("class", "edge")
-          .style("stroke-width", 1);
+          .style("stroke-width", EDGE_WIDTH);
       edgeLine.exit().remove();
       edgeLine
         .style("stroke", function(d) {
@@ -377,9 +379,15 @@ SPECTRA = (function() {
        var curEdge = d3.select(this);
        strokeStyle = curEdge.style("stroke");
        curEdge
-         .style("stroke-width", 3)
-         .style("stroke", networkStatColor(d3.max(networkStatColor.domain())));
-      var curNodes = d3.selectAll("circle.node")
+         .style("stroke-width", 2*EDGE_WIDTH)
+         .style("stroke", function() {
+           if (e.data[curTime_ind][curFreq_ind] < 0) {
+             return networkStatColor(0);
+           } else {
+             return networkStatColor(1);
+           }
+         });
+       var curNodes = d3.selectAll("circle.node")
         .filter(function(n) {
           return (n.name === e.source.name) || (n.name === e.target.name);
         })
@@ -388,7 +396,7 @@ SPECTRA = (function() {
      function edgeMouseOut(e) {
        var curEdge = d3.select(this);
        curEdge
-         .style("stroke-width", 1)
+         .style("stroke-width", EDGE_WIDTH)
          .style("stroke", strokeStyle);
        d3.selectAll("circle.node")
         .filter(function(n) {
@@ -820,10 +828,10 @@ SPECTRA = (function() {
         .text(function(d) {return "Frequency Slice @ Time " + d + " s";});
     }
     function rectMouseOver(d, freqInd, timeInd) {
-      curFreq_ind = freqInd;
-      curTime_ind = timeInd;
       // Mouse click can freeze visualization in place
       if (mouseFlag) {
+          curFreq_ind = freqInd;
+          curTime_ind = timeInd;
           drawNetwork();
           drawFreqSlice();
           timeSlider.property("value", tAx[curTime_ind]);
@@ -840,6 +848,16 @@ SPECTRA = (function() {
       subjectDropdown.selectAll("li")
         .on("click", function() {
           curSubject = this.id;
+          curCh1 = [];
+          curCh2 = [];
+          loadData();
+          })
+    }
+    function edgeTypeLoad() {
+      edgeTypeDropdown = d3.select("#EdgeTypeDropdown");
+      edgeTypeDropdown.selectAll("li")
+        .on("click", function() {
+          edgeType = this.id;
           curCh1 = [];
           curCh2 = [];
           loadData();

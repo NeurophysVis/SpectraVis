@@ -23,12 +23,10 @@
   display: none;
 }
 .edge {
-  stroke: #999;
   stroke-opacity: .6;
 }
 .node {
   stroke: #ddd;
-  stroke-opacity: .6;
 }
 text.nodeLabel {
 	font-family: sans-serif;

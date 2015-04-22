@@ -40,11 +40,24 @@
           <ul class="dropdown-menu" role="menu" aria-labelledby="subjectDropdown"></ul>
         </div>
       </div>
+      <div id="EdgeTypePanel" class="col-md-2">
+        <div class="dropdown" id="EdgeTypeDropdown">
+          <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown">
+            Edge Type
+            <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu" role="menu" aria-labelledby="edgeTypeDropdown">
+            <li role="presentation" id="C2s_coh"><a role="menuitem" tabindex="-1" href="#">C2s_coh</a></li>
+            <li role="presentation" id="xhat_coh"><a role="menuitem" tabindex="-1" href="#">xhat_coh</a></li>
+            <li role="presentation" id="zhat_coh"><a role="menuitem" tabindex="-1" href="#">zhat_coh</a></li>
+          </ul>
+        </div>
+      </div>
       <div class="col-md-4">
         <p>
           <label for="timeSlider"
                  style="display: inline-block; width: 240px; text-align: right">
-                 Time = <span id="timeSlider-value">…</span> s
+                 Time = <span id="timeSlider-value">…</span> ms
           </label>
           <input type="range" id="timeSlider">
         </p>
