@@ -63,8 +63,8 @@ SPECTRA = (function() {
 
   // Load data
   var curSubject,
-      curCh1 = 27,
-      curCh2 = 58,
+      curCh1,
+      curCh2,
       curFreq_ind = 0,
       curTime_ind = 0
       mouseFlag = true,
@@ -87,24 +87,29 @@ SPECTRA = (function() {
 
   // Load Files
   function loadData() {
+    var channel_file = "channels_" + curSubject + ".json";
 
-  var spectCh1_file = "spectrogram_" + curSubject + "_" + curCh1 + ".json",
-      spectCh2_file = "spectrogram_" + curSubject + "_" + curCh2 + ".json",
-      coh_file = "coherogram_" + curSubject + "_" + curCh1 + "_" + curCh2 + ".json",
-      channel_file = "channels_" + curSubject + ".json"
-      edge_file = "edges_" + curSubject + "_" + edgeType + ".json";
+    d3.json("DATA/" + channel_file, function(isError, channel) {
 
-  queue()
-      .defer(d3.json, "DATA/" + spectCh1_file)
-      .defer(d3.json, "DATA/" + spectCh2_file)
-      .defer(d3.json, "DATA/" + coh_file)
-      .defer(d3.json, "DATA/" + channel_file)
-      .defer(d3.json, "DATA/" + edge_file)
-      .await(display);
+        curCh1 = channel[0].name;
+        curCh2 = channel[1].name;
+
+        var spectCh1_file = "spectrogram_" + curSubject + "_" + curCh1 + ".json",
+            spectCh2_file = "spectrogram_" + curSubject + "_" + curCh2 + ".json",
+            coh_file = "coherogram_" + curSubject + "_" + curCh1 + "_" + curCh2 + ".json",
+            edge_file = "edges_" + curSubject + "_" + edgeType + ".json";
+
+        queue()
+            .defer(d3.json, "DATA/" + spectCh1_file)
+            .defer(d3.json, "DATA/" + spectCh2_file)
+            .defer(d3.json, "DATA/" + coh_file)
+            .defer(d3.json, "DATA/" + edge_file)
+            .await(display);
+    });
   }
 
   // Draw
-  function display(isError, spect1, spect2, coh, channel, edge) {
+  function display(isError, spect1, spect2, coh, edge) {
 
     var timeScale, timeScaleLinear, freqScale, powerScale, cohScale,
         tAx, fAx, heatmapPowerColor, networkXScale, networkYScale, force, timeSlider,
