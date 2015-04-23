@@ -26,7 +26,8 @@
   stroke-opacity: .6;
 }
 .node {
-  stroke: #ddd;
+  stroke: #FFF;
+  stroke-width 0.5px;
 }
 text.nodeLabel {
 	font-family: sans-serif;

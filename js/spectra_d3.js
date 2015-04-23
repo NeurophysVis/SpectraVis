@@ -3,6 +3,8 @@ SPECTRA = (function() {
       heatmapCohColor,
       networkStatColor,
       NUM_COLORS = 11,
+      NODE_RADIUS = 10,
+      EDGE_WIDTH = 2,
       powerColors = colorbrewer.PiYG[NUM_COLORS].reverse(),
       cohColors = colorbrewer.RdBu[NUM_COLORS].reverse(),
       networkColors = colorbrewer.RdBu[NUM_COLORS].reverse(),
@@ -125,7 +127,7 @@ SPECTRA = (function() {
     var timeScale, timeScaleLinear, freqScale, powerScale, cohScale,
         tAx, fAx, heatmapPowerColor, networkXScale, networkYScale, force, timeSlider,
         freqSlider, timeSliderText, freqSliderText, subjectDropdown, networkStatScale,
-        edgeTypeDropdown;
+        edgeTypeDropdown, networkColorScale;
 
     tAx = spect1.tax; // Time Axis
     fAx = spect1.fax; // Frequency Axis
@@ -174,7 +176,7 @@ SPECTRA = (function() {
       function updateFreqSlider(){
         curFreq_ind = fAx.indexOf(+this.value);
         drawNetwork();
-        freqSliderText.text(fAx[curFreq_ind + " Hz"]);
+        freqSliderText.text(fAx[curFreq_ind] + " Hz");
       }
     }
     function setupNodesEdges() {
@@ -215,6 +217,8 @@ SPECTRA = (function() {
       networkStatColor = d3.scale.linear()
         .domain(d3.range(0, 1, 1.0 / (NUM_COLORS - 1)))
         .range(networkColors);
+      networkColorScale = d3.scale.ordinal()
+        .range(colorbrewer.Pastel1[7]);
 
       powerMin = d3.min(
         [d3.min(spect1.data, function(d) {
@@ -326,7 +330,7 @@ SPECTRA = (function() {
       }
     }
     function drawNetwork() {
-      var nodesGroup, edgesGroup, nodeG, strokeStyle, nodeClickNames = [], NODE_RADIUS = 10, EDGE_WIDTH = 3;
+      var nodesGroup, edgesGroup, nodeG, strokeStyle, nodeClickNames = [];
 
       edgesGroup = svgNetworkMap.selectAll("g#EDGES").data([{}]);
       edgesGroup.enter()
@@ -368,6 +372,10 @@ SPECTRA = (function() {
           .attr("fill", "#ddd")
           .attr("opacity", 1)
           .on("click", nodeMouseClick);
+      // nodeCircle
+      //     .attr("fill", function(d){
+      //       return networkColorScale(d.region);
+      //     });
 
       nodeText = nodeG.selectAll("text.nodeLabel").data(function(d) {return [d];});
       nodeText.enter()
