@@ -1,18 +1,23 @@
 SPECTRA = (function() {
+
+  var NUM_COLORS = 11;
+  colorbrewer.PiYG[NUM_COLORS].reverse();
+  colorbrewer.RdBu[NUM_COLORS].reverse();
+
   var heatmapPowerColor,
       heatmapCohColor,
       networkStatColor,
-      NUM_COLORS = 11,
       NODE_RADIUS = 10,
       EDGE_WIDTH = 2,
-      powerColors = colorbrewer.PiYG[NUM_COLORS].reverse(),
-      cohColors = colorbrewer.RdBu[NUM_COLORS].reverse(),
-      networkColors = colorbrewer.RdBu[NUM_COLORS].reverse(),
+      powerColors = colorbrewer.PiYG[NUM_COLORS],
+      cohColors = colorbrewer.RdBu[NUM_COLORS],
+      networkColors = colorbrewer.RdBu[NUM_COLORS],
       powerLineFun, cohLineFun, freqSlicePowerScale, freqSliceCohScale,
       spect1Line, spect2Line, cohLine,
       margin = {top: 40, right: 40, bottom: 40, left: 40},
       panelWidth = document.getElementById("Ch1Panel").offsetWidth - margin.left - margin.right,
       panelHeight = document.getElementById("Ch1Panel").offsetWidth*4/5 - margin.top - margin.bottom;
+
 
   svgCh1 = d3.select("#Ch1Panel")
       .append("svg")
