@@ -53,8 +53,8 @@ SPECTRA = (function() {
       .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-  var networkWidth = document.getElementById("NetworkPanel").offsetWidth * (2/5) - margin.left - margin.right;
-      networkHeight =  document.getElementById("NetworkPanel").offsetWidth * (2/5) - margin.top - margin.bottom;
+  var networkWidth = document.getElementById("NetworkPanel").offsetWidth * (3/5) - margin.left - margin.right;
+      networkHeight =  document.getElementById("NetworkPanel").offsetWidth * (3/5) - margin.top - margin.bottom;
   svgNetworkMap = d3.select("#NetworkPanel")
       .append("svg")
         .attr("width", networkWidth + margin.left + margin.right)
@@ -77,14 +77,18 @@ SPECTRA = (function() {
 
   // Functions
   function createSubjectMenu(isError, subjects) {
-      var dropDown = d3.select(".dropdown-menu");
-      var subjectMenu = dropDown.selectAll("li").data(subjects);
+      var subjectDropdown = d3.select("#SubjectDropdown");
+      var subjectMenu = subjectDropdown.selectAll(".dropdown-menu").selectAll("li").data(subjects);
       subjectMenu.enter()
         .append("li")
           .attr("id", function(d) {return d.subjectID;})
           .attr("role", "presentation")
           .html(function(d) {return "<a role='menuitem' tabindex='-1' href='#'>" + d.subjectID + "</a>";});
       curSubject = subjects[0].subjectID;
+      subjectDropdown.selectAll("button").html(curSubject + "    <span class='caret'></span>");
+
+      var edgeTypeDropdown = d3.select("#EdgeTypeDropdown");
+      edgeTypeDropdown.selectAll("button").html(edgeType + "    <span class='caret'></span>");
       loadData();
   }
 
@@ -152,25 +156,25 @@ SPECTRA = (function() {
       timeSlider.property("step", d3.round(tAx[1] - tAx[0], 4));
       timeSlider.property("value", tAx[curTime_ind]);
       timeSlider.on("input", updateTimeSlider);
-      timeSliderText.text(tAx[curTime_ind]);
+      timeSliderText.text(tAx[curTime_ind] + " ms");
 
       freqSlider.property("min", d3.min(fAx));
       freqSlider.property("max", d3.max(fAx));
       freqSlider.property("step", fAx[1] - fAx[0]);
       freqSlider.property("value", fAx[curFreq_ind]);
       freqSlider.on("input", updateFreqSlider)
-      freqSliderText.text(fAx[curFreq_ind]);
+      freqSliderText.text(fAx[curFreq_ind] + " Hz");
 
       function updateTimeSlider(){
         curTime_ind = tAx.indexOf(+this.value);
         drawNetwork();
         drawFreqSlice();
-        timeSliderText.text(tAx[curTime_ind]);
+        timeSliderText.text(tAx[curTime_ind] + " ms");
       }
       function updateFreqSlider(){
         curFreq_ind = fAx.indexOf(+this.value);
         drawNetwork();
-        freqSliderText.text(fAx[curFreq_ind]);
+        freqSliderText.text(fAx[curFreq_ind + " Hz"]);
       }
     }
     function setupNodesEdges() {
@@ -322,9 +326,18 @@ SPECTRA = (function() {
       }
     }
     function drawNetwork() {
-      var nodeG, strokeStyle, nodeClickNames = [], NODE_RADIUS = 10, EDGE_WIDTH = 2;
+      var nodesGroup, edgesGroup, nodeG, strokeStyle, nodeClickNames = [], NODE_RADIUS = 10, EDGE_WIDTH = 3;
 
-      edgeLine = svgNetworkMap.selectAll(".edge").data(edge, function(e) {return e.source.name + "_" + e.target.name});
+      edgesGroup = svgNetworkMap.selectAll("g#EDGES").data([{}]);
+      edgesGroup.enter()
+            .append("g")
+              .attr("id", "EDGES");
+      nodesGroup = svgNetworkMap.selectAll("g#NODES").data([{}]);
+      nodesGroup.enter()
+        .append("g")
+          .attr("id", "NODES");
+
+      edgeLine = edgesGroup.selectAll(".edge").data(edge, function(e) {return e.source.name + "_" + e.target.name});
       edgeLine.enter()
         .append("line")
           .attr("class", "edge")
@@ -338,7 +351,7 @@ SPECTRA = (function() {
         .on("mouseout", edgeMouseOut)
         .on("click", edgeMouseClick);
 
-      nodeG = svgNetworkMap.selectAll("g.gnode").data(channel, function(d) {return d.name;});
+      nodeG = nodesGroup.selectAll("g.gnode").data(channel, function(d) {return curSubject + "_" + d.name;});
       nodeG.enter()
         .append("g")
         .attr("class", "gnode")
@@ -395,14 +408,16 @@ SPECTRA = (function() {
      }
      function edgeMouseOut(e) {
        var curEdge = d3.select(this);
-       curEdge
-         .style("stroke-width", EDGE_WIDTH)
-         .style("stroke", strokeStyle);
-       d3.selectAll("circle.node")
-        .filter(function(n) {
-          return (n.name === e.source.name) || (n.name === e.target.name);
-        })
-          .attr("r", NODE_RADIUS)
+       if (typeof(strokeStyle) != "undefined") {
+         curEdge
+           .style("stroke-width", EDGE_WIDTH)
+           .style("stroke", strokeStyle);
+         d3.selectAll("circle.node")
+          .filter(function(n) {
+            return (n.name === e.source.name) || (n.name === e.target.name);
+          })
+            .attr("r", NODE_RADIUS)
+        }
      }
      function edgeMouseClick(e) {
        var re = /\d+/;
@@ -541,7 +556,7 @@ SPECTRA = (function() {
   		hoverLine.classed("hide", true);
     }
     function drawTitles() {
-      var titleCh1, titleCh2, titleCoh, titleSubjectEdge, titlePanel;
+      var titleCh1, titleCh2, titleCoh, titleSubjectEdge;
       titleCh1 = svgCh1.selectAll("text.title").data([spect1["name"]]);
       titleCh1.exit().remove();
       titleCh1.enter()
@@ -581,16 +596,6 @@ SPECTRA = (function() {
           .text(function(d) {
             return "Coherence: Ch" + d.source + "-Ch" + d.target;
           });
-      titlePanel = d3.select("#TitlePanel");
-      titleSubjectEdge = titlePanel.selectAll("text.title").data([{}]);
-      titleSubjectEdge.enter()
-        .append("text")
-          .attr("x", 0)
-          .attr("y", 0)
-          .attr("text-anchor", "middle")
-          .attr("class", "title");
-      titleSubjectEdge
-        .text(curSubject + " - " + edgeType);
     }
     function drawLegends() {
       var powerG, powerLegendRect, legendScale, colorInd, powerAxisG, powerAxis, formatter,
@@ -835,9 +840,9 @@ SPECTRA = (function() {
           drawNetwork();
           drawFreqSlice();
           timeSlider.property("value", tAx[curTime_ind]);
-          timeSliderText.text(tAx[curTime_ind]);
+          timeSliderText.text(tAx[curTime_ind] + " ms");
           freqSlider.property("value", fAx[curFreq_ind]);
-          freqSliderText.text(fAx[curFreq_ind]);
+          freqSliderText.text(fAx[curFreq_ind] + " Hz");
         };
     }
     function rectMouseClick() {
@@ -847,6 +852,7 @@ SPECTRA = (function() {
       subjectDropdown = d3.select("#SubjectDropdown");
       subjectDropdown.selectAll("li")
         .on("click", function() {
+          subjectDropdown.selectAll("button").html(this.id + "    <span class='caret'></span>");
           curSubject = this.id;
           curCh1 = [];
           curCh2 = [];
@@ -857,6 +863,7 @@ SPECTRA = (function() {
       edgeTypeDropdown = d3.select("#EdgeTypeDropdown");
       edgeTypeDropdown.selectAll("li")
         .on("click", function() {
+          edgeTypeDropdown.selectAll("button").html(this.id + "    <span class='caret'></span>");
           edgeType = this.id;
           curCh1 = [];
           curCh2 = [];

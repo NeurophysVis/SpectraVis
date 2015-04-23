@@ -33,4 +33,29 @@ text.nodeLabel {
 	font-size: 11px;
   text-anchor: middle;
   line-height: 100%;
+  dominant-baseline: central;
+}
+label {
+  width: 50%;
+  float: left;
+}
+button {
+  width: 50%;
+}
+input[type="range"] {
+  width: 50%;
+  float: right;
+}
+output {
+  padding-top: 0px;
+  width: 50%;
+  float: left;
+  text-align: center;
+}
+.subgroup {
+  margin-bottom: 10px;
+  display: block;
+}
+.top-buffer {
+  margin-top: 50px;
 }

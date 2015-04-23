@@ -28,58 +28,53 @@
   <script src="d3/d3.js"></script>
   <div class="container">
     <!-- Title Panel -->
-    <div class="row" id="TitlePanel"></div>
-    <!-- Brain Panel -->
-    <div class="row">
-      <div id="SubjectPanel" class="col-md-2">
-        <div class="dropdown" id="SubjectDropdown">
-          <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown">
-            Subjects
-            <span class="caret"></span>
-          </button>
-          <ul class="dropdown-menu" role="menu" aria-labelledby="subjectDropdown"></ul>
-        </div>
-      </div>
-      <div id="EdgeTypePanel" class="col-md-2">
-        <div class="dropdown" id="EdgeTypeDropdown">
-          <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown">
-            Edge Type
-            <span class="caret"></span>
-          </button>
-          <ul class="dropdown-menu" role="menu" aria-labelledby="edgeTypeDropdown">
-            <li role="presentation" id="C2s_coh"><a role="menuitem" tabindex="-1" href="#">C2s_coh</a></li>
-            <li role="presentation" id="xhat_coh"><a role="menuitem" tabindex="-1" href="#">xhat_coh</a></li>
-            <li role="presentation" id="zhat_coh"><a role="menuitem" tabindex="-1" href="#">zhat_coh</a></li>
-          </ul>
-        </div>
-      </div>
-      <div class="col-md-4">
+    <div class="row" id="TitlePanel"><h1>SpectraVis</h1></div>
+    <div class="row top-buffer">
+      <div class="col-md-3" id="Instructions">
         <p>
-          <label for="timeSlider"
-                 style="display: inline-block; width: 240px; text-align: right">
-                 Time = <span id="timeSlider-value">…</span> ms
-          </label>
-          <input type="range" id="timeSlider">
-        </p>
-     </div>
-     <div class="col-md-4">
-       <p>
-         <label for="freqSlider"
-                style="display: inline-block; width: 240px; text-align: right">
-                Frequency = <span id="freqSlider-value">…</span> Hz
-         </label>
-         <input type="range" id="freqSlider">
-       </p>
-    </div>
-    </div>
-    <div class="row">
-      <div class="col-md-2" id="Instructions">
-        <p> <br> <br>
           <strong>Click</strong> on any two nodes or the edge between them to load the spectra and coherences between those two nodes. <br> <br>
           <strong>Mouse over</strong> the spectra or cohereograms to see the network at that time and frequency<br> <br>
           <strong>Click on</strong> the spectra or cohereograms to freeze the network at a particular time and frequency value<br> <br>
         </p></div>
-      <div class="col-md-10 text-center" id="NetworkPanel"></div>
+      <!-- Brain Panel -->
+      <div class="col-md-6 text-center" id="NetworkPanel"></div>
+      <!-- Sidebar -->
+      <div class="col-md-3 group" id="sidebar">
+        <div id="SubjectPanel" class="subgroup">
+          <div class="dropdown" id="SubjectDropdown">
+            <label>Subject</label>
+            <button class="btn btn-default dropdown-toggle" type="button" id="subjectButton" data-toggle="dropdown">
+            </button>
+            <ul class="dropdown-menu" role="menu" aria-labelledby="subjectDropdown"></ul>
+          </div>
+        </div>
+        <div id="EdgeTypePanel" class="subgroup">
+          <div class="dropdown" id="EdgeTypeDropdown">
+            <label>Edge Type</label>
+            <button class="btn btn-default dropdown-toggle" type="button" id="edgeTypeButton" data-toggle="dropdown">
+            </button>
+            <ul class="dropdown-menu" role="menu" aria-labelledby="edgeTypeDropdown">
+              <li role="presentation" id="C2s_coh"><a role="menuitem" tabindex="-1" href="#">C2s_coh</a></li>
+              <li role="presentation" id="xhat_coh"><a role="menuitem" tabindex="-1" href="#">xhat_coh</a></li>
+              <li role="presentation" id="zhat_coh"><a role="menuitem" tabindex="-1" href="#">zhat_coh</a></li>
+            </ul>
+          </div>
+        </div>
+        <div id="TimeSliderPanel" class="subgroup">
+          <form>
+            <label for="timeSlider">Time</label>
+            <input type="range" id="timeSlider">
+            <output id="timeSlider-value"></output>
+          </form>
+       </div>
+       <div id="FreqSliderPanel" class="subgroup">
+         <form>
+           <label for="freqSlider">Frequency</label>
+           <input type="range" id="freqSlider">
+           <output id="freqSlider-value"></output>
+         </form>
+      </div>
+      </div>
     </div>
     <!-- Heatmap Panel -->
     <div class="row" id="heatmapRow">
