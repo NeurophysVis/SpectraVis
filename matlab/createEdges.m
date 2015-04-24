@@ -11,6 +11,6 @@ for s = 1:length(subjects),
         edges(n).target = ['Channel ', num2str(edges_ind(n, 2))];
     end
     
-    opt.FileName = ['edges_',subjects{s},'.json'];
+    opt.FileName = ['edges_',subjects{s}, '_C2s_coh','.json'];
     savejson('', edges, opt)
 end
