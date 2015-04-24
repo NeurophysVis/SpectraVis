@@ -14,7 +14,7 @@ SPECTRA = (function() {
       cohColors = colorbrewer.RdBu[NUM_COLORS],
       networkColors = colorbrewer.RdBu[NUM_COLORS],
       powerLineFun, cohLineFun, freqSlicePowerScale, freqSliceCohScale,
-      spect1Line, spect2Line, cohLine,
+      spect1Line, spect2Line, cohLine, subjects,
       margin = {top: 40, right: 40, bottom: 40, left: 40},
       panelWidth = document.getElementById("Ch1Panel").offsetWidth - margin.left - margin.right,
       panelHeight = document.getElementById("Ch1Panel").offsetWidth*4/5 - margin.top - margin.bottom;
@@ -61,8 +61,8 @@ SPECTRA = (function() {
       .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-  var networkWidth = document.getElementById("NetworkPanel").offsetWidth * (3/5) - margin.left - margin.right;
-      networkHeight =  document.getElementById("NetworkPanel").offsetWidth * (3/5) - margin.top - margin.bottom;
+  var networkWidth = document.getElementById("NetworkPanel").offsetWidth * (9/10) - margin.left - margin.right;
+      networkHeight =  document.getElementById("NetworkPanel").offsetWidth * (9/10) - margin.top - margin.bottom;
   svgNetworkMap = d3.select("#NetworkPanel")
       .append("svg")
         .attr("width", networkWidth + margin.left + margin.right)
@@ -84,7 +84,8 @@ SPECTRA = (function() {
 
 
   // Functions
-  function createSubjectMenu(isError, subjects) {
+  function createSubjectMenu(isError, subjectData) {
+      subjects = subjectData;
       var subjectDropdown = d3.select("#SubjectDropdown");
       var subjectMenu = subjectDropdown.selectAll(".dropdown-menu").selectAll("li").data(subjects);
       subjectMenu.enter()
@@ -112,7 +113,6 @@ SPECTRA = (function() {
           curCh2 = channel[1].name;
         }
 
-
         var spectCh1_file = "spectrogram_" + curSubject + "_" + curCh1 + ".json",
             spectCh2_file = "spectrogram_" + curSubject + "_" + curCh2 + ".json",
             coh_file = "coherogram_" + curSubject + "_" + curCh1 + "_" + curCh2 + ".json",
@@ -133,7 +133,8 @@ SPECTRA = (function() {
     var timeScale, timeScaleLinear, freqScale, powerScale, cohScale,
         tAx, fAx, heatmapPowerColor, networkXScale, networkYScale, force, timeSlider,
         freqSlider, timeSliderText, freqSliderText, subjectDropdown, networkStatScale,
-        edgeTypeDropdown, networkColorScale, timeSliderStep, timeMaxStep_ind;
+        edgeTypeDropdown, networkColorScale, timeSliderStep, timeMaxStep_ind,
+        networkXExtent, networkYExtent;
 
     tAx = spect1.tax; // Time Axis
     fAx = spect1.fax; // Frequency Axis
@@ -204,7 +205,7 @@ SPECTRA = (function() {
     }
     function setupScales() {
       var powerMin, powerMax, powerExtent, cohMax, cohMin, cohExtent,
-          networkXExtent, networkYExtent, edgeStatMin, edgeStatMax, edgeStatExtent;
+          edgeStatMin, edgeStatMax, edgeStatExtent, subjectObject;
 
       heatmapPowerColor = d3.scale.linear()
         .domain(d3.range(0, 1, 1.0 / (NUM_COLORS - 1)))
@@ -248,8 +249,9 @@ SPECTRA = (function() {
 
       cohExtent = symmetricExtent(cohMin, cohMax);
 
-      networkXExtent = d3.extent(channel, function(c) {return c.x;});
-      networkYExtent = d3.extent(channel, function(c) {return c.y;});
+      subjectObject = subjects.filter(function(d) {return d.subjectID === curSubject;})[0];
+      networkXExtent = subjectObject.brainXLim;
+      networkYExtent = subjectObject.brainYLim;
 
       // if (networkXExtent[0] < networkYExtent[0]) {
       //   networkYExtent[0] = networkXExtent[0];
@@ -328,8 +330,22 @@ SPECTRA = (function() {
       }
     }
     function drawNetwork() {
-      var nodesGroup, edgesGroup, nodeG, strokeStyle, nodeClickNames = [];
+      var nodesGroup, edgesGroup, nodeG, strokeStyle, nodeClickNames = [], brainImage, subjectObject;
 
+      subjectObject = subjects.filter(function(d) {return d.subjectID === curSubject;})[0];
+      brainImageGroup = svgNetworkMap.selectAll("g#BRAIN_IMAGE").data([{}]);
+      brainImageGroup.enter()
+            .append("g")
+              .attr("id", "BRAIN_IMAGE");
+      brainImage  = brainImageGroup.selectAll("image").data([subjectObject], function(d) {return d.brainPath;});
+      brainImage.enter()
+        .append("image");
+      brainImage
+        .attr("xlink:href", function(d){return "DATA/brainImages/" + d.brainPath;})
+        .attr("width", networkWidth)
+        .attr("height", networkHeight);
+      brainImage.exit()
+        .remove();
       edgesGroup = svgNetworkMap.selectAll("g#EDGES").data([{}]);
       edgesGroup.enter()
             .append("g")
