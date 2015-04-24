@@ -354,6 +354,7 @@ SPECTRA = (function() {
         .style("stroke", function(d) {
             return networkStatColor(networkStatScale(d.data[curTime_ind][curFreq_ind]));
           })
+        .style("display", "")
         .on("mouseover", edgeMouseOver)
         .on("mouseout", edgeMouseOut)
         .on("click", edgeMouseClick);
