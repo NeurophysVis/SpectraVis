@@ -40,18 +40,18 @@
       <div class="col-md-6 text-center" id="NetworkPanel"></div>
       <!-- Sidebar -->
       <div class="col-md-3 group" id="sidebar">
-        <div id="SubjectPanel" class="subgroup">
+        <div id="SubjectPanel" class="row bottom-buffer">
           <div class="dropdown" id="SubjectDropdown">
-            <label>Subject</label>
-            <button class="btn btn-default dropdown-toggle" type="button" id="subjectButton" data-toggle="dropdown">
+            <label class="col-md-6">Subject</label>
+            <button class="btn btn-default dropdown-toggle col-md-6" type="button" id="subjectButton" data-toggle="dropdown">
             </button>
             <ul class="dropdown-menu" role="menu" aria-labelledby="subjectDropdown"></ul>
           </div>
         </div>
-        <div id="EdgeTypePanel" class="subgroup">
+        <div id="EdgeTypePanel" class="row bottom-buffer">
           <div class="dropdown" id="EdgeTypeDropdown">
-            <label>Edge Type</label>
-            <button class="btn btn-default dropdown-toggle" type="button" id="edgeTypeButton" data-toggle="dropdown">
+            <label class="col-md-6">Edge Type</label>
+            <button class="btn btn-default dropdown-toggle col-md-6" type="button" id="edgeTypeButton" data-toggle="dropdown">
             </button>
             <ul class="dropdown-menu" role="menu" aria-labelledby="edgeTypeDropdown">
               <li role="presentation" id="C2s_coh"><a role="menuitem" tabindex="-1" href="#">C2s_coh</a></li>
@@ -60,19 +60,24 @@
             </ul>
           </div>
         </div>
-        <div id="TimeSliderPanel" class="subgroup">
+        <div id="TimeSliderPanel" class="row bottom-buffer clearfix">
           <form>
-            <label for="timeSlider">Time</label>
-            <input type="range" id="timeSlider">
-            <output id="timeSlider-value"></output>
+            <label for="timeSlider" class="col-md-6">Time</label>
+            <input type="range" id="timeSlider" class="col-md-6">
+            <output id="timeSlider-value" class="col-md-6 pull-right"></output>
           </form>
        </div>
-       <div id="FreqSliderPanel" class="subgroup">
+       <div id="FreqSliderPanel" class="row bottom-buffer clearfix">
          <form>
-           <label for="freqSlider">Frequency</label>
-           <input type="range" id="freqSlider">
-           <output id="freqSlider-value"></output>
+           <label for="freqSlider" class="col-md-6">Frequency</label>
+           <input type="range" id="freqSlider" class="col-md-6">
+           <output id="freqSlider-value" class="col-md-6 pull-right"></output>
          </form>
+      </div>
+      <div id="PlayButtonPanel" class="row bottom-buffer">
+        <button class="btn btn-default center-block" type="button" id="playButton" class="col-md-6">
+          Play
+        </button>
       </div>
       </div>
     </div>

@@ -13,7 +13,7 @@ SPECTRA = (function() {
       cohColors = colorbrewer.RdBu[NUM_COLORS],
       networkColors = colorbrewer.RdBu[NUM_COLORS],
       powerLineFun, cohLineFun, freqSlicePowerScale, freqSliceCohScale,
-      spect1Line, spect2Line, cohLine,
+      spect1Line, spect2Line, cohLine, TIME_SLIDER_MIN, TIME_SLIDER_MAX, TIME_SLIDER_STEP, maxStep,
       margin = {top: 40, right: 40, bottom: 40, left: 40},
       panelWidth = document.getElementById("Ch1Panel").offsetWidth - margin.left - margin.right,
       panelHeight = document.getElementById("Ch1Panel").offsetWidth*4/5 - margin.top - margin.bottom;
@@ -151,6 +151,7 @@ SPECTRA = (function() {
     drawFreqSlice();
     subjectLoad();
     edgeTypeLoad();
+    playButtonStart();
 
     function setupSliders() {
       timeSlider = d3.select("#timeSlider");
@@ -158,9 +159,14 @@ SPECTRA = (function() {
       freqSlider = d3.select("#freqSlider");
       freqSliderText = d3.select("#freqSlider-value");
 
-      timeSlider.property("min", d3.min(tAx));
-      timeSlider.property("max", d3.max(tAx));
-      timeSlider.property("step", d3.round(tAx[1] - tAx[0], 4));
+      TIME_SLIDER_MIN = d3.min(tAx);
+      TIME_SLIDER_MAX = d3.max(tAx);
+      TIME_SLIDER_STEP = d3.round(tAx[1] - tAx[0], 4);
+      maxStep = tAx.length - 1;
+
+      timeSlider.property("min", TIME_SLIDER_MIN);
+      timeSlider.property("max", TIME_SLIDER_MAX);
+      timeSlider.property("step", TIME_SLIDER_STEP);
       timeSlider.property("value", tAx[curTime_ind]);
       timeSlider.on("input", updateTimeSlider);
       timeSliderText.text(tAx[curTime_ind] + " ms");
@@ -843,7 +849,7 @@ SPECTRA = (function() {
         .attr("y", 0)
         .attr("dy", -1 + "em");
       timeTitle
-        .text(function(d) {return "Frequency Slice @ Time " + d + " s";});
+        .text(function(d) {return "Frequency Slice @ Time " + d + " ms";});
     }
     function rectMouseOver(d, freqInd, timeInd) {
       // Mouse click can freeze visualization in place
@@ -882,6 +888,13 @@ SPECTRA = (function() {
           curCh2 = [];
           loadData();
           })
+    }
+    function playButtonStart() {
+      var playButton = d3.select("#playButton");
+      playButton.on("click", function(){
+        curTime_ind = 0;
+
+      });
     }
   }
 })();

@@ -37,26 +37,23 @@ text.nodeLabel {
   dominant-baseline: central;
 }
 label {
-  width: 50%;
-  float: left;
+  width: 49%;
 }
-button {
-  width: 50%;
+button.dropdown-toggle{
+  width: 49%;
 }
 input[type="range"] {
-  width: 50%;
-  float: right;
+  width: 49%;
+  display: inline-block;
 }
 output {
   padding-top: 0px;
-  width: 50%;
-  float: left;
+  width: 49%;
   text-align: center;
-}
-.subgroup {
-  margin-bottom: 10px;
-  display: block;
 }
 .top-buffer {
   margin-top: 50px;
+}
+.bottom-buffer {
+  margin-bottom: 5px;
 }
