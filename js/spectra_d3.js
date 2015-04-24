@@ -154,6 +154,7 @@ SPECTRA = (function() {
     subjectLoad();
     edgeTypeLoad();
     playButtonStart();
+    resetButton();
 
     function setupSliders() {
       timeSlider = d3.select("#timeSlider");
@@ -893,8 +894,7 @@ SPECTRA = (function() {
     function playButtonStart() {
       var playButton = d3.select("#playButton");
       playButton.on("click", function(){
-        // curTime_ind = 0;
-        // updateTimeSlider.call({value: tAx[curTime_ind]});
+
         d3.select("#playButton").text("Stop")
         stopAnimation = !stopAnimation;
         d3.timer(function(interval, timeSliderStep){
@@ -908,9 +908,16 @@ SPECTRA = (function() {
             }
 
         })
-
-
       });
+    }
+    function resetButton() {
+      var resetButton = d3.select("#resetButton");
+      resetButton.on("click", function() {
+          curTime_ind = 0;
+          stopAnimation = true;
+          updateTimeSlider.call({value: tAx[curTime_ind]});
+      });
+
     }
     function updateTimeSlider(){
       curTime_ind = tAx.indexOf(+this.value);
