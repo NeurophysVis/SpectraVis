@@ -23,16 +23,37 @@
   display: none;
 }
 .edge {
-  stroke: #999;
   stroke-opacity: .6;
 }
 .node {
-  stroke: #ddd;
-  stroke-opacity: .6;
+  stroke: #FFF;
+  stroke-width 0.5px;
 }
 text.nodeLabel {
 	font-family: sans-serif;
 	font-size: 11px;
   text-anchor: middle;
   line-height: 100%;
+  dominant-baseline: central;
+}
+label {
+  width: 49%;
+}
+button.dropdown-toggle{
+  width: 49%;
+}
+input[type="range"] {
+  width: 49%;
+  display: inline-block;
+}
+output {
+  padding-top: 0px;
+  width: 49%;
+  text-align: center;
+}
+.top-buffer {
+  margin-top: 50px;
+}
+.bottom-buffer {
+  margin-bottom: 5px;
 }
