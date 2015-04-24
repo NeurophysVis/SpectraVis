@@ -9,11 +9,12 @@ SPECTRA = (function() {
       networkStatColor,
       NODE_RADIUS = 10,
       EDGE_WIDTH = 2,
+      stopAnimation = true,
       powerColors = colorbrewer.PiYG[NUM_COLORS],
       cohColors = colorbrewer.RdBu[NUM_COLORS],
       networkColors = colorbrewer.RdBu[NUM_COLORS],
       powerLineFun, cohLineFun, freqSlicePowerScale, freqSliceCohScale,
-      spect1Line, spect2Line, cohLine, TIME_SLIDER_MIN, TIME_SLIDER_MAX, TIME_SLIDER_STEP, maxStep,
+      spect1Line, spect2Line, cohLine,
       margin = {top: 40, right: 40, bottom: 40, left: 40},
       panelWidth = document.getElementById("Ch1Panel").offsetWidth - margin.left - margin.right,
       panelHeight = document.getElementById("Ch1Panel").offsetWidth*4/5 - margin.top - margin.bottom;
@@ -132,7 +133,7 @@ SPECTRA = (function() {
     var timeScale, timeScaleLinear, freqScale, powerScale, cohScale,
         tAx, fAx, heatmapPowerColor, networkXScale, networkYScale, force, timeSlider,
         freqSlider, timeSliderText, freqSliderText, subjectDropdown, networkStatScale,
-        edgeTypeDropdown, networkColorScale;
+        edgeTypeDropdown, networkColorScale, timeSliderStep, timeMaxStep_ind;
 
     tAx = spect1.tax; // Time Axis
     fAx = spect1.fax; // Frequency Axis
@@ -159,14 +160,12 @@ SPECTRA = (function() {
       freqSlider = d3.select("#freqSlider");
       freqSliderText = d3.select("#freqSlider-value");
 
-      TIME_SLIDER_MIN = d3.min(tAx);
-      TIME_SLIDER_MAX = d3.max(tAx);
-      TIME_SLIDER_STEP = d3.round(tAx[1] - tAx[0], 4);
-      maxStep = tAx.length - 1;
+      timeSliderStep = d3.round(tAx[1] - tAx[0], 4);
+      timeMaxStep_ind = tAx.length - 1;
 
-      timeSlider.property("min", TIME_SLIDER_MIN);
-      timeSlider.property("max", TIME_SLIDER_MAX);
-      timeSlider.property("step", TIME_SLIDER_STEP);
+      timeSlider.property("min", d3.min(tAx));
+      timeSlider.property("max", d3.max(tAx));
+      timeSlider.property("step", timeSliderStep);
       timeSlider.property("value", tAx[curTime_ind]);
       timeSlider.on("input", updateTimeSlider);
       timeSliderText.text(tAx[curTime_ind] + " ms");
@@ -177,18 +176,6 @@ SPECTRA = (function() {
       freqSlider.property("value", fAx[curFreq_ind]);
       freqSlider.on("input", updateFreqSlider)
       freqSliderText.text(fAx[curFreq_ind] + " Hz");
-
-      function updateTimeSlider(){
-        curTime_ind = tAx.indexOf(+this.value);
-        drawNetwork();
-        drawFreqSlice();
-        timeSliderText.text(tAx[curTime_ind] + " ms");
-      }
-      function updateFreqSlider(){
-        curFreq_ind = fAx.indexOf(+this.value);
-        drawNetwork();
-        freqSliderText.text(fAx[curFreq_ind] + " Hz");
-      }
     }
     function setupNodesEdges() {
       // Replace source name by source object
@@ -858,10 +845,8 @@ SPECTRA = (function() {
           curTime_ind = timeInd;
           drawNetwork();
           drawFreqSlice();
-          timeSlider.property("value", tAx[curTime_ind]);
-          timeSliderText.text(tAx[curTime_ind] + " ms");
-          freqSlider.property("value", fAx[curFreq_ind]);
-          freqSliderText.text(fAx[curFreq_ind] + " Hz");
+          updateTimeSlider.call({value: tAx[curTime_ind]});
+          updateFreqSlider.call({value: fAx[curFreq_ind]});
         };
     }
     function rectMouseClick() {
@@ -892,9 +877,37 @@ SPECTRA = (function() {
     function playButtonStart() {
       var playButton = d3.select("#playButton");
       playButton.on("click", function(){
-        curTime_ind = 0;
+        // curTime_ind = 0;
+        // updateTimeSlider.call({value: tAx[curTime_ind]});
+        d3.select("#playButton").text("Stop")
+        stopAnimation = !stopAnimation;
+        d3.timer(function(interval, timeSliderStep){
+            if (curTime_ind < timeMaxStep_ind && stopAnimation === false) {
+                curTime_ind++;
+                updateTimeSlider.call({value: tAx[curTime_ind]});
+            } else {
+              d3.select("#playButton").text("Start")
+              stopAnimation = true;
+              return true;
+            }
+
+        })
+
 
       });
+    }
+    function updateTimeSlider(){
+      curTime_ind = tAx.indexOf(+this.value);
+      drawNetwork();
+      drawFreqSlice();
+      timeSlider.property("value", tAx[curTime_ind]);
+      timeSliderText.text(tAx[curTime_ind] + " ms");
+    }
+    function updateFreqSlider(){
+      curFreq_ind = fAx.indexOf(+this.value);
+      drawNetwork();
+      freqSlider.property("value", fAx[curFreq_ind]);
+      freqSliderText.text(fAx[curFreq_ind] + " Hz");
     }
   }
 })();
