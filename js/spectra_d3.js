@@ -254,18 +254,6 @@ SPECTRA = (function() {
       networkXExtent = subjectObject.brainXLim;
       networkYExtent = subjectObject.brainYLim;
 
-      // if (networkXExtent[0] < networkYExtent[0]) {
-      //   networkYExtent[0] = networkXExtent[0];
-      // } else {
-      //   networkXExtent[0] = networkYExtent[0];
-      // }
-      //
-      // if (networkXExtent[1] >= networkYExtent[1]) {
-      //   networkYExtent[1] = networkXExtent[1];
-      // } else {
-      //   networkXExtent[1] = networkYExtent[1];
-      // }
-
       edgeStatMin = d3.min(edge, function(d) {
         return d3.min(d.data, function(e) {
           return d3.min(e, function(f) {return f;})
@@ -369,7 +357,16 @@ SPECTRA = (function() {
         .on("mouseover", edgeMouseOver)
         .on("mouseout", edgeMouseOut)
         .on("click", edgeMouseClick);
-
+      if (edgeType === "C2s_coh") {
+        edgeLine
+          .style("display", function(d) {
+            if (d.data[curTime_ind][curFreq_ind] === 0) {
+              return "none";
+            } else {
+              return "";
+            }
+          });
+      }
       nodeG = nodesGroup.selectAll("g.gnode").data(channel, function(d) {return curSubject + "_" + d.name;});
       nodeG.enter()
         .append("g")
