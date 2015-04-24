@@ -384,10 +384,10 @@ SPECTRA = (function() {
           .attr("fill", "#ddd")
           .attr("opacity", 1)
           .on("click", nodeMouseClick);
-      // nodeCircle
-      //     .attr("fill", function(d){
-      //       return networkColorScale(d.region);
-      //     });
+      nodeCircle
+          .attr("fill", function(d){
+            return networkColorScale(d.region);
+          });
 
       nodeText = nodeG.selectAll("text.nodeLabel").data(function(d) {return [d];});
       nodeText.enter()
