@@ -202,6 +202,7 @@ SPECTRA = (function() {
         .domain(d3.range(0, 1, 1.0 / (NUM_COLORS - 1)))
         .range(networkColors);
       networkColorScale = d3.scale.ordinal()
+        .domain(visInfo.brainAreas)
         .range(colorbrewer.Pastel1[7]);
 
       powerMin = d3.min(
