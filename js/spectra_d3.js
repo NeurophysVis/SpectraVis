@@ -1,5 +1,6 @@
 SPECTRA = (function() {
 
+  params = {};
   var NUM_COLORS = 11;
   colorbrewer.PiYG[NUM_COLORS].reverse();
   colorbrewer.RdBu[NUM_COLORS].reverse();
@@ -74,7 +75,6 @@ SPECTRA = (function() {
   var curSubject,
       curCh1 = [],
       curCh2 = [],
-      channel, edge,
       curFreq_ind = 0,
       curTime_ind = 0
       mouseFlag = true,
@@ -107,10 +107,10 @@ SPECTRA = (function() {
 
     d3.json("DATA/" + channel_file, function(isError, channelData) {
 
-        channel = channelData;
+        params.channel = channelData;
         if (curCh1.length === 0 || curCh2.length === 0) {
-          curCh1 = channel[0].name;
-          curCh2 = channel[1].name;
+          curCh1 = params.channel[0].name;
+          curCh2 = params.channel[1].name;
         }
         loadEdges();
     });
@@ -118,7 +118,7 @@ SPECTRA = (function() {
   function loadEdges() {
     var edge_file = "edges_" + curSubject + "_" + edgeType + ".json";
     d3.json("DATA/" + edge_file, function(isError, edgeData) {
-      edge = edgeData;
+      params.edge = edgeData;
       loadSpectra();
     });
   }
@@ -148,7 +148,6 @@ SPECTRA = (function() {
     fAx = spect1.fax; // Frequency Axis
 
     setupScales();
-    setupNodesEdges();
     setupSliders();
 
     drawNetwork();
@@ -186,33 +185,6 @@ SPECTRA = (function() {
       freqSlider.property("value", fAx[curFreq_ind]);
       freqSlider.on("input", updateFreqSlider)
       freqSliderText.text(fAx[curFreq_ind] + " Hz");
-    }
-    function setupNodesEdges() {
-      // Replace source name by source object
-      edge = edge.map(function(e) {
-        if (typeof(e.source) != "object") {
-            e.source = channel.filter(function(n) {return n.name === e.source;});
-            e.source = e.source[0];
-            e.target = channel.filter(function(n) {return n.name === e.target;});
-            e.target = e.target[0];
-        };
-        return e;
-      });
-
-      // Replace x and y coordinates of nodes with properly scaled x,y
-      channel = channel.map(function(n) {
-        n.x = networkXScale(n.x);
-        n.y = networkYScale(n.y)
-        return n;
-      });
-
-      force = d3.layout.force()
-        .nodes(channel)
-        .links(edge)
-        .charge(-200)
-        .linkDistance(300)
-        .size([networkWidth, networkHeight])
-        .start();
     }
     function setupScales() {
       var powerMin, powerMax, powerExtent, cohMax, cohMin, cohExtent,
@@ -264,12 +236,12 @@ SPECTRA = (function() {
       networkXExtent = subjectObject.brainXLim;
       networkYExtent = subjectObject.brainYLim;
 
-      edgeStatMin = d3.min(edge, function(d) {
+      edgeStatMin = d3.min(params.edge, function(d) {
         return d3.min(d.data, function(e) {
           return d3.min(e, function(f) {return f;})
         });
       });
-      edgeStatMax = d3.max(edge, function(d) {
+      edgeStatMax = d3.max(params.edge, function(d) {
         return d3.max(d.data, function(e) {
           return d3.max(e, function(f) {return f;})
         });
@@ -329,7 +301,34 @@ SPECTRA = (function() {
       }
     }
     function drawNetwork() {
-      var nodesGroup, edgesGroup, nodeG, strokeStyle, nodeClickNames = [], brainImage, subjectObject;
+      var nodesGroup, edgesGroup, nodeG, strokeStyle, nodeClickNames = [],
+          brainImage, subjectObject, channel, edge;
+
+      // Replace x and y coordinates of nodes with properly scaled x,y
+      channel = params.channel.map(function(n) {
+        var obj = copyObject(n);
+        obj.x = networkXScale(n.x);
+        obj.y = networkYScale(n.y)
+        return obj;
+      });
+
+      // Replace source name by source object
+      edge = params.edge.map(function(e) {
+            var obj = copyObject(e);
+            obj.source = channel.filter(function(n) {return n.name === e.source;});
+            obj.source = obj.source[0];
+            obj.target = channel.filter(function(n) {return n.name === e.target;});
+            obj.target = obj.target[0];
+            return obj;
+      });
+
+      force = d3.layout.force()
+        .nodes(channel)
+        .links(edge)
+        .charge(-200)
+        .linkDistance(300)
+        .size([networkWidth, networkHeight])
+        .start();
 
       subjectObject = subjects.filter(function(d) {return d.subjectID === curSubject;})[0];
       brainImageGroup = svgNetworkMap.selectAll("g#BRAIN_IMAGE").data([{}]);
@@ -407,10 +406,10 @@ SPECTRA = (function() {
           .text(function(d) {return d.name;});
       // For every iteration of force simulation "tick"
       force.on("tick", function() {
-        edgeLine.attr("x1", function(d) {return (d.source.x); })
-            .attr("y1", function(d) { return (d.source.y); })
-            .attr("x2", function(d) { return (d.target.x); })
-            .attr("y2", function(d) { return(d.target.y); });
+        edgeLine.attr("x1", function(d) {return (d.source.x);})
+            .attr("y1", function(d) {return (d.source.y);})
+            .attr("x2", function(d) {return (d.target.x);})
+            .attr("y2", function(d) {return(d.target.y);});
 
          // Translate the groups
         nodeG.attr("transform", function(d) {
@@ -487,6 +486,15 @@ SPECTRA = (function() {
          loadSpectra();
        }
      }
+     function copyObject(obj) {
+        var newObj = {};
+        for (var key in obj) {
+            //copy all the fields
+            newObj[key] = obj[key];
+        }
+
+        return newObj;
+    }
     };
     function drawHeatmap(curPlot, curData, intensityScale, colorScale) {
 
