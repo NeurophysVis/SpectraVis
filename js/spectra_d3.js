@@ -74,7 +74,7 @@ SPECTRA = (function() {
   var curSubject,
       curCh1 = [],
       curCh2 = [],
-      channel,
+      channel, edge,
       curFreq_ind = 0,
       curTime_ind = 0
       mouseFlag = true,
@@ -112,23 +112,31 @@ SPECTRA = (function() {
           curCh1 = channel[0].name;
           curCh2 = channel[1].name;
         }
-
-        var spectCh1_file = "spectrogram_" + curSubject + "_" + curCh1 + ".json",
-            spectCh2_file = "spectrogram_" + curSubject + "_" + curCh2 + ".json",
-            coh_file = "coherogram_" + curSubject + "_" + curCh1 + "_" + curCh2 + ".json",
-            edge_file = "edges_" + curSubject + "_" + edgeType + ".json";
-
-        queue()
-            .defer(d3.json, "DATA/" + spectCh1_file)
-            .defer(d3.json, "DATA/" + spectCh2_file)
-            .defer(d3.json, "DATA/" + coh_file)
-            .defer(d3.json, "DATA/" + edge_file)
-            .await(display);
+        loadEdges();
     });
+  }
+  function loadEdges() {
+    var edge_file = "edges_" + curSubject + "_" + edgeType + ".json";
+    d3.json("DATA/" + edge_file, function(isError, edgeData) {
+      edge = edgeData;
+      loadSpectra();
+    });
+  }
+  function loadSpectra() {
+    var spectCh1_file = "spectrogram_" + curSubject + "_" + curCh1 + ".json",
+        spectCh2_file = "spectrogram_" + curSubject + "_" + curCh2 + ".json",
+        coh_file = "coherogram_" + curSubject + "_" + curCh1 + "_" + curCh2 + ".json";
+
+    // Load the rest of the files in parallel
+    queue()
+        .defer(d3.json, "DATA/" + spectCh1_file)
+        .defer(d3.json, "DATA/" + spectCh2_file)
+        .defer(d3.json, "DATA/" + coh_file)
+        .await(display);
   }
 
   // Draw
-  function display(isError, spect1, spect2, coh, edge) {
+  function display(isError, spect1, spect2, coh) {
 
     var timeScale, timeScaleLinear, freqScale, powerScale, cohScale,
         tAx, fAx, heatmapPowerColor, networkXScale, networkYScale, force, timeSlider,
@@ -182,10 +190,12 @@ SPECTRA = (function() {
     function setupNodesEdges() {
       // Replace source name by source object
       edge = edge.map(function(e) {
-        e.source = channel.filter(function(n) {return n.name === e.source;});
-        e.source = e.source[0];
-        e.target = channel.filter(function(n) {return n.name === e.target;});
-        e.target = e.target[0];
+        if (typeof(e.source) != "object") {
+            e.source = channel.filter(function(n) {return n.name === e.source;});
+            e.source = e.source[0];
+            e.target = channel.filter(function(n) {return n.name === e.target;});
+            e.target = e.target[0];
+        };
         return e;
       });
 
@@ -445,7 +455,7 @@ SPECTRA = (function() {
        curCh1 = re.exec(e.source.name)[0];
        curCh2 = re.exec(e.target.name)[0];
        mouseFlag = true;
-       loadData();
+       loadSpectra();
      }
      function nodeMouseClick(e) {
        var curNode = d3.select(this),
@@ -474,7 +484,7 @@ SPECTRA = (function() {
            })
            .attr("fill", "#ddd")
          nodeClickNames = [];
-         loadData();
+         loadSpectra();
        }
      }
     };
@@ -884,9 +894,7 @@ SPECTRA = (function() {
         .on("click", function() {
           edgeTypeDropdown.selectAll("button").html(this.id + "    <span class='caret'></span>");
           edgeType = this.id;
-          curCh1 = [];
-          curCh2 = [];
-          loadData();
+          loadEdges();
           })
     }
     function playButtonStart() {
@@ -904,7 +912,6 @@ SPECTRA = (function() {
               stopAnimation = true;
               return true;
             }
-
         })
       });
     }
