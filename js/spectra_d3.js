@@ -308,7 +308,7 @@ SPECTRA = (function() {
       channel = params.channel.map(function(n) {
         var obj = copyObject(n);
         obj.x = networkXScale(n.x);
-        obj.y = networkYScale(n.y)
+        obj.y = networkYScale(n.y);
         return obj;
       });
 
@@ -321,6 +321,8 @@ SPECTRA = (function() {
             obj.target = obj.target[0];
             return obj;
       });
+
+      edge = edge.filter(edgeFilter);
 
       force = d3.layout.force()
         .nodes(channel)
@@ -367,16 +369,7 @@ SPECTRA = (function() {
         .on("mouseover", edgeMouseOver)
         .on("mouseout", edgeMouseOut)
         .on("click", edgeMouseClick);
-      if (edgeType === "C2s_coh") {
-        edgeLine
-          .style("display", function(d) {
-            if (d.data[curTime_ind][curFreq_ind] === 0) {
-              return "none";
-            } else {
-              return "";
-            }
-          });
-      }
+
       nodeG = nodesGroup.selectAll("g.gnode").data(channel, function(d) {return curSubject + "_" + d.name;});
       nodeG.enter()
         .append("g")
@@ -416,85 +409,95 @@ SPECTRA = (function() {
           return 'translate(' + [d.x, d.y] + ')';
         });
      });
+       function edgeMouseOver(e) {
 
-     function edgeMouseOver(e) {
-
-       var curEdge = d3.select(this);
-       strokeStyle = curEdge.style("stroke");
-       curEdge
-         .style("stroke-width", 2*EDGE_WIDTH)
-         .style("stroke", function() {
-           if (e.data[curTime_ind][curFreq_ind] < 0) {
-             return networkStatColor(0);
-           } else {
-             return networkStatColor(1);
-           }
-         });
-       var curNodes = d3.selectAll("circle.node")
-        .filter(function(n) {
-          return (n.name === e.source.name) || (n.name === e.target.name);
-        })
-        .attr("r", NODE_RADIUS * 1.2)
-     }
-     function edgeMouseOut(e) {
-       var curEdge = d3.select(this);
-       if (typeof(strokeStyle) != "undefined") {
+         var curEdge = d3.select(this);
+         strokeStyle = curEdge.style("stroke");
          curEdge
-           .style("stroke-width", EDGE_WIDTH)
-           .style("stroke", strokeStyle);
-         d3.selectAll("circle.node")
+           .style("stroke-width", 2*EDGE_WIDTH)
+           .style("stroke", function() {
+             if (e.data[curTime_ind][curFreq_ind] < 0) {
+               return networkStatColor(0);
+             } else {
+               return networkStatColor(1);
+             }
+           });
+         var curNodes = d3.selectAll("circle.node")
           .filter(function(n) {
             return (n.name === e.source.name) || (n.name === e.target.name);
           })
-            .attr("r", NODE_RADIUS)
-        }
-     }
-     function edgeMouseClick(e) {
-       var re = /\d+/;
-       curCh1 = re.exec(e.source.name)[0];
-       curCh2 = re.exec(e.target.name)[0];
-       mouseFlag = true;
-       loadSpectra();
-     }
-     function nodeMouseClick(e) {
-       var curNode = d3.select(this),
-           node_ind = nodeClickNames.indexOf(e.name);
-
-       if (node_ind > -1) {
-         // If clicked on node is in the array, remove
-         curNode
-           .attr("fill", "#ddd");
-         nodeClickNames.splice(node_ind, 1);
-       } else {
-         // Else add to array
-         curNode
-           .attr("fill", "red");
-        nodeClickNames.push(e.name);
+          .attr("r", NODE_RADIUS * 1.2)
        }
-       if (nodeClickNames.length === 2) {
-         nodeClickNames = nodeClickNames.sort();
+       function edgeMouseOut(e) {
+         var curEdge = d3.select(this);
+         if (typeof(strokeStyle) != "undefined") {
+           curEdge
+             .style("stroke-width", EDGE_WIDTH)
+             .style("stroke", strokeStyle);
+           d3.selectAll("circle.node")
+            .filter(function(n) {
+              return (n.name === e.source.name) || (n.name === e.target.name);
+            })
+              .attr("r", NODE_RADIUS)
+          }
+       }
+       function edgeMouseClick(e) {
          var re = /\d+/;
-         curCh1 = re.exec(nodeClickNames[0])[0];
-         curCh2 = re.exec(nodeClickNames[1])[0];
+         curCh1 = re.exec(e.source.name)[0];
+         curCh2 = re.exec(e.target.name)[0];
          mouseFlag = true;
-         d3.selectAll("circle.node")
-           .filter(function(n) {
-             return (n.name === nodeClickNames[0]) || (n.name === nodeClickNames[1]);
-           })
-           .attr("fill", "#ddd")
-         nodeClickNames = [];
          loadSpectra();
        }
-     }
-     function copyObject(obj) {
-        var newObj = {};
-        for (var key in obj) {
-            //copy all the fields
-            newObj[key] = obj[key];
-        }
+       function nodeMouseClick(e) {
+         var curNode = d3.select(this),
+             node_ind = nodeClickNames.indexOf(e.name);
 
-        return newObj;
-    }
+         if (node_ind > -1) {
+           // If clicked on node is in the array, remove
+           curNode
+             .attr("fill", "#ddd");
+           nodeClickNames.splice(node_ind, 1);
+         } else {
+           // Else add to array
+           curNode
+             .attr("fill", "red");
+          nodeClickNames.push(e.name);
+         }
+         if (nodeClickNames.length === 2) {
+           nodeClickNames = nodeClickNames.sort();
+           var re = /\d+/;
+           curCh1 = re.exec(nodeClickNames[0])[0];
+           curCh2 = re.exec(nodeClickNames[1])[0];
+           mouseFlag = true;
+           d3.selectAll("circle.node")
+             .filter(function(n) {
+               return (n.name === nodeClickNames[0]) || (n.name === nodeClickNames[1]);
+             })
+             .attr("fill", "#ddd")
+           nodeClickNames = [];
+           loadSpectra();
+         }
+       }
+       function copyObject(obj) {
+          var newObj = {};
+          for (var key in obj) {
+              //copy all the fields
+              newObj[key] = obj[key];
+          }
+          return newObj;
+      }
+      function edgeFilter(e) {
+          if (edgeType === "C2s_coh") {
+                if (e.data[curTime_ind][curFreq_ind] === 0) {
+                  return false;
+                } else {
+                  return true;
+                }
+          } else {
+            return true;
+          }
+
+      }
     };
     function drawHeatmap(curPlot, curData, intensityScale, colorScale) {
 
