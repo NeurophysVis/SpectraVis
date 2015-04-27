@@ -6,16 +6,14 @@ SPECTRA = (function() {
   colorbrewer.RdBu[NUM_COLORS].reverse();
 
   var heatmapPowerColor,
-      heatmapCohColor,
-      networkStatColor,
+      edgeStatColor,
       NODE_RADIUS = 10,
       EDGE_WIDTH = 2,
       stopAnimation = true,
       powerColors = colorbrewer.PiYG[NUM_COLORS],
-      cohColors = colorbrewer.RdBu[NUM_COLORS],
       networkColors = colorbrewer.RdBu[NUM_COLORS],
-      powerLineFun, cohLineFun, freqSlicePowerScale, freqSliceCohScale,
-      spect1Line, spect2Line, cohLine, subjects,
+      powerLineFun, edgeStatLineFun, freqSlicePowerScale, freqSliceNetworkStatScale,
+      spect1Line, spect2Line, edgeStatLine, subjects,
       margin = {top: 40, right: 40, bottom: 40, left: 40},
       panelWidth = document.getElementById("Ch1Panel").offsetWidth - margin.left - margin.right,
       panelHeight = document.getElementById("Ch1Panel").offsetWidth*4/5 - margin.top - margin.bottom;
@@ -35,7 +33,7 @@ SPECTRA = (function() {
       .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-  svgCoh = d3.select("#CoherencePanel")
+  svgCoh = d3.select("#EdgeStatPanel")
       .append("svg")
         .attr("width", panelWidth + margin.left + margin.right)
         .attr("height", panelHeight + margin.top + margin.bottom)
@@ -140,22 +138,19 @@ SPECTRA = (function() {
   // Draw
   function display(isError, spect1, spect2, visInfo, edgeInfo) {
 
-    var timeScale, timeScaleLinear, freqScale, powerScale, cohScale,
+    var timeScale, timeScaleLinear, freqScale, powerScale,
         tAx, fAx, heatmapPowerColor, networkXScale, networkYScale, force, timeSlider,
-        freqSlider, timeSliderText, freqSliderText, subjectDropdown, networkStatScale,
+        freqSlider, timeSliderText, freqSliderText, subjectDropdown, edgeStatScale,
         edgeTypeDropdown, networkColorScale, timeSliderStep, timeMaxStep_ind,
-        networkXExtent, networkYExtent, coh;
+        networkXExtent, networkYExtent, edgeStat, edgeTypeName;
 
     tAx = visInfo.tax; // Time Axis
     fAx = visInfo.fax; // Frequency Axis
-    edgeInfo = d3.nest()
-      .key(function(d) {
-        return d.edgeTypeID;})
-      .entries(edgeInfo);
-    coh = params.edge.filter(function(e) {
+    edgeStat = params.edge.filter(function(e) {
         return e.source === curCh1 && e.target === curCh2;
     });
-    coh = coh[0];
+    edgeStat = edgeStat[0];
+    edgeTypeName = edgeInfo.filter(function(e){return e.edgeTypeID === edgeType;})[0].edgeTypeName;
 
     setupScales();
     setupSliders();
@@ -163,7 +158,7 @@ SPECTRA = (function() {
     drawNetwork();
     drawHeatmap(svgCh1, spect1, powerScale, heatmapPowerColor);
     drawHeatmap(svgCh2, spect2, powerScale, heatmapPowerColor);
-    drawHeatmap(svgCoh, coh, cohScale, heatmapCohColor);
+    drawHeatmap(svgCoh, edgeStat, edgeStatScale, edgeStatColor);
 
     drawTitles();
     drawLegends();
@@ -197,16 +192,13 @@ SPECTRA = (function() {
       freqSliderText.text(fAx[curFreq_ind] + " Hz");
     }
     function setupScales() {
-      var powerMin, powerMax, powerExtent, cohMax, cohMin, cohExtent,
+      var powerMin, powerMax, powerExtent,
           edgeStatMin, edgeStatMax, edgeStatExtent, subjectObject;
 
       heatmapPowerColor = d3.scale.linear()
         .domain(d3.range(0, 1, 1.0 / (NUM_COLORS - 1)))
         .range(powerColors);
-      heatmapCohColor = d3.scale.linear()
-        .domain(d3.range(0, 1, 1.0 / (NUM_COLORS - 1)))
-        .range(cohColors);
-      networkStatColor = d3.scale.linear()
+      edgeStatColor = d3.scale.linear()
         .domain(d3.range(0, 1, 1.0 / (NUM_COLORS - 1)))
         .range(networkColors);
       networkColorScale = d3.scale.ordinal()
@@ -231,16 +223,6 @@ SPECTRA = (function() {
       );
 
       powerExtent = symmetricExtent(powerMin, powerMax);
-
-      cohMin = d3.min(coh.data, function(d) {
-        return d3.min(d, function(e) {return e;});
-      });
-
-      cohMax = d3.max(coh.data, function(d) {
-        return d3.max(d, function(e) {return e;});
-      });
-
-      cohExtent = symmetricExtent(cohMin, cohMax);
 
       subjectObject = subjects.filter(function(d) {return d.subjectID === curSubject;})[0];
       networkXExtent = subjectObject.brainXLim;
@@ -276,18 +258,13 @@ SPECTRA = (function() {
         .range([0, 1])
         .nice();
 
-      cohScale = d3.scale.linear()
-        .domain(cohExtent)
-        .range([0, 1])
-        .nice();
-
       freqSlicePowerScale = d3.scale.linear()
         .domain(powerExtent)
         .range([freqSliceHeight, 0])
         .nice();
 
-      freqSliceCohScale = d3.scale.linear()
-        .domain(cohExtent)
+      freqSliceNetworkStatScale = d3.scale.linear()
+        .domain(edgeStatExtent)
         .range([freqSliceHeight, 0])
         .nice();
 
@@ -297,7 +274,7 @@ SPECTRA = (function() {
       networkYScale = d3.scale.linear()
         .domain(networkYExtent)
         .range([networkHeight, 0]);
-      networkStatScale = d3.scale.linear()
+      edgeStatScale = d3.scale.linear()
         .domain(edgeStatExtent)
         .range([0, 1]);
 
@@ -373,7 +350,7 @@ SPECTRA = (function() {
       edgeLine.exit().remove();
       edgeLine
         .style("stroke", function(d) {
-            return networkStatColor(networkStatScale(d.data[curTime_ind][curFreq_ind]));
+            return edgeStatColor(edgeStatScale(d.data[curTime_ind][curFreq_ind]));
           })
         .style("display", "")
         .on("mouseover", edgeMouseOver)
@@ -427,9 +404,9 @@ SPECTRA = (function() {
            .style("stroke-width", 2*EDGE_WIDTH)
            .style("stroke", function() {
              if (e.data[curTime_ind][curFreq_ind] < 0) {
-               return networkStatColor(0);
+               return edgeStatColor(0);
              } else {
-               return networkStatColor(1);
+               return edgeStatColor(1);
              }
            });
          var curNodes = d3.selectAll("circle.node")
@@ -562,7 +539,7 @@ SPECTRA = (function() {
             .attr("y", 0)
             .attr("text-anchor", "middle")
             .attr("dy", 2 + "em")
-            .text("Time (ms)");
+            .text("Time (" + visInfo.tunits + ")");
       timeAxisG.call(timeAxis);
 
       freqAxisG = curPlot.selectAll("g.freqAxis").data([{}]);
@@ -574,7 +551,7 @@ SPECTRA = (function() {
           .attr("dy", -2 + "em")
           .attr("transform", "rotate(-90)")
           .attr("text-anchor", "middle")
-          .text("Frequency (Hz)");
+          .text("Frequency (" + visInfo.funits + ")");
       freqAxisG.call(freqAxis);
 
       zeroG = curPlot.selectAll("g.zeroLine").data([[[0, panelHeight]]]);
@@ -635,7 +612,7 @@ SPECTRA = (function() {
           .text(function(d) {
             return "Spectra: Ch" + d;
           });
-      titleCoh = svgCoh.selectAll("text.title").data([coh]);
+      titleCoh = svgCoh.selectAll("text.title").data([edgeStat]);
       titleCoh.exit().remove();
       titleCoh.enter()
         .append("text")
@@ -646,12 +623,12 @@ SPECTRA = (function() {
           .attr("class", "title");
       titleCoh
           .text(function(d) {
-            return "Coherence: Ch" + d.source + "-Ch" + d.target;
+            return edgeTypeName + ": Ch" + d.source + "-Ch" + d.target;
           });
     }
     function drawLegends() {
       var powerG, powerLegendRect, legendScale, colorInd, powerAxisG, powerAxis, formatter,
-          cohG, cohLegendRect, cohAxisG, cohAxis, chartKeyText;
+          edgeStatG, edgeStatLegendRect, edgeStatAxisG, edgeStatAxis, chartKeyText;
 
       formatter = d3.format(".2f");
       colorInd = d3.range(0, 1, 1.0 / (NUM_COLORS - 1));
@@ -710,46 +687,46 @@ SPECTRA = (function() {
             .text("Power");
       powerAxisG.call(powerAxis);
       // Coh Legend
-      cohG = svgLegend.selectAll("g#cohLegend").data([{}]);
-      cohG.enter()
+      edgeStatG = svgLegend.selectAll("g#edgeStatLegend").data([{}]);
+      edgeStatG.enter()
         .append("g")
-        .attr("id", "cohLegend")
+        .attr("id", "edgeStatLegend")
         .attr("transform", "translate(" + 300 + ", 0)");
-      cohLegendRect = cohG.selectAll("rect.coh").data(colorInd);
-      cohLegendRect.enter()
+      edgeStatLegendRect = edgeStatG.selectAll("rect.edgeStat").data(colorInd);
+      edgeStatLegendRect.enter()
         .append("rect")
-          .attr("class", "coh")
+          .attr("class", "edgeStat")
           .attr("x", function(d) {return legendScale(d);})
           .attr("y", 0)
           .attr("height", 10)
           .attr("width", legendScale.rangeBand());
-      cohLegendRect
-        .style("fill", function(d) {return heatmapCohColor(d);});
-      cohAxis = d3.svg.axis()
+      edgeStatLegendRect
+        .style("fill", function(d) {return edgeStatColor(d);});
+      edgeStatAxis = d3.svg.axis()
         .scale(legendScale)
         .orient("bottom")
         .ticks(2)
         .tickValues([colorInd[0], colorInd[colorInd.length-1]])
         .tickFormat(function (d) {
-          return formatter(cohScale.invert(+d));
+          return formatter(edgeStatScale.invert(+d));
         })
         .tickSize(0,0,0);
-      cohAxisG = cohG.selectAll("g.cohAxis").data([{}]);
-      cohAxisG.enter()
+      edgeStatAxisG = edgeStatG.selectAll("g.edgeStatAxis").data([{}]);
+      edgeStatAxisG.enter()
         .append("g")
           .attr("transform", "translate(0," + 9 + ")")
-          .attr("class", "cohAxis")
+          .attr("class", "edgeStatAxis")
         .append("text")
           .attr("x", 0)
           .attr("y", 0)
           .attr("text-anchor", "end")
-          .text("Coherence");
-      cohAxisG.call(cohAxis);
+          .text(edgeTypeName);
+      edgeStatAxisG.call(edgeStatAxis);
 
     }
     function drawFreqSlice() {
       var freqAxis, freqG, freqSlicePowerAxis, powerG,
-          cohAxis, cohG, freqScale, zeroG;
+          edgeStatAxis, edgeStatG, freqScale, zeroG;
 
       freqScale = d3.scale.ordinal()
           .domain(fAx)
@@ -758,20 +735,20 @@ SPECTRA = (function() {
       powerLineFun = d3.svg.line()
           .x(function(d, i) { return freqScale(fAx[i]) + freqScale.rangeBand()/2;})
           .y(function(d) {return freqSlicePowerScale(d);});
-      cohLineFun = d3.svg.line()
+      edgeStatLineFun = d3.svg.line()
           .x(function(d, i) { return freqScale(fAx[i]) + freqScale.rangeBand()/2;})
-          .y(function(d) {return freqSliceCohScale(d);});
+          .y(function(d) {return freqSliceNetworkStatScale(d);});
 
       freqAxis = d3.svg.axis()
           .scale(freqScale)
           .orient("bottom")
           .tickValues(["5", "20", "40", "60", "90", "150"])
           .tickSize(0,0,0);
-      cohAxis = d3.svg.axis()
-          .scale(freqSliceCohScale)
+      edgeStatAxis = d3.svg.axis()
+          .scale(freqSliceNetworkStatScale)
           .orient("right")
           .ticks(2)
-          .tickValues(freqSliceCohScale.domain())
+          .tickValues(freqSliceNetworkStatScale.domain())
           .tickSize(0,0,0);
       powerAxis = d3.svg.axis()
           .scale(freqSlicePowerScale)
@@ -793,10 +770,10 @@ SPECTRA = (function() {
             .text("Frequency (Hz)");
        freqG.call(freqAxis);
 
-       cohG = svgFreqSlice.selectAll("g.cohSliceAxis").data([{}]);
-       cohG.enter()
+       edgeStatG = svgFreqSlice.selectAll("g.edgeStatSliceAxis").data([{}]);
+       edgeStatG.enter()
           .append("g")
-            .attr("class", "cohSliceAxis")
+            .attr("class", "edgeStatSliceAxis")
             .attr("transform", "translate(" + freqSliceWidth + ",0)")
           .append("text")
             .attr("x", freqSliceHeight/2)
@@ -804,8 +781,8 @@ SPECTRA = (function() {
             .attr("dy", -0.5 + "em")
             .attr("transform", "rotate(90)")
             .attr("text-anchor", "middle")
-            .text("Coherence (a.u)");
-       cohG.call(cohAxis)
+            .text(edgeTypeName);
+       edgeStatG.call(edgeStatAxis)
 
        powerG = svgFreqSlice.selectAll("g.powerSliceAxis").data([{}]);
        powerG.enter()
@@ -817,7 +794,7 @@ SPECTRA = (function() {
             .attr("dy", -0.5 + "em")
             .attr("transform", "rotate(-90)")
             .attr("text-anchor", "middle")
-            .text("Power (a.u)");
+            .text("Power");
       powerG.call(powerAxis);
 
       zeroG = svgFreqSlice.selectAll("g.zeroLine").data([[[0, freqSliceWidth]]]);
@@ -861,18 +838,18 @@ SPECTRA = (function() {
           .duration(5)
           .ease("linear")
         .attr("d", powerLineFun);
-      cohLine = svgFreqSlice.selectAll("path.coh").data([coh.data[curTime_ind]]);
-      cohLine.enter()
+      edgeStatLine = svgFreqSlice.selectAll("path.edgeStat").data([edgeStat.data[curTime_ind]]);
+      edgeStatLine.enter()
         .append("path")
-          .attr("class", "coh")
+          .attr("class", "edgeStat")
           .attr("stroke", "blue")
           .attr("stroke-width", 2)
           .attr("fill", "none");
-      cohLine
+      edgeStatLine
         .transition()
           .duration(5)
           .ease("linear")
-        .attr("d", cohLineFun);
+        .attr("d", edgeStatLineFun);
       timeTitle = svgFreqSlice.selectAll("text.title").data([tAx[curTime_ind]]);
       timeTitle.enter()
         .append("text")
