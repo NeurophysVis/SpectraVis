@@ -1,7 +1,7 @@
 
 .timeAxis text, .freqAxis text,
-.powerAxis text, .cohAxis text,
-.powerSliceAxis text, .cohSliceAxis text,
+.powerAxis text, .edgeStatAxis text,
+.powerSliceAxis text, .edgeStatSliceAxis text,
 .freqSliceAxis text
 {
   font: 11px sans-serif;
@@ -9,17 +9,17 @@
   font-weight: 400;
 }
 .timeAxis line, .freqAxis line,
-.powerAxis line, .cohAxis line,
-.powerSliceAxis line, .cohSliceAxis line,
+.powerAxis line, .edgeStatAxis line,
+.powerSliceAxis line, .edgeStatSliceAxis line,
 .freqSliceAxis line,
-.powerSliceAxis path, .cohSliceAxis path,
+.powerSliceAxis path, .edgeStatSliceAxis path,
 .freqSliceAxis path {
   fill: none;
   stroke: #000;
   shape-rendering: crispEdges;
 }
 .timeAxis path, .freqAxis path,
-.powerAxis path, .cohAxis path {
+.powerAxis path, .edgeStatAxis path {
   display: none;
 }
 .edge {
