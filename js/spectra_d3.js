@@ -109,8 +109,8 @@ SPECTRA = (function() {
 
         params.channel = channelData;
         if (curCh1.length === 0 || curCh2.length === 0) {
-          curCh1 = params.channel[0].name;
-          curCh2 = params.channel[1].name;
+          curCh1 = params.channel[0].channelID;
+          curCh2 = params.channel[1].channelID;
         }
         loadEdges();
     });
@@ -125,27 +125,37 @@ SPECTRA = (function() {
   function loadSpectra() {
     var spectCh1_file = "spectrogram_" + curSubject + "_" + curCh1 + ".json",
         spectCh2_file = "spectrogram_" + curSubject + "_" + curCh2 + ".json",
-        coh_file = "coherogram_" + curSubject + "_" + curCh1 + "_" + curCh2 + ".json";
+        visInfo_file = "visInfo.json",
+        edgeTypes_file = "edgeTypes.json";
 
     // Load the rest of the files in parallel
     queue()
         .defer(d3.json, "DATA/" + spectCh1_file)
         .defer(d3.json, "DATA/" + spectCh2_file)
-        .defer(d3.json, "DATA/" + coh_file)
+        .defer(d3.json, "DATA/" + visInfo_file)
+        .defer(d3.json, "DATA/" + edgeTypes_file)
         .await(display);
   }
 
   // Draw
-  function display(isError, spect1, spect2, coh) {
+  function display(isError, spect1, spect2, visInfo, edgeInfo) {
 
     var timeScale, timeScaleLinear, freqScale, powerScale, cohScale,
         tAx, fAx, heatmapPowerColor, networkXScale, networkYScale, force, timeSlider,
         freqSlider, timeSliderText, freqSliderText, subjectDropdown, networkStatScale,
         edgeTypeDropdown, networkColorScale, timeSliderStep, timeMaxStep_ind,
-        networkXExtent, networkYExtent;
+        networkXExtent, networkYExtent, coh;
 
-    tAx = spect1.tax; // Time Axis
-    fAx = spect1.fax; // Frequency Axis
+    tAx = visInfo.tax; // Time Axis
+    fAx = visInfo.fax; // Frequency Axis
+    edgeInfo = d3.nest()
+      .key(function(d) {
+        return d.edgeTypeID;})
+      .entries(edgeInfo);
+    coh = params.edge.filter(function(e) {
+        return e.source === curCh1 && e.target === curCh2;
+    });
+    coh = coh[0];
 
     setupScales();
     setupSliders();
@@ -315,9 +325,9 @@ SPECTRA = (function() {
       // Replace source name by source object
       edge = params.edge.map(function(e) {
             var obj = copyObject(e);
-            obj.source = channel.filter(function(n) {return n.name === e.source;});
+            obj.source = channel.filter(function(n) {return n.channelID === e.source;});
             obj.source = obj.source[0];
-            obj.target = channel.filter(function(n) {return n.name === e.target;});
+            obj.target = channel.filter(function(n) {return n.channelID === e.target;});
             obj.target = obj.target[0];
             return obj;
       });
@@ -337,11 +347,11 @@ SPECTRA = (function() {
       brainImageGroup.enter()
             .append("g")
               .attr("id", "BRAIN_IMAGE");
-      brainImage  = brainImageGroup.selectAll("image").data([subjectObject], function(d) {return d.brainPath;});
+      brainImage  = brainImageGroup.selectAll("image").data([subjectObject], function(d) {return d.brainFilename;});
       brainImage.enter()
         .append("image");
       brainImage
-        .attr("xlink:href", function(d){return "DATA/brainImages/" + d.brainPath;})
+        .attr("xlink:href", function(d){return "DATA/brainImages/" + d.brainFilename;})
         .attr("width", networkWidth)
         .attr("height", networkHeight);
       brainImage.exit()
@@ -355,7 +365,7 @@ SPECTRA = (function() {
         .append("g")
           .attr("id", "NODES");
 
-      edgeLine = edgesGroup.selectAll(".edge").data(edge, function(e) {return e.source.name + "_" + e.target.name});
+      edgeLine = edgesGroup.selectAll(".edge").data(edge, function(e) {return e.source.channelID + "_" + e.target.channelID;});
       edgeLine.enter()
         .append("line")
           .attr("class", "edge")
@@ -370,7 +380,7 @@ SPECTRA = (function() {
         .on("mouseout", edgeMouseOut)
         .on("click", edgeMouseClick);
 
-      nodeG = nodesGroup.selectAll("g.gnode").data(channel, function(d) {return curSubject + "_" + d.name;});
+      nodeG = nodesGroup.selectAll("g.gnode").data(channel, function(d) {return curSubject + "_" + d.channelID;});
       nodeG.enter()
         .append("g")
         .attr("class", "gnode")
@@ -396,7 +406,7 @@ SPECTRA = (function() {
       nodeText.enter()
         .append('text')
           .attr("class", "nodeLabel")
-          .text(function(d) {return d.name;});
+          .text(function(d) {return d.channelID;});
       // For every iteration of force simulation "tick"
       force.on("tick", function() {
         edgeLine.attr("x1", function(d) {return (d.source.x);})
@@ -424,7 +434,7 @@ SPECTRA = (function() {
            });
          var curNodes = d3.selectAll("circle.node")
           .filter(function(n) {
-            return (n.name === e.source.name) || (n.name === e.target.name);
+            return (n.channelID === e.source.channelID) || (n.channelID === e.target.channelID);
           })
           .attr("r", NODE_RADIUS * 1.2)
        }
@@ -436,21 +446,21 @@ SPECTRA = (function() {
              .style("stroke", strokeStyle);
            d3.selectAll("circle.node")
             .filter(function(n) {
-              return (n.name === e.source.name) || (n.name === e.target.name);
+              return (n.channelID === e.source.channelID) || (n.channelID === e.target.channelID);
             })
               .attr("r", NODE_RADIUS)
           }
        }
        function edgeMouseClick(e) {
          var re = /\d+/;
-         curCh1 = re.exec(e.source.name)[0];
-         curCh2 = re.exec(e.target.name)[0];
+         curCh1 = re.exec(e.source.channelID)[0];
+         curCh2 = re.exec(e.target.channelID)[0];
          mouseFlag = true;
          loadSpectra();
        }
        function nodeMouseClick(e) {
          var curNode = d3.select(this),
-             node_ind = nodeClickNames.indexOf(e.name);
+             node_ind = nodeClickNames.indexOf(e.channelID);
 
          if (node_ind > -1) {
            // If clicked on node is in the array, remove
@@ -461,7 +471,7 @@ SPECTRA = (function() {
            // Else add to array
            curNode
              .attr("fill", "red");
-          nodeClickNames.push(e.name);
+          nodeClickNames.push(e.channelID);
          }
          if (nodeClickNames.length === 2) {
            nodeClickNames = nodeClickNames.sort();
@@ -471,7 +481,7 @@ SPECTRA = (function() {
            mouseFlag = true;
            d3.selectAll("circle.node")
              .filter(function(n) {
-               return (n.name === nodeClickNames[0]) || (n.name === nodeClickNames[1]);
+               return (n.channelID === nodeClickNames[0]) || (n.channelID === nodeClickNames[1]);
              })
              .attr("fill", "#ddd")
            nodeClickNames = [];
@@ -599,7 +609,7 @@ SPECTRA = (function() {
     }
     function drawTitles() {
       var titleCh1, titleCh2, titleCoh, titleSubjectEdge;
-      titleCh1 = svgCh1.selectAll("text.title").data([spect1["name"]]);
+      titleCh1 = svgCh1.selectAll("text.title").data([spect1["channelID"]]);
       titleCh1.exit().remove();
       titleCh1.enter()
         .append("text")
@@ -612,7 +622,7 @@ SPECTRA = (function() {
           .text(function(d) {
             return "Spectra: Ch" + d;
           });
-      titleCh2 = svgCh2.selectAll("text.title").data([spect2["name"]]);
+      titleCh2 = svgCh2.selectAll("text.title").data([spect2["channelID"]]);
       titleCh2.exit().remove();
       titleCh2.enter()
         .append("text")
