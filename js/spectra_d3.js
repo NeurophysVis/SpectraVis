@@ -60,14 +60,10 @@ SPECTRA = (function() {
       .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-  var networkWidth = document.getElementById("NetworkPanel").offsetWidth * (9/10) - margin.left - margin.right;
-      networkHeight =  document.getElementById("NetworkPanel").offsetWidth * (9/10) - margin.top - margin.bottom;
-  svgNetworkMap = d3.select("#NetworkPanel")
-      .append("svg")
-        .attr("width", networkWidth + margin.left + margin.right)
-        .attr("height", networkHeight + margin.top + margin.bottom)
-      .append("g")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+  var networkWidth,
+      networkHeight,
+      svgNetworkMap,
+      subjectObject;
 
   // Load data
   var curSubject,
@@ -96,12 +92,27 @@ SPECTRA = (function() {
 
       var edgeTypeDropdown = d3.select("#EdgeTypeDropdown");
       edgeTypeDropdown.selectAll("button").html(edgeType + "    <span class='caret'></span>");
+
       loadData();
   }
 
   // Load Files
   function loadData() {
     var channel_file = "channels_" + curSubject + ".json";
+
+    subjectObject = subjects.filter(function(d) {return d.subjectID === curSubject;})[0];
+    networkWidth = subjectObject.brainXpixels - margin.left - margin.right;
+    networkHeight =  subjectObject.brainYpixels - margin.top - margin.bottom;
+
+    svgNetworkMap = d3.select("#NetworkPanel").selectAll("svg").data([subjectObject], function(d) {return d.subjectID;});
+    svgNetworkMap.exit().remove();
+    svgNetworkMap = svgNetworkMap.enter()
+        .append("svg")
+          .attr("width", networkWidth + margin.left + margin.right)
+          .attr("height", networkHeight + margin.top + margin.bottom)
+        .append("g")
+          .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
 
     d3.json("DATA/" + channel_file, function(isError, channelData) {
 
@@ -193,7 +204,7 @@ SPECTRA = (function() {
     }
     function setupScales() {
       var powerMin, powerMax, powerExtent,
-          edgeStatMin, edgeStatMax, edgeStatExtent, subjectObject;
+          edgeStatMin, edgeStatMax, edgeStatExtent;
 
       heatmapPowerColor = d3.scale.linear()
         .domain(d3.range(0, 1, 1.0 / (NUM_COLORS - 1)))
@@ -225,7 +236,6 @@ SPECTRA = (function() {
 
       powerExtent = symmetricExtent(powerMin, powerMax);
 
-      subjectObject = subjects.filter(function(d) {return d.subjectID === curSubject;})[0];
       networkXExtent = subjectObject.brainXLim;
       networkYExtent = subjectObject.brainYLim;
 
@@ -290,7 +300,7 @@ SPECTRA = (function() {
     }
     function drawNetwork() {
       var nodesGroup, edgesGroup, nodeG, strokeStyle, nodeClickNames = [],
-          brainImage, subjectObject, channel, edge;
+          brainImage, channel, edge;
 
       // Replace x and y coordinates of nodes with properly scaled x,y
       channel = params.channel.map(function(n) {
@@ -320,7 +330,6 @@ SPECTRA = (function() {
         .size([networkWidth, networkHeight])
         .start();
 
-      subjectObject = subjects.filter(function(d) {return d.subjectID === curSubject;})[0];
       brainImageGroup = svgNetworkMap.selectAll("g#BRAIN_IMAGE").data([{}]);
       brainImageGroup.enter()
             .append("g")
@@ -393,11 +402,11 @@ SPECTRA = (function() {
             .attr("y2", function(d) {return(d.target.y);});
 
          // Translate the groups
-        nodeG.attr("transform", function(d) {
-          return 'translate(' + [d.x, d.y] + ')';
-        });
-     });
-       function edgeMouseOver(e) {
+         nodeG.attr("transform", function(d) {
+             return 'translate(' + [d.x, d.y] + ')';
+         });
+      });
+      function edgeMouseOver(e) {
 
          var curEdge = d3.select(this);
          strokeStyle = curEdge.style("stroke");
