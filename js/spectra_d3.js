@@ -101,8 +101,9 @@ SPECTRA = (function() {
     var channel_file = "channels_" + curSubject + ".json";
 
     subjectObject = subjects.filter(function(d) {return d.subjectID === curSubject;})[0];
-    networkWidth = subjectObject.brainXpixels - margin.left - margin.right;
-    networkHeight =  subjectObject.brainYpixels - margin.top - margin.bottom;
+    var aspectRatio = subjectObject.brainXpixels / subjectObject.brainYpixels;
+    networkWidth = document.getElementById("NetworkPanel").offsetWidth - margin.left - margin.right;
+
 
     svgNetworkMap = d3.select("#NetworkPanel").selectAll("svg").data([subjectObject], function(d) {return d.subjectID;});
     svgNetworkMap.exit().remove();
