@@ -103,6 +103,7 @@ SPECTRA = (function() {
     subjectObject = subjects.filter(function(d) {return d.subjectID === curSubject;})[0];
     var aspectRatio = subjectObject.brainXpixels / subjectObject.brainYpixels;
     networkWidth = document.getElementById("NetworkPanel").offsetWidth - margin.left - margin.right;
+    networkHeight =  document.getElementById("NetworkPanel").offsetWidth * (1/aspectRatio) - margin.top - margin.bottom;
 
 
     svgNetworkMap = d3.select("#NetworkPanel").selectAll("svg").data([subjectObject], function(d) {return d.subjectID;});
