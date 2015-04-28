@@ -13,7 +13,8 @@ SPECTRA = (function() {
       powerColors = colorbrewer.PiYG[NUM_COLORS],
       networkColors = colorbrewer.RdBu[NUM_COLORS],
       powerLineFun, edgeStatLineFun, freqSlicePowerScale, freqSliceNetworkStatScale,
-      spect1Line, spect2Line, edgeStatLine, subjects,
+      spect1Line, spect2Line, edgeStatLine, subjects, svgCh1, svgCh2, svgEdgeStat,
+      svgSpectraLegend, svgEdgeStatLegend,
       margin = {top: 40, right: 40, bottom: 40, left: 40},
       panelWidth = document.getElementById("Ch1Panel").offsetWidth - margin.left - margin.right,
       panelHeight = document.getElementById("Ch1Panel").offsetWidth*4/5 - margin.top - margin.bottom;
@@ -33,7 +34,7 @@ SPECTRA = (function() {
       .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-  svgCoh = d3.select("#EdgeStatPanel")
+  svgEdgeStat = d3.select("#EdgeStatPanel")
       .append("svg")
         .attr("width", panelWidth + margin.left + margin.right)
         .attr("height", panelHeight + margin.top + margin.bottom)
@@ -41,14 +42,20 @@ SPECTRA = (function() {
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
   var legendWidth = document.getElementById("legendKey").offsetWidth - margin.left - margin.right,
-      legendHeight = 180 - margin.top - margin.bottom;
+      legendHeight = 70 - margin.top - margin.bottom;
 
-  svgLegend = d3.select("#legendKey")
+  svgSpectraLegend = d3.selectAll("#legendKey").select("#spectraLegend")
       .append("svg")
         .attr("width", legendWidth + margin.left + margin.right)
         .attr("height", legendHeight + margin.top + margin.bottom)
       .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+svgEdgeStatLegend = d3.selectAll("#legendKey").select("#edgeStatLegend")
+    .append("svg")
+      .attr("width", legendWidth + margin.left + margin.right)
+      .attr("height", legendHeight + margin.top + margin.bottom)
+    .append("g")
+      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
   var freqSliceWidth = document.getElementById("freqSlice").offsetWidth - margin.left - margin.right;
       freqSliceHeight =  180 - margin.top - margin.bottom;
@@ -171,7 +178,7 @@ SPECTRA = (function() {
     drawNetwork();
     drawHeatmap(svgCh1, spect1, powerScale, heatmapPowerColor);
     drawHeatmap(svgCh2, spect2, powerScale, heatmapPowerColor);
-    drawHeatmap(svgCoh, edgeStat, edgeStatScale, edgeStatColor);
+    drawHeatmap(svgEdgeStat, edgeStat, edgeStatScale, edgeStatColor);
 
     drawTitles();
     drawLegends();
@@ -624,7 +631,7 @@ SPECTRA = (function() {
           .text(function(d) {
             return "Spectra: Ch" + d;
           });
-      titleCoh = svgCoh.selectAll("text.title").data([edgeStat]);
+      titleCoh = svgEdgeStat.selectAll("text.title").data([edgeStat]);
       titleCoh.exit().remove();
       titleCoh.enter()
         .append("text")
@@ -646,7 +653,7 @@ SPECTRA = (function() {
       colorInd = d3.range(0, 1, 1.0 / (NUM_COLORS - 1));
       colorInd.push(1);
 
-      chartKeyText = svgLegend.selectAll("g#ChartText").data([{}]);
+      chartKeyText = svgSpectraLegend.selectAll("g#ChartText").data([{}]);
       chartKeyText.enter()
         .append("text")
           .attr("id", "ChartText")
@@ -663,7 +670,7 @@ SPECTRA = (function() {
         .domain(colorInd)
         .rangeBands([0, 175]);
       // Power Legend
-      powerG = svgLegend.selectAll("g#powerLegend").data([{}]);
+      powerG = svgSpectraLegend.selectAll("g#powerLegend").data([{}]);
       powerG.enter()
         .append("g")
         .attr("id", "powerLegend")
@@ -693,17 +700,18 @@ SPECTRA = (function() {
           .attr("transform", "translate(0," + 9 + ")")
           .attr("class", "powerAxis")
           .append("text")
+            .attr("transform", "translate(" + legendScale.rangeBand()*NUM_COLORS/2 +"," + -10 + ")")
             .attr("x", 0)
             .attr("y", 0)
-            .attr("text-anchor", "end")
+            .attr("text-anchor", "middle")
             .text("Power");
       powerAxisG.call(powerAxis);
       // Coh Legend
-      edgeStatG = svgLegend.selectAll("g#edgeStatLegend").data([{}]);
+      edgeStatG = svgEdgeStatLegend.selectAll("g#edgeStatLegend").data([{}]);
       edgeStatG.enter()
         .append("g")
         .attr("id", "edgeStatLegend")
-        .attr("transform", "translate(" + 300 + ", 0)");
+        .attr("transform", "translate(60, 0)");
       edgeStatLegendRect = edgeStatG.selectAll("rect.edgeStat").data(colorInd);
       edgeStatLegendRect.enter()
         .append("rect")
@@ -729,9 +737,10 @@ SPECTRA = (function() {
           .attr("transform", "translate(0," + 9 + ")")
           .attr("class", "edgeStatAxis")
         .append("text")
+          .attr("transform", "translate(" + legendScale.rangeBand()*NUM_COLORS/2 +"," + -10 + ")")
           .attr("x", 0)
           .attr("y", 0)
-          .attr("text-anchor", "end")
+          .attr("text-anchor", "middle")
           .text(edgeTypeName);
       edgeStatAxisG.call(edgeStatAxis);
 
