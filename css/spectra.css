@@ -35,6 +35,7 @@ text.nodeLabel {
   text-anchor: middle;
   line-height: 100%;
   dominant-baseline: central;
+  cursor: pointer;
 }
 label {
   width: 49%;

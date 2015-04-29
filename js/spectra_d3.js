@@ -379,10 +379,11 @@ svgEdgeStatLegend = d3.selectAll("#legendKey").select("#edgeStatLegend")
       nodeG = nodesGroup.selectAll("g.gnode").data(channel, function(d) {return curSubject + "_" + d.channelID;});
       nodeG.enter()
         .append("g")
-        .attr("class", "gnode")
-        .attr("transform", function(d) {
-          return 'translate(' + [d.x, d.y] + ')';
-        });
+          .attr("class", "gnode")
+          .attr("transform", function(d) {
+              return 'translate(' + [d.x, d.y] + ')';
+            })
+          .on("click", nodeMouseClick);
       nodeG.exit().remove();
 
       nodeCircle = nodeG.selectAll("circle.node").data(function(d) {return [d];});
@@ -391,8 +392,7 @@ svgEdgeStatLegend = d3.selectAll("#legendKey").select("#edgeStatLegend")
           .attr("class", "node")
           .attr("r", NODE_RADIUS)
           .attr("fill", "#ddd")
-          .attr("opacity", 1)
-          .on("click", nodeMouseClick);
+          .attr("opacity", 1);
       nodeCircle
           .attr("fill", function(d){
             return networkColorScale(d.region);
@@ -460,13 +460,13 @@ svgEdgeStatLegend = d3.selectAll("#legendKey").select("#edgeStatLegend")
 
          if (node_ind > -1) {
            // If clicked on node is in the array, remove
-           curNode
-             .attr("fill", "#ddd");
+           curNode.selectAll("circle")
+             .attr("r", NODE_RADIUS);
            nodeClickNames.splice(node_ind, 1);
          } else {
            // Else add to array
-           curNode
-             .attr("fill", "red");
+           curNode.selectAll("circle")
+           .attr("r", 1.2 * NODE_RADIUS);
           nodeClickNames.push(e.channelID);
          }
          if (nodeClickNames.length === 2) {
@@ -480,6 +480,7 @@ svgEdgeStatLegend = d3.selectAll("#legendKey").select("#edgeStatLegend")
                return (n.channelID === nodeClickNames[0]) || (n.channelID === nodeClickNames[1]);
              })
              .attr("fill", "#ddd")
+             .attr("r", NODE_RADIUS);
            nodeClickNames = [];
            loadSpectra();
          }
