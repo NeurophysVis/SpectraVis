@@ -80,7 +80,8 @@ svgEdgeStatLegend = d3.selectAll("#legendKey").select("#edgeStatLegend")
       curTime_ind = 0
       mouseFlag = true,
       edgeType = "C2s_coh"
-      edgeArea = "All";
+      edgeArea = "All"
+      networkType = "Anatomical";
 
   var edgeTypeDropdown = d3.select("#EdgeTypeDropdown");
   edgeTypeDropdown.selectAll("button").html(edgeType + "    <span class='caret'></span>");
@@ -166,7 +167,7 @@ svgEdgeStatLegend = d3.selectAll("#legendKey").select("#edgeStatLegend")
         tAx, fAx, heatmapPowerColor, networkXScale, networkYScale, force, timeSlider,
         freqSlider, timeSliderText, freqSliderText, subjectDropdown, edgeStatScale,
         edgeTypeDropdown, networkColorScale, timeSliderStep, timeMaxStep_ind,
-        networkXExtent, networkYExtent, edgeStat, edgeTypeName;
+        networkXExtent, networkYExtent, edgeStat, edgeTypeName, channel;
 
     tAx = visInfo.tax; // Time Axis
     fAx = visInfo.fax; // Frequency Axis
@@ -190,6 +191,7 @@ svgEdgeStatLegend = d3.selectAll("#legendKey").select("#edgeStatLegend")
     subjectLoad();
     edgeTypeLoad();
     edgeAreaLoad();
+    networkTypeLoad();
     playButtonStart();
     resetButton();
 
@@ -314,13 +316,20 @@ svgEdgeStatLegend = d3.selectAll("#legendKey").select("#edgeStatLegend")
     }
     function drawNetwork() {
       var nodesGroup, edgesGroup, nodeG, strokeStyle, nodeClickNames = [],
-          brainImage, channel, edge;
+          brainImage, edge;
 
       // Replace x and y coordinates of nodes with properly scaled x,y
       channel = params.channel.map(function(n) {
         var obj = copyObject(n);
-        obj.x = networkXScale(n.x);
-        obj.y = networkYScale(n.y);
+        if (networkType === "Topological") {
+          obj.fixed = false;
+          obj.x = undefined;
+          obj.y = undefined;
+        }
+        else {
+          obj.x = networkXScale(n.x);
+          obj.y = networkYScale(n.y);
+          obj.fixed = true;}
         return obj;
       });
 
@@ -339,8 +348,10 @@ svgEdgeStatLegend = d3.selectAll("#legendKey").select("#edgeStatLegend")
       force = d3.layout.force()
         .nodes(channel)
         .links(edge)
-        .charge(-200)
-        .linkDistance(300)
+        .charge(-10)
+        .friction(.7)
+        .gravity(0.4)
+        .linkDistance(100)
         .size([networkWidth, networkHeight])
         .start();
 
@@ -357,6 +368,7 @@ svgEdgeStatLegend = d3.selectAll("#legendKey").select("#edgeStatLegend")
         .attr("height", networkHeight);
       brainImage.exit()
         .remove();
+      if (networkType === "Topological") {brainImage.remove();}
       edgesGroup = svgNetworkMap.selectAll("g#EDGES").data([{}]);
       edgesGroup.enter()
             .append("g")
@@ -419,6 +431,7 @@ svgEdgeStatLegend = d3.selectAll("#legendKey").select("#edgeStatLegend")
          nodeG.attr("transform", function(d) {
              return 'translate(' + [d.x, d.y] + ')';
          });
+         if (networkType != "Topological") {force.stop();}
       });
       function edgeMouseOver(e) {
 
@@ -939,7 +952,7 @@ svgEdgeStatLegend = d3.selectAll("#legendKey").select("#edgeStatLegend")
           edgeTypeDropdown.selectAll("button").html(this.id + "    <span class='caret'></span>");
           edgeType = this.id;
           loadEdges();
-          })
+        })
     }
     function edgeAreaLoad() {
       edgeAreaDropdown = d3.select("#EdgeAreaDropdown");
@@ -948,7 +961,19 @@ svgEdgeStatLegend = d3.selectAll("#legendKey").select("#edgeStatLegend")
           edgeAreaDropdown.selectAll("button").html(this.id + "    <span class='caret'></span>");
           edgeArea = this.id;
           drawNetwork();
-          })
+        })
+    }
+    function networkTypeLoad() {
+      networkTypeRadio = d3.select("#NetworkTypePanel");
+      networkTypeRadio.selectAll("input")
+        .on("click", function() {
+          var radioValue = this.value;
+          networkTypeRadio.selectAll("input")
+            .property("checked", false)
+          d3.select(this).property("checked", true);
+          networkType = radioValue;
+          drawNetwork();
+        })
     }
     function playButtonStart() {
       var playButton = d3.select("#playButton");
