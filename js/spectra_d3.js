@@ -350,7 +350,8 @@ svgEdgeStatLegend = d3.selectAll("#legendKey").select("#edgeStatLegend")
         .nodes(channel)
         .links(edge)
         .charge(-120)
-        .linkDistance(30)
+        .linkDistance(200)
+        .linkStrength(weights)
         .size([networkWidth, networkHeight])
         .start();
 
@@ -434,6 +435,13 @@ svgEdgeStatLegend = d3.selectAll("#legendKey").select("#edgeStatLegend")
       brainImage.exit()
         .remove();
       if (networkType === "Topological") {brainImage.remove();}
+      function weights(d) {
+        if (edgeType !="C2s_coh") {
+            return Math.abs(Math.abs(edgeStatScale(d.data[curTime_ind][curFreq_ind]) - 0.5) - 0.5);
+        } else {
+            return 1;
+        }
+      }
       function edgeMouseOver(e) {
 
          var curEdge = d3.select(this);
@@ -486,17 +494,17 @@ svgEdgeStatLegend = d3.selectAll("#legendKey").select("#edgeStatLegend")
            // Else add to array
            curNode.selectAll("circle")
            .attr("r", 1.2 * NODE_RADIUS);
-          nodeClickNames.push(e.channelID);
+          nodeClickNames.push(+e.channelID);
          }
          if (nodeClickNames.length === 2) {
-           nodeClickNames = nodeClickNames.sort();
+           nodeClickNames.sort(d3.ascending);
            var re = /\d+/;
            curCh1 = re.exec(nodeClickNames[0])[0];
            curCh2 = re.exec(nodeClickNames[1])[0];
            mouseFlag = true;
            d3.selectAll("circle.node")
              .filter(function(n) {
-               return (n.channelID === nodeClickNames[0]) || (n.channelID === nodeClickNames[1]);
+               return (n.channelID === nodeClickNames[0].toString()) || (n.channelID === nodeClickNames[1].toString());
              })
              .attr("fill", "#ddd")
              .attr("r", NODE_RADIUS);
