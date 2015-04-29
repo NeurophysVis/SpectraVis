@@ -79,7 +79,14 @@ svgEdgeStatLegend = d3.selectAll("#legendKey").select("#edgeStatLegend")
       curFreq_ind = 0,
       curTime_ind = 0
       mouseFlag = true,
-      edgeType = "C2s_coh";
+      edgeType = "C2s_coh"
+      edgeArea = "All";
+
+  var edgeTypeDropdown = d3.select("#EdgeTypeDropdown");
+  edgeTypeDropdown.selectAll("button").html(edgeType + "    <span class='caret'></span>");
+
+  var edgeAreaDropdown = d3.select("#EdgeAreaDropdown");
+  edgeAreaDropdown.selectAll("button").html(edgeArea + "    <span class='caret'></span>");
 
   d3.json("DATA/subjects.json", createSubjectMenu)
 
@@ -96,9 +103,6 @@ svgEdgeStatLegend = d3.selectAll("#legendKey").select("#edgeStatLegend")
           .html(function(d) {return "<a role='menuitem' tabindex='-1' href='#'>" + d.subjectID + "</a>";});
       curSubject = subjects[0].subjectID;
       subjectDropdown.selectAll("button").html(curSubject + "    <span class='caret'></span>");
-
-      var edgeTypeDropdown = d3.select("#EdgeTypeDropdown");
-      edgeTypeDropdown.selectAll("button").html(edgeType + "    <span class='caret'></span>");
 
       loadData();
   }
@@ -185,6 +189,7 @@ svgEdgeStatLegend = d3.selectAll("#legendKey").select("#edgeStatLegend")
     drawFreqSlice();
     subjectLoad();
     edgeTypeLoad();
+    edgeAreaLoad();
     playButtonStart();
     resetButton();
 
@@ -494,16 +499,32 @@ svgEdgeStatLegend = d3.selectAll("#legendKey").select("#edgeStatLegend")
           return newObj;
       }
       function edgeFilter(e) {
-          if (edgeType === "C2s_coh") {
-                if (e.data[curTime_ind][curFreq_ind] === 0) {
-                  return false;
-                } else {
-                  return true;
-                }
-          } else {
-            return true;
+          var isEdge;
+          switch (edgeType) {
+            case "C2s_coh":
+              if (e.data[curTime_ind][curFreq_ind] === 0) {
+                isEdge = false;
+              } else {isEdge = true;}
+              break;
+            default:
+              isEdge = true;
+          }
+          switch (edgeArea) {
+            case "Within":
+              if (e.source.region != e.target.region) {
+                isEdge = false;
+              } else {isEdge = isEdge & true;}
+              break;
+            case "Between":
+              if (e.source.region === e.target.region) {
+                isEdge = false;
+              } else {isEdge = isEdge & true;}
+              break;
+            default:
+              isEdge = isEdge & true;
           }
 
+          return isEdge;
       }
     };
     function drawHeatmap(curPlot, curData, intensityScale, colorScale) {
@@ -918,6 +939,15 @@ svgEdgeStatLegend = d3.selectAll("#legendKey").select("#edgeStatLegend")
           edgeTypeDropdown.selectAll("button").html(this.id + "    <span class='caret'></span>");
           edgeType = this.id;
           loadEdges();
+          })
+    }
+    function edgeAreaLoad() {
+      edgeAreaDropdown = d3.select("#EdgeAreaDropdown");
+      edgeAreaDropdown.selectAll("li")
+        .on("click", function() {
+          edgeAreaDropdown.selectAll("button").html(this.id + "    <span class='caret'></span>");
+          edgeArea = this.id;
+          drawNetwork();
           })
     }
     function playButtonStart() {
