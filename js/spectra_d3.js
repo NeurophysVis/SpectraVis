@@ -747,7 +747,7 @@ svgEdgeStatLegend = d3.selectAll("#legendKey").select("#edgeStatLegend")
     }
     function drawFreqSlice() {
       var freqAxis, freqG, freqSlicePowerAxis, powerG,
-          edgeStatAxis, edgeStatG, freqScale, zeroG;
+          edgeStatAxis, edgeStatG, freqScale, zeroG, edgeStatText;
 
       freqScale = d3.scale.ordinal()
           .domain(fAx)
@@ -795,13 +795,16 @@ svgEdgeStatLegend = d3.selectAll("#legendKey").select("#edgeStatLegend")
        edgeStatG.enter()
           .append("g")
             .attr("class", "edgeStatSliceAxis")
-            .attr("transform", "translate(" + freqSliceWidth + ",0)")
+            .attr("transform", "translate(" + freqSliceWidth + ",0)");
+       edgeStatText = edgeStatG.selectAll("text").data([{}]);
+       edgeStatText.enter()
           .append("text")
             .attr("x", freqSliceHeight/2)
             .attr("y", 0)
-            .attr("dy", -0.5 + "em")
+            .attr("dy", -1.5 + "em")
             .attr("transform", "rotate(90)")
-            .attr("text-anchor", "middle")
+            .attr("text-anchor", "middle");
+       edgeStatText
             .text(edgeTypeName);
        edgeStatG.call(edgeStatAxis)
 
@@ -819,13 +822,13 @@ svgEdgeStatLegend = d3.selectAll("#legendKey").select("#edgeStatLegend")
       powerG.call(powerAxis);
 
       zeroG = svgFreqSlice.selectAll("g.zeroLine").data([[[0, freqSliceWidth]]]);
-        zeroG.enter()
+      zeroG.enter()
           .append("g")
           .attr("class", "zeroLine");
-        zeroLine = zeroG.selectAll("path").data(function(d) {return d;});
-        zeroLine.enter()
+      zeroLine = zeroG.selectAll("path").data(function(d) {return d;});
+      zeroLine.enter()
           .append("path");
-        zeroLine
+      zeroLine
           .attr("d", d3.svg.line()
                 .x(function(d) { return d; })
                 .y(freqSlicePowerScale(0))
