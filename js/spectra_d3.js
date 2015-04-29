@@ -319,20 +319,21 @@ svgEdgeStatLegend = d3.selectAll("#legendKey").select("#edgeStatLegend")
           brainImage, edge;
 
       // Replace x and y coordinates of nodes with properly scaled x,y
-      channel = params.channel.map(function(n) {
-        var obj = copyObject(n);
-        if (networkType === "Topological") {
-          obj.fixed = false;
-          obj.x = undefined;
-          obj.y = undefined;
-        }
-        else {
-          obj.x = networkXScale(n.x);
-          obj.y = networkYScale(n.y);
-          obj.fixed = true;}
-        return obj;
-      });
 
+      if (networkType != "Topological" || typeof(channel) === "undefined") {
+        channel = params.channel.map(function(n) {
+          var obj = copyObject(n);
+            obj.x = networkXScale(n.x);
+            obj.y = networkYScale(n.y);
+            if (networkType != "Topological") {obj.fixed = true;} else {obj.fixed = false;}
+          return obj;
+        });
+      }
+      else {
+        channel.forEach(function(n) {
+          n.fixed = false;
+        });
+      }
       // Replace source name by source object
       edge = params.edge.map(function(e) {
             var obj = copyObject(e);
@@ -348,10 +349,8 @@ svgEdgeStatLegend = d3.selectAll("#legendKey").select("#edgeStatLegend")
       force = d3.layout.force()
         .nodes(channel)
         .links(edge)
-        .charge(-10)
-        .friction(.7)
-        .gravity(0.4)
-        .linkDistance(100)
+        .charge(-120)
+        .linkDistance(30)
         .size([networkWidth, networkHeight])
         .start();
 
@@ -359,16 +358,6 @@ svgEdgeStatLegend = d3.selectAll("#legendKey").select("#edgeStatLegend")
       brainImageGroup.enter()
             .append("g")
               .attr("id", "BRAIN_IMAGE");
-      brainImage  = brainImageGroup.selectAll("image").data([subjectObject], function(d) {return d.brainFilename;});
-      brainImage.enter()
-        .append("image");
-      brainImage
-        .attr("xlink:href", function(d){return "DATA/brainImages/" + d.brainFilename;})
-        .attr("width", networkWidth)
-        .attr("height", networkHeight);
-      brainImage.exit()
-        .remove();
-      if (networkType === "Topological") {brainImage.remove();}
       edgesGroup = svgNetworkMap.selectAll("g#EDGES").data([{}]);
       edgesGroup.enter()
             .append("g")
@@ -433,6 +422,18 @@ svgEdgeStatLegend = d3.selectAll("#legendKey").select("#edgeStatLegend")
          });
          if (networkType != "Topological") {force.stop();}
       });
+
+
+      brainImage = brainImageGroup.selectAll("image").data([subjectObject], function(d) {return d.brainFilename;});
+      brainImage.enter()
+        .append("image")
+      brainImage
+        .attr("xlink:href", function(d) {return "DATA/brainImages/" + d.brainFilename;})
+        .attr("width", networkWidth)
+        .attr("height", networkHeight);
+      brainImage.exit()
+        .remove();
+      if (networkType === "Topological") {brainImage.remove();}
       function edgeMouseOver(e) {
 
          var curEdge = d3.select(this);
@@ -925,6 +926,7 @@ svgEdgeStatLegend = d3.selectAll("#legendKey").select("#edgeStatLegend")
       if (mouseFlag) {
           curFreq_ind = freqInd;
           curTime_ind = timeInd;
+          force.stop();
           drawNetwork();
           drawFreqSlice();
           updateTimeSlider.call({value: tAx[curTime_ind]});
@@ -951,6 +953,7 @@ svgEdgeStatLegend = d3.selectAll("#legendKey").select("#edgeStatLegend")
         .on("click", function() {
           edgeTypeDropdown.selectAll("button").html(this.id + "    <span class='caret'></span>");
           edgeType = this.id;
+          force.stop();
           loadEdges();
         })
     }
@@ -960,6 +963,7 @@ svgEdgeStatLegend = d3.selectAll("#legendKey").select("#edgeStatLegend")
         .on("click", function() {
           edgeAreaDropdown.selectAll("button").html(this.id + "    <span class='caret'></span>");
           edgeArea = this.id;
+          force.stop();
           drawNetwork();
         })
     }
@@ -972,6 +976,7 @@ svgEdgeStatLegend = d3.selectAll("#legendKey").select("#edgeStatLegend")
             .property("checked", false)
           d3.select(this).property("checked", true);
           networkType = radioValue;
+          force.stop();
           drawNetwork();
         })
     }
@@ -998,12 +1003,14 @@ svgEdgeStatLegend = d3.selectAll("#legendKey").select("#edgeStatLegend")
       resetButton.on("click", function() {
           curTime_ind = 0;
           stopAnimation = true;
+          force.stop();
           updateTimeSlider.call({value: tAx[curTime_ind]});
       });
 
     }
     function updateTimeSlider(){
       curTime_ind = tAx.indexOf(+this.value);
+      force.stop();
       drawNetwork();
       drawFreqSlice();
       timeSlider.property("value", tAx[curTime_ind]);
@@ -1011,6 +1018,7 @@ svgEdgeStatLegend = d3.selectAll("#legendKey").select("#edgeStatLegend")
     }
     function updateFreqSlider(){
       curFreq_ind = fAx.indexOf(+this.value);
+      force.stop();
       drawNetwork();
       freqSlider.property("value", fAx[curFreq_ind]);
       freqSliderText.text(fAx[curFreq_ind] + " Hz");
