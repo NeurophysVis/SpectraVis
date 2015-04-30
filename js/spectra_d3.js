@@ -368,10 +368,7 @@ SPECTRA = (function() {
       force = d3.layout.force()
         .nodes(channel)
         .links(edge)
-        .charge(-200)
-        .linkDistance(200)
-        .linkStrength(weights)
-        .gravity(.2)
+        .linkDistance(weights)
         .size([networkWidth, networkHeight])
         .start();
 
@@ -462,8 +459,11 @@ SPECTRA = (function() {
         .remove();
       if (networkType === 'Topological') {brainImage.remove();};
 
-      function weights(d) {
-        return 2 * Math.abs(Math.abs(edgeStatScale(d.data[curTimeInd][curFreqInd]) - 0.5) - 0.5) + .01;
+      function weights(e) {
+        var minDistance = 50;
+        var distanceRange = 100;
+        var initialScaling = (2 * Math.abs(Math.abs(edgeStatScale(e.data[curTimeInd][curFreqInd]) - 0.5) - 0.5) + .01);
+        return minDistance + (distanceRange * initialScaling);
       }
 
       function edgeMouseOver(e) {
@@ -925,9 +925,9 @@ SPECTRA = (function() {
           .append('path');
       zeroLine
           .attr('d', d3.svg.line()
-                .x(function(d) { return d; })
-                .y(freqSlicePowerScale(0))
-                .interpolate('linear'))
+            .x(function(d) { return d; })
+            .y(freqSlicePowerScale(0))
+            .interpolate('linear'))
           .attr('stroke', 'black')
           .attr('stroke-width', 2)
           .attr('fill', 'none')
