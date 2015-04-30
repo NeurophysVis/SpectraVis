@@ -368,6 +368,7 @@ SPECTRA = (function() {
       force = d3.layout.force()
         .nodes(channel)
         .links(edge)
+        .charge(-500)
         .linkDistance(weights)
         .size([networkWidth, networkHeight])
         .start();
