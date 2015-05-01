@@ -2,7 +2,7 @@
 .timeAxis text, .freqAxis text,
 .powerAxis text, .edgeStatAxis text,
 .powerSliceAxis text, .edgeStatSliceAxis text,
-.freqSliceAxis text
+.timeSliceAxis text
 {
   font: 11px sans-serif;
   color: #777;
@@ -11,9 +11,9 @@
 .timeAxis line, .freqAxis line,
 .powerAxis line, .edgeStatAxis line,
 .powerSliceAxis line, .edgeStatSliceAxis line,
-.freqSliceAxis line,
+.timeSliceAxis line,
 .powerSliceAxis path, .edgeStatSliceAxis path,
-.freqSliceAxis path {
+.timeSliceAxis path {
   fill: none;
   stroke: #000;
   shape-rendering: crispEdges;
