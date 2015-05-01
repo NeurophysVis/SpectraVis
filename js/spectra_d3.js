@@ -98,7 +98,7 @@ SPECTRA = (function() {
   var mouseFlag = true;
   var edgeType = 'C2s_coh';
   var edgeArea = 'All';
-  var networkType = 'Anatomical';
+  var networkView = 'Anatomical';
 
   var edgeTypeDropdown = d3.select('#EdgeTypeDropdown');
   edgeTypeDropdown.selectAll('button')
@@ -221,7 +221,7 @@ SPECTRA = (function() {
     subjectLoad();
     edgeTypeLoad();
     edgeAreaLoad();
-    networkTypeLoad();
+    networkViewLoad();
     playButtonStart();
     resetButton();
 
@@ -358,12 +358,12 @@ SPECTRA = (function() {
 
       // Replace x and y coordinates of nodes with properly scaled x,y
 
-      if (networkType != 'Topological' || typeof channel === 'undefined') {
+      if (networkView != 'Topological' || typeof channel === 'undefined') {
         channel = params.channel.map(function(n) {
           var obj = copyObject(n);
           obj.x = networkXScale(n.x);
           obj.y = networkYScale(n.y);
-          if (networkType != 'Topological') {obj.fixed = true;
+          if (networkView != 'Topological') {obj.fixed = true;
           } else {obj.fixed = false;}
 
           return obj;
@@ -468,7 +468,7 @@ SPECTRA = (function() {
           return 'translate(' + [d.x, d.y] + ')';
         });
 
-        if (networkType != 'Topological') {force.stop();}
+        if (networkView != 'Topological') {force.stop();}
       });
 
       brainImage = brainImageGroup.selectAll('image').data([subjectObject], function(d) {return d.brainFilename;});
@@ -481,7 +481,7 @@ SPECTRA = (function() {
         .attr('height', networkHeight);
       brainImage.exit()
         .remove();
-      if (networkType === 'Topological') {brainImage.remove();};
+      if (networkView === 'Topological') {brainImage.remove();};
 
       function weights(e) {
         var minDistance = 50;
@@ -1065,15 +1065,15 @@ SPECTRA = (function() {
         })
     }
 
-    function networkTypeLoad() {
-      networkTypeRadio = d3.select('#NetworkTypePanel');
-      networkTypeRadio.selectAll('input')
+    function networkViewLoad() {
+      networkViewRadio = d3.select('#NetworkViewPanel');
+      networkViewRadio.selectAll('input')
         .on('click', function() {
           var radioValue = this.value;
-          networkTypeRadio.selectAll('input')
+          networkViewRadio.selectAll('input')
             .property('checked', false)
           d3.select(this).property('checked', true);
-          networkType = radioValue;
+          networkView = radioValue;
           force.stop();
           drawNetwork();
         })
