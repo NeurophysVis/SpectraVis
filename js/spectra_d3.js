@@ -848,7 +848,8 @@ SPECTRA = (function() {
           return formatter(edgeStatScale.invert(+d));
         })
         .tickSize(0, 0, 0);
-      edgeStatAxisG = edgeStatG.selectAll('g.edgeStatAxis').data([{}]);
+      edgeStatAxisG = edgeStatG.selectAll('g.edgeStatAxis').data([edgeTypeName], function(d) {return [d];});
+
       edgeStatAxisG.enter()
         .append('g')
           .attr('transform', 'translate(0,' + 9 + ')')
@@ -859,6 +860,8 @@ SPECTRA = (function() {
           .attr('y', 0)
           .attr('text-anchor', 'middle')
           .text(edgeTypeName);
+      edgeStatAxisG.exit()
+        .remove();
       edgeStatAxisG.call(edgeStatAxis);
     }
 
@@ -1046,6 +1049,7 @@ SPECTRA = (function() {
           edgeTypeDropdown.selectAll('button').html(this.id + '    <span class="caret"></span>');
           edgeType = this.id;
           force.stop();
+
           loadEdges();
         })
     }
