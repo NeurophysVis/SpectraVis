@@ -58,3 +58,19 @@ output {
 .bottom-buffer {
   margin-bottom: 10px;
 }
+#help-button {
+    background: white;
+}
+#helpToolTip {
+  position: absolute;
+  padding: 20px;
+  background: white;
+  font-size: 13px;
+  width: 300px;
+  border-width: 2px;
+  border-style: solid;
+  border-color: #777;
+}
+#TitlePanel h1 {
+  display: inline-block;
+}

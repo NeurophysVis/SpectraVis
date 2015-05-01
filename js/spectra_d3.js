@@ -60,6 +60,29 @@ SPECTRA = (function() {
           .attr('height', freqSliceHeight + margin.top + margin.bottom)
         .append('g')
           .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+  var toolTip = d3.select('body')
+         .append('div')
+           .attr('id', 'helpToolTip')
+           .style('opacity', 1e-6);
+
+  d3.select('span.glyphicon-question-sign')
+    .on('mouseover', function() {
+      toolTip
+        .style('opacity', 0.9)
+        .style('left', d3.event.pageX + 30 + 'px')
+        .style('top', d3.event.pageY + 'px')
+        .html(function() {
+          return '<p>' +
+                 '<strong>Click</strong> on any two nodes or the edge between them to load the spectra and coherences between those two nodes. <br> <br>' +
+                 '<strong>Mouse over</strong> the spectra or cohereograms to see the network at that time and frequency<br> <br>' +
+                 '<strong>Click on</strong> the spectra or cohereograms to freeze the network at a particular time and frequency value' +
+                 '</p>'
+          ;});
+    })
+    .on('mouseout', function() {
+      toolTip
+        .style('opacity', 1e-6);
+    })
 
   var networkWidth;
   var networkHeight;

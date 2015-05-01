@@ -28,7 +28,12 @@
   <script src="d3/d3.js"></script>
   <div class="container">
     <!-- Title Panel -->
-    <div class="row" id="TitlePanel"><h1>SpectraVis</h1></div>
+    <div class="row" id="TitlePanel">
+       <h1>SpectraVis</h1>
+        <button type="button" class="btn btn-lg bottom-buffer" id="help-button" aria-label="Help">          
+          <span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
+        </button>
+    </div>
     <div class="row top-buffer">
       <!-- Brain Panel -->
       <div class="col-md-9 text-center" id="NetworkPanel"></div>
@@ -102,13 +107,7 @@
           Reset
         </button>
       </div>
-      <div id="Instructions" class="top-buffer">
-        <p>
-          <strong>Click</strong> on any two nodes or the edge between them to load the spectra and coherences between those two nodes. <br> <br>
-          <strong>Mouse over</strong> the spectra or cohereograms to see the network at that time and frequency<br> <br>
-          <strong>Click on</strong> the spectra or cohereograms to freeze the network at a particular time and frequency value<br> <br>
-        </p></div>
-      </div>
+    </div>
     </div>
     <!-- Heatmap Panel -->
     <div class="row" id="heatmapRow">
