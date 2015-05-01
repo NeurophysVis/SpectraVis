@@ -96,13 +96,13 @@ SPECTRA = (function() {
   var curFreqInd = 0;
   var curTimeInd = 0;
   var mouseFlag = true;
-  var edgeType = 'C2s_coh';
+  var edgeStatType = 'C2s_coh';
   var edgeArea = 'All';
   var networkView = 'Anatomical';
 
-  var edgeTypeDropdown = d3.select('#EdgeTypeDropdown');
-  edgeTypeDropdown.selectAll('button')
-    .html(edgeType + '    <span class="caret"></span>');
+  var edgeStatTypeDropdown = d3.select('#EdgeStatTypeDropdown');
+  edgeStatTypeDropdown.selectAll('button')
+    .html(edgeStatType + '    <span class="caret"></span>');
 
   var edgeAreaDropdown = d3.select('#EdgeAreaDropdown');
   edgeAreaDropdown.selectAll('button')
@@ -163,7 +163,7 @@ SPECTRA = (function() {
   }
 
   function loadEdges() {
-    var edgeFile = 'edges_' + curSubject + '_' + edgeType + '.json';
+    var edgeFile = 'edges_' + curSubject + '_' + edgeStatType + '.json';
     d3.json('DATA/' + edgeFile, function(isError, edgeData) {
       params.edge = edgeData;
       loadSpectra();
@@ -191,8 +191,8 @@ SPECTRA = (function() {
     var timeScale, timeScaleLinear, freqScale, powerScale, tAx, fAx,
         heatmapPowerColor, networkXScale, networkYScale, force, timeSlider,
         freqSlider, timeSliderText, freqSliderText, subjectDropdown, edgeStatScale,
-        edgeTypeDropdown, networkColorScale, timeSliderStep, timeMaxStepInd,
-        networkXExtent, networkYExtent, edgeStat, edgeTypeName, channel, powerLineFun,
+        edgeStatTypeDropdown, networkColorScale, timeSliderStep, timeMaxStepInd,
+        networkXExtent, networkYExtent, edgeStat, edgeStatTypeName, channel, powerLineFun,
         edgeStatLineFun, timeSlicePowerScale, timeSliceNetworkStatScale, spect1Line,
         spect2Line, edgeStatLine, heatmapPowerColor, edgeStatColor;
 
@@ -203,8 +203,8 @@ SPECTRA = (function() {
     });
 
     edgeStat = edgeStat[0];
-    edgeTypeName = edgeInfo
-      .filter(function(e) {return e.edgeTypeID === edgeType;})[0]
+    edgeStatTypeName = edgeInfo
+      .filter(function(e) {return e.edgeTypeID === edgeStatType;})[0]
       .edgeTypeName;
 
     setupScales();
@@ -219,7 +219,7 @@ SPECTRA = (function() {
     drawLegends();
     drawTimeSlice();
     subjectLoad();
-    edgeTypeLoad();
+    edgeStatTypeLoad();
     edgeAreaLoad();
     networkViewLoad();
     playButtonStart();
@@ -578,7 +578,7 @@ SPECTRA = (function() {
 
       function edgeFilter(e) {
         var isEdge;
-        switch (edgeType) {
+        switch (edgeStatType) {
           case 'C2s_coh':
             if (e.data[curTimeInd][curFreqInd] === 0) {
               isEdge = false;
@@ -754,7 +754,7 @@ SPECTRA = (function() {
           .attr('class', 'title');
       titleCoh
           .text(function(d) {
-            return edgeTypeName + ': Ch' + d.source + '-Ch' + d.target;
+            return edgeStatTypeName + ': Ch' + d.source + '-Ch' + d.target;
           });
     }
 
@@ -848,7 +848,7 @@ SPECTRA = (function() {
           return formatter(edgeStatScale.invert(+d));
         })
         .tickSize(0, 0, 0);
-      edgeStatAxisG = edgeStatG.selectAll('g.edgeStatAxis').data([edgeTypeName], function(d) {return [d];});
+      edgeStatAxisG = edgeStatG.selectAll('g.edgeStatAxis').data([edgeStatTypeName], function(d) {return [d];});
 
       edgeStatAxisG.enter()
         .append('g')
@@ -859,7 +859,7 @@ SPECTRA = (function() {
           .attr('x', 0)
           .attr('y', 0)
           .attr('text-anchor', 'middle')
-          .text(edgeTypeName);
+          .text(edgeStatTypeName);
       edgeStatAxisG.exit()
         .remove();
       edgeStatAxisG.call(edgeStatAxis);
@@ -927,7 +927,7 @@ SPECTRA = (function() {
           .attr('transform', 'rotate(90)')
           .attr('text-anchor', 'middle');
       edgeStatText
-        .text(edgeTypeName);
+        .text(edgeStatTypeName);
       edgeStatG.call(edgeStatAxis)
 
       powerG = svgTimeSlice.selectAll('g.powerSliceAxis').data([{}]);
@@ -1042,12 +1042,12 @@ SPECTRA = (function() {
         })
     }
 
-    function edgeTypeLoad() {
-      edgeTypeDropdown = d3.select('#EdgeTypeDropdown');
-      edgeTypeDropdown.selectAll('li')
+    function edgeStatTypeLoad() {
+      edgeStatTypeDropdown = d3.select('#EdgeStatTypeDropdown');
+      edgeStatTypeDropdown.selectAll('li')
         .on('click', function() {
-          edgeTypeDropdown.selectAll('button').html(this.id + '    <span class="caret"></span>');
-          edgeType = this.id;
+          edgeStatTypeDropdown.selectAll('button').html(this.id + '    <span class="caret"></span>');
+          edgeStatType = this.id;
           force.stop();
 
           loadEdges();
