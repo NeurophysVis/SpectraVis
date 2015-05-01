@@ -1108,7 +1108,6 @@ SPECTRA = (function() {
       curTimeInd = tAx.indexOf(+this.value);
       force.stop();
       drawNetwork();
-      drawTimeSlice();
       timeSlider.property('value', tAx[curTimeInd]);
       timeSliderText.text(tAx[curTimeInd] + ' ms');
     }
@@ -1117,6 +1116,7 @@ SPECTRA = (function() {
       curFreqInd = fAx.indexOf(+this.value);
       force.stop();
       drawNetwork();
+      drawTimeSlice();
       freqSlider.property('value', fAx[curFreqInd]);
       freqSliderText.text(fAx[curFreqInd] + ' Hz');
     }
