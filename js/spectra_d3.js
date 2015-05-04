@@ -36,26 +36,42 @@ SPECTRA = (function() {
           .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
   var legendWidth = document.getElementById('legendKey').offsetWidth - margin.left - margin.right;
-  var legendHeight = 100 - margin.top - margin.bottom;
+  var colorbarlegendHeight = 60 - margin.top - margin.bottom;
+  var anatomicallegendHeight = 100 - margin.top - margin.bottom;
 
   var svgSpectraLegend = d3.selectAll('#legendKey').select('#spectraLegend')
         .append('svg')
           .attr('width', legendWidth + margin.left + margin.right)
-          .attr('height', legendHeight + margin.top + margin.bottom)
+          .attr('height', colorbarlegendHeight + margin.top + margin.bottom)
         .append('g')
           .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+  svgSpectraLegend.append('text')
+        .attr('transform', 'translate(-5, -16)')
+        .attr('font-size', 12)
+        .attr('font-weight', 700)
+        .text('Spectra');
   var svgEdgeStatLegend = d3.selectAll('#legendKey').select('#edgeStatLegend')
         .append('svg')
           .attr('width', legendWidth + margin.left + margin.right)
-          .attr('height', legendHeight + margin.top + margin.bottom)
+          .attr('height', colorbarlegendHeight + margin.top + margin.bottom)
         .append('g')
           .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+  svgEdgeStatLegend.append('text')
+        .attr('transform', 'translate(-5, -16)')
+        .attr('font-size', 12)
+        .attr('font-weight', 700)
+        .text('Edge Statistic');
   var svgAnatomicalLegend = d3.selectAll('#legendKey').select('#anatomicalLegend')
         .append('svg')
           .attr('width', legendWidth + margin.left + margin.right)
-          .attr('height', legendHeight + margin.top + margin.bottom)
+          .attr('height', anatomicallegendHeight + margin.top + margin.bottom)
         .append('g')
           .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+  svgAnatomicalLegend.append('text')
+        .attr('transform', 'translate(-5, -16)')
+        .attr('font-size', 12)
+        .attr('font-weight', 700)
+        .text('Brain Areas');
 
   var timeSliceWidth = document.getElementById('freqSlice').offsetWidth - margin.left - margin.right;
   var timeSliceHeight =  180 - margin.top - margin.bottom;
@@ -126,7 +142,7 @@ SPECTRA = (function() {
         .attr('id', function(d) {return d.subjectID;})
         .attr('role', 'presentation')
         .html(function(d) {
-          return '<a role="menuitem" tabindex="-1" href="#">' + d.subjectID + '</a>';
+          return '<a role="menuitem" tabindex="-1">' + d.subjectID + '</a>';
         });
 
     curSubject = subjects[0].subjectID;
