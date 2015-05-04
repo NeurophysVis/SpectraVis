@@ -36,7 +36,7 @@ SPECTRA = (function() {
           .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
   var legendWidth = document.getElementById('legendKey').offsetWidth - margin.left - margin.right;
-  var legendHeight = 70 - margin.top - margin.bottom;
+  var legendHeight = 100 - margin.top - margin.bottom;
 
   var svgSpectraLegend = d3.selectAll('#legendKey').select('#spectraLegend')
         .append('svg')
@@ -45,6 +45,12 @@ SPECTRA = (function() {
         .append('g')
           .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
   var svgEdgeStatLegend = d3.selectAll('#legendKey').select('#edgeStatLegend')
+        .append('svg')
+          .attr('width', legendWidth + margin.left + margin.right)
+          .attr('height', legendHeight + margin.top + margin.bottom)
+        .append('g')
+          .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+  var svgAnatomicalLegend = d3.selectAll('#legendKey').select('#anatomicalLegend')
         .append('svg')
           .attr('width', legendWidth + margin.left + margin.right)
           .attr('height', legendHeight + margin.top + margin.bottom)
@@ -77,7 +83,7 @@ SPECTRA = (function() {
                  '<strong>Mouse over</strong> the spectra or cohereograms to see the network at that time and frequency<br> <br>' +
                  '<strong>Click on</strong> the spectra or cohereograms to freeze the network at a particular time and frequency value' +
                  '</p>'
-          ;});
+        ;});
     })
     .on('mouseout', function() {
       toolTip
@@ -192,7 +198,7 @@ SPECTRA = (function() {
         heatmapPowerColor, networkXScale, networkYScale, force, timeSlider,
         freqSlider, timeSliderText, freqSliderText, subjectDropdown, edgeStatScale,
         edgeStatTypeDropdown, networkColorScale, timeSliderStep, timeMaxStepInd,
-        networkXExtent, networkYExtent, edgeStat, edgeStatTypeName, channel, powerLineFun,
+        networkXExtent, networkYExtent, edgeStat, edgeStatTypeName, edgeStatTypeUnits, channel, powerLineFun,
         edgeStatLineFun, timeSlicePowerScale, timeSliceNetworkStatScale, spect1Line,
         spect2Line, edgeStatLine, heatmapPowerColor, edgeStatColor;
 
@@ -206,6 +212,9 @@ SPECTRA = (function() {
     edgeStatTypeName = edgeInfo
       .filter(function(e) {return e.edgeTypeID === edgeStatType;})[0]
       .edgeTypeName;
+    edgeStatTypeUnits = edgeInfo
+      .filter(function(e) {return e.edgeTypeID === edgeStatType;})[0]
+      .units;
 
     setupScales();
     setupSliders();
@@ -760,24 +769,11 @@ SPECTRA = (function() {
 
     function drawLegends() {
       var powerG, powerLegendRect, legendScale, colorInd, powerAxisG, powerAxis, formatter,
-          edgeStatG, edgeStatLegendRect, edgeStatAxisG, edgeStatAxis, chartKeyText;
+          edgeStatG, edgeStatLegendRect, edgeStatAxisG, edgeStatAxis, anatomicalG;
 
       formatter = d3.format('.2f');
       colorInd = d3.range(0, 1, 1.0 / (NUM_COLORS - 1));
       colorInd.push(1);
-
-      chartKeyText = svgSpectraLegend.selectAll('g#ChartText').data([{}]);
-      chartKeyText.enter()
-        .append('text')
-          .attr('id', 'ChartText')
-          .attr('transform', 'translate(10,' + 9 + ')')
-          .attr('x', 0)
-          .attr('y', 0)
-          .attr('text-anchor', 'end')
-          .attr('font-size', 10 + 'px')
-          .attr('font-weight', '700')
-          .attr('color', '#333')
-          .text('Chart Key');
 
       legendScale = d3.scale.ordinal()
         .domain(colorInd)
@@ -787,8 +783,7 @@ SPECTRA = (function() {
       powerG = svgSpectraLegend.selectAll('g#powerLegend').data([{}]);
       powerG.enter()
         .append('g')
-          .attr('id', 'powerLegend')
-          .attr('transform', 'translate(60, 0)');
+          .attr('id', 'powerLegend');
       powerLegendRect = powerG.selectAll('rect.power').data(colorInd);
       powerLegendRect.enter()
         .append('rect')
@@ -803,8 +798,7 @@ SPECTRA = (function() {
       powerAxis = d3.svg.axis()
         .scale(legendScale)
         .orient('bottom')
-        .ticks(2)
-        .tickValues([colorInd[0], colorInd[colorInd.length - 1]])
+        .tickValues([colorInd[0], 0, colorInd[colorInd.length - 1]])
         .tickFormat(function(d) {
           return formatter(powerScale.invert(+d));
         })
@@ -812,22 +806,21 @@ SPECTRA = (function() {
       powerAxisG = powerG.selectAll('g.powerAxis').data([{}]);
       powerAxisG.enter()
         .append('g')
-          .attr('transform', 'translate(0,' + 9 + ')')
+          .attr('transform', 'translate(0,9)')
           .attr('class', 'powerAxis')
           .append('text')
             .attr('transform', 'translate(' + legendScale.rangeBand() * NUM_COLORS / 2 + ', -10)')
             .attr('x', 0)
             .attr('y', 0)
             .attr('text-anchor', 'middle')
-            .text('Power');
+            .text('Difference in Power');
       powerAxisG.call(powerAxis);
 
-      // Coh Legend
+      // Edge Statistic Legend
       edgeStatG = svgEdgeStatLegend.selectAll('g#edgeStatLegend').data([{}]);
       edgeStatG.enter()
         .append('g')
-          .attr('id', 'edgeStatLegend')
-          .attr('transform', 'translate(60, 0)');
+          .attr('id', 'edgeStatLegend');
       edgeStatLegendRect = edgeStatG.selectAll('rect.edgeStat').data(colorInd);
       edgeStatLegendRect.enter()
         .append('rect')
@@ -842,8 +835,7 @@ SPECTRA = (function() {
       edgeStatAxis = d3.svg.axis()
         .scale(legendScale)
         .orient('bottom')
-        .ticks(2)
-        .tickValues([colorInd[0], colorInd[colorInd.length - 1]])
+        .tickValues([colorInd[0], 0, colorInd[colorInd.length - 1]])
         .tickFormat(function(d) {
           return formatter(edgeStatScale.invert(+d));
         })
@@ -852,7 +844,7 @@ SPECTRA = (function() {
 
       edgeStatAxisG.enter()
         .append('g')
-          .attr('transform', 'translate(0,' + 9 + ')')
+          .attr('transform', 'translate(0,9)')
           .attr('class', 'edgeStatAxis')
         .append('text')
           .attr('transform', 'translate(' + legendScale.rangeBand() * NUM_COLORS / 2 + ', -10)')
@@ -863,11 +855,39 @@ SPECTRA = (function() {
       edgeStatAxisG.exit()
         .remove();
       edgeStatAxisG.call(edgeStatAxis);
+
+      // Anatomical legend
+      anatomicalG = svgAnatomicalLegend.selectAll('g.anatomical').data(visInfo.brainAreas, String);
+      anatomicalG.enter()
+        .append('g')
+          .attr('class', 'anatomical')
+          .attr('transform', function(d, i) {
+            return 'translate(0,' + (i * (((NODE_RADIUS / 2) * 2) + 3))  + ')';
+          });
+
+      anatomicalG.exit()
+        .remove();
+      anatomicalCircle = anatomicalG.selectAll('circle').data(function(d) {return [d];});
+
+      anatomicalCircle.enter()
+        .append('circle')
+          .attr('r', NODE_RADIUS / 2)
+          .attr('fill', function(d) {return networkColorScale(d);});
+
+      anatomicalText = anatomicalG.selectAll('text').data(function(d) {return [d];});
+
+      anatomicalText.enter()
+        .append('text')
+          .attr('x', ((NODE_RADIUS / 2) * 2) + 5)
+          .attr('y', 0)
+          .attr('font-size', ((NODE_RADIUS / 2) * 2))
+          .attr('alignment-baseline', 'middle')
+          .text(String);
     }
 
     function drawTimeSlice() {
-      var timeAxis, timeG, powerG,
-          edgeStatAxis, edgeStatG, freqScale, zeroG, edgeStatText;
+      var timeAxis, timeG, powerG, edgeStatAxis, edgeStatG, freqScale, zeroG,
+      edgeStatText;
 
       timeScale = d3.scale.ordinal()
         .domain(tAx)
