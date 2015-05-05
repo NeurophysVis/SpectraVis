@@ -36,13 +36,13 @@ SPECTRA = (function() {
           .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
   var legendWidth = document.getElementById('legendKey').offsetWidth - margin.left - margin.right;
-  var colorbarlegendHeight = 60 - margin.top - margin.bottom;
-  var anatomicallegendHeight = 100 - margin.top - margin.bottom;
+  var colorbarLegendHeight = 60 - margin.top - margin.bottom;
+  var anatomicalLegendHeight = 100 - margin.top - margin.bottom;
 
   var svgSpectraLegend = d3.selectAll('#legendKey').select('#spectraLegend')
         .append('svg')
           .attr('width', legendWidth + margin.left + margin.right)
-          .attr('height', colorbarlegendHeight + margin.top + margin.bottom)
+          .attr('height', colorbarLegendHeight + margin.top + margin.bottom)
         .append('g')
           .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
   svgSpectraLegend.append('text')
@@ -53,7 +53,7 @@ SPECTRA = (function() {
   var svgEdgeStatLegend = d3.selectAll('#legendKey').select('#edgeStatLegend')
         .append('svg')
           .attr('width', legendWidth + margin.left + margin.right)
-          .attr('height', colorbarlegendHeight + margin.top + margin.bottom)
+          .attr('height', colorbarLegendHeight + margin.top + margin.bottom)
         .append('g')
           .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
   svgEdgeStatLegend.append('text')
@@ -64,7 +64,7 @@ SPECTRA = (function() {
   var svgAnatomicalLegend = d3.selectAll('#legendKey').select('#anatomicalLegend')
         .append('svg')
           .attr('width', legendWidth + margin.left + margin.right)
-          .attr('height', anatomicallegendHeight + margin.top + margin.bottom)
+          .attr('height', anatomicalLegendHeight + margin.top + margin.bottom)
         .append('g')
           .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
   svgAnatomicalLegend.append('text')
@@ -73,7 +73,7 @@ SPECTRA = (function() {
         .attr('font-weight', 700)
         .text('Brain Areas');
 
-  var timeSliceWidth = document.getElementById('freqSlice').offsetWidth - margin.left - margin.right;
+  var timeSliceWidth = panelWidth;
   var timeSliceHeight =  180 - margin.top - margin.bottom;
 
   var svgTimeSlice = d3.select('#freqSlice')

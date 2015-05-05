@@ -74,5 +74,8 @@ output {
 #TitlePanel h1 {
   display: inline-block;
 }
-.legend {
+#sidebar {
+  background: rgba(221, 221, 221, 0.4);
+  padding: 20px 30px 20px 20px;
+  border-radius: 25px;
 }
