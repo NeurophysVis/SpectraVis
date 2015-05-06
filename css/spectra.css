@@ -37,19 +37,11 @@ text.nodeLabel {
   dominant-baseline: central;
   cursor: pointer;
 }
-label {
-  width: 49%;
-}
 button.dropdown-toggle{
-  width: 49%;
-}
-input[type="range"] {
-  width: 49%;
-  display: inline-block;
+  width: 100%;
 }
 output {
   padding-top: 0px;
-  width: 49%;
   text-align: center;
 }
 .top-buffer {
@@ -59,7 +51,7 @@ output {
   margin-bottom: 10px;
 }
 #help-button {
-    background: white;
+  background: white;
 }
 #helpToolTip {
   position: absolute;
@@ -76,6 +68,9 @@ output {
 }
 #sidebar {
   background: rgba(221, 221, 221, 0.4);
-  padding: 20px 30px 20px 20px;
+  padding: 30px;
   border-radius: 25px;
+}
+button#PlayButtonPanel {
+  width: 50%;
 }

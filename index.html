@@ -1,123 +1,121 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Spectra</title>
-  <!-- Bootstrap -->
-  <link href="css/bootstrap.min.css" rel="stylesheet">
-  <!-- Styles for D3 objects -->
-  <link href="css/spectra.css" rel="stylesheet">
-</head>
-<body>
-  <div class="container">
-    <!-- Title Panel -->
-    <div class="row" id="TitlePanel">
-       <h1>SpectraVis</h1>
-        <button type="button" class="btn btn-lg bottom-buffer" id="help-button" aria-label="Help">
-          <span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
-        </button>
-    </div>
-    <div class="row top-buffer">
-      <!-- Brain Panel -->
-      <div class="col-md-9 text-center" id="NetworkPanel"></div>
-      <!-- Sidebar -->
-      <div class="col-md-3 group" id="sidebar">
-        <div id="SubjectPanel" class="row bottom-buffer">
-          <div class="dropdown" id="SubjectDropdown">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SpectraVis</title>
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <!-- Styles for D3 objects -->
+    <link href="css/spectra.css" rel="stylesheet">
+  </head>
+  <body>
+    <div class="container">
+      <!-- Title Panel -->
+      <div class="row" id="TitlePanel">
+         <h1 class="col-md-3">SpectraVis
+          <button type="button" class="btn btn-lg bottom-buffer" id="help-button" aria-label="Help">
+            <span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
+          </button>
+        </h1>
+      </div>
+      <div class="row top-buffer">
+        <!-- Brain Panel -->
+        <div class="col-md-9 text-center" id="NetworkPanel"></div>
+        <!-- Sidebar -->
+        <div class="col-md-3" id="sidebar">
+          <div id="SubjectPanel" class="row bottom-buffer">
             <label class="col-md-6">Subject</label>
-            <button class="btn btn-default dropdown-toggle col-md-6" type="button" id="subjectButton" data-toggle="dropdown">
-            </button>
-            <ul class="dropdown-menu" role="menu" aria-labelledby="subjectDropdown"></ul>
+            <div class="dropdown col-md-6" id="SubjectDropdown">
+              <button class="btn btn-default dropdown-toggle" type="button" id="subjectButton" data-toggle="dropdown">
+              </button>
+              <ul class="dropdown-menu" role="menu" aria-labelledby="subjectDropdown"></ul>
+            </div>
           </div>
-        </div>
-        <div id="EdgeStatTypePanel" class="row bottom-buffer">
-          <div class="dropdown" id="EdgeStatTypeDropdown">
+          <div id="EdgeStatTypePanel" class="row bottom-buffer">
             <label class="col-md-6">Edge Statistic</label>
-            <button class="btn btn-default dropdown-toggle col-md-6" type="button" id="EdgeStatTypeButton" data-toggle="dropdown">
-            </button>
-            <ul class="dropdown-menu" role="menu" aria-labelledby="EdgeStatTypeDropdown">
-              <li role="presentation" id="rawDiff_coh"><a role="menuitem" tabindex="-1">rawDiff_coh</a></li>
-              <li role="presentation" id="C2s_coh"><a role="menuitem" tabindex="-1">C2s_coh</a></li>
-              <li role="presentation" id="xhat_coh"><a role="menuitem" tabindex="-1">xhat_coh</a></li>
-              <li role="presentation" id="zhat_coh"><a role="menuitem" tabindex="-1">zhat_coh</a></li>
-            </ul>
+            <div class="dropdown  col-md-6" id="EdgeStatTypeDropdown">
+              <button class="btn btn-default dropdown-toggle" type="button" id="EdgeStatTypeButton" data-toggle="dropdown">
+              </button>
+              <ul class="dropdown-menu" role="menu" aria-labelledby="EdgeStatTypeDropdown">
+                <li role="presentation" id="rawDiff_coh"><a role="menuitem" tabindex="-1">rawDiff_coh</a></li>
+                <li role="presentation" id="C2s_coh"><a role="menuitem" tabindex="-1">C2s_coh</a></li>
+                <li role="presentation" id="xhat_coh"><a role="menuitem" tabindex="-1">xhat_coh</a></li>
+                <li role="presentation" id="zhat_coh"><a role="menuitem" tabindex="-1">zhat_coh</a></li>
+              </ul>
+            </div>
           </div>
-        </div>
-        <div id="EdgeAreaPanel" class="row bottom-buffer">
-          <div class="dropdown" id="EdgeAreaDropdown">
+          <div id="EdgeAreaPanel" class="row bottom-buffer">
             <label class="col-md-6">Edge Area</label>
-            <button class="btn btn-default dropdown-toggle col-md-6" type="button" id="edgeAreaButton" data-toggle="dropdown">
-            </button>
-            <ul class="dropdown-menu" role="menu" aria-labelledby="edgeAreaDropdown">
-              <li role="presentation" id="All"><a role="menuitem" tabindex="-1">All Edges</a></li>
-              <li role="presentation" id="Within"><a role="menuitem" tabindex="-1">Within Area Edges</a></li>
-              <li role="presentation" id="Between"><a role="menuitem" tabindex="-1">Between Area Edges</a></li>
-            </ul>
+            <div class="dropdown col-md-6" id="EdgeAreaDropdown">
+              <button class="btn btn-default dropdown-toggle" type="button" id="edgeAreaButton" data-toggle="dropdown">
+              </button>
+              <ul class="dropdown-menu" role="menu" aria-labelledby="edgeAreaDropdown">
+                <li role="presentation" id="All"><a role="menuitem" tabindex="-1">All Edges</a></li>
+                <li role="presentation" id="Within"><a role="menuitem" tabindex="-1">Within Area Edges</a></li>
+                <li role="presentation" id="Between"><a role="menuitem" tabindex="-1">Between Area Edges</a></li>
+              </ul>
+            </div>
           </div>
-        </div>
-        <div id="NetworkViewPanel" class="row bottom-buffer">
-          <label for="networkRadio" class="col-md-6">Network View</label>
-          <form class="col-md-6 text-center">
-            <div class="row">
-              <input type="radio" id="anatomicalRadio" value="Anatomical" checked>
-              <label for ="networkRadio">Anatomical</label>
-            </div>
-            <div class="row">
-              <input type="radio" id="topologicalRadio" value="Topological">
-              <label for ="networkRadio">Topological</label>
-            </div>
-          </form>
-        </div>
-        <div id="TimeSliderPanel" class="row bottom-buffer clearfix">
-          <form>
+          <div id="NetworkViewPanel" class="row bottom-buffer">
+            <label for="networkRadio" class="col-md-6">Network View</label>
+            <form class="col-md-6 text-center">
+                <input type="radio" id="anatomicalRadio" value="Anatomical" checked>
+                <label for ="networkRadio">Anatomical</label>
+                <input type="radio" id="topologicalRadio" value="Topological">
+                <label for ="networkRadio">Topological</label>
+            </form>
+          </div>
+          <div id="TimeSliderPanel" class="row bottom-buffer">
             <label for="timeSlider" class="col-md-6">Time</label>
-            <input type="range" id="timeSlider" class="col-md-6">
+            <form class="col-md-6">
+              <input type="range" id="timeSlider">
+            </form>
             <output id="timeSlider-value" class="col-md-6 pull-right"></output>
-          </form>
-       </div>
-       <div id="FreqSliderPanel" class="row bottom-buffer clearfix">
-         <form>
+         </div>
+         <div id="FreqSliderPanel" class="row bottom-buffer">
            <label for="freqSlider" class="col-md-6">Frequency</label>
-           <input type="range" id="freqSlider" class="col-md-6">
+           <form class="col-md-6">
+             <input type="range" id="freqSlider">
+           </form>
            <output id="freqSlider-value" class="col-md-6 pull-right"></output>
-         </form>
+        </div>
+        <div id="PlayButtonPanel" class="row bottom-buffer">
+          <button class="btn btn-default col-md-6" type="button" id="playButton">
+            Play
+          </button>
+          <button class="btn btn-default col-md-6" type="button" id="resetButton">
+            Reset
+          </button>
+        </div>
+        <!-- Legend Panel -->
+        <div id="legendKey" class="row bottom-buffer clearfix" >
+          <label for="freqSlider" class="col-md-12">Legend</label>
+          <div class="col-md-12" id="anatomicalLegend"></div>
+          <div class="col-md-12" id="edgeStatLegend"></div>
+          <div class="col-md-12" id="spectraLegend"></div>
+        </div>
       </div>
-      <div id="PlayButtonPanel" class="row bottom-buffer text-center">
-        <button class="btn btn-default " type="button" id="playButton">
-          Play
-        </button>
-        <button class="btn btn-default" type="button" id="resetButton">
-          Reset
-        </button>
       </div>
-      <!-- Legend Panel -->
-      <div id="legendKey" class="row bottom-buffer clearfix" >
-        <label for="freqSlider" class="col-md-12">Legend</label>
-        <div class="row col-md-12" id="anatomicalLegend"></div>
-        <div class="row col-md-12" id="edgeStatLegend"></div>
-        <div class="row col-md-12" id="spectraLegend"></div>
+      <!-- Heatmap Panel -->
+      <div class="row" id="heatmapRow">
+        <div class="col-md-4" id="Ch1Panel"></div>
+        <div class="col-md-4" id="EdgeStatPanel"></div>
+        <div class="col-md-4" id="Ch2Panel"></div>
       </div>
-    </div>
-    </div>
-    <!-- Heatmap Panel -->
-    <div class="row" id="heatmapRow">
-      <div class="col-md-4" id="Ch1Panel"></div>
-      <div class="col-md-4" id="EdgeStatPanel"></div>
-      <div class="col-md-4" id="Ch2Panel"></div>
-    </div>
-    <!-- Frequency Slice Panel -->
-    <div class="row">
-      <div class="col-md-4 col-md-offset-8" id="freqSlice"></div>
-    </div>
-  </div> <!-- end container div-->
-  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-  <script src="js/jquery-2.1.4.min.js"></script>
-  <script src="js/bootstrap.min.js"></script>
-  <script src="js/d3.min.js"></script>
-  <script src="js/queue.min.js"></script>
-  <script src="http://d3js.org/colorbrewer.v1.min.js"></script>
-  <script src="js/spectra_d3.js"></script>
-</body>
+      <!-- Frequency Slice Panel -->
+      <div class="row">
+        <div class="col-md-4 col-md-offset-4" id="freqSlice"></div>
+      </div>
+    </div> <!-- end container div-->
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="js/jquery-2.1.4.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/d3.min.js"></script>
+    <script src="js/queue.min.js"></script>
+    <script src="http://d3js.org/colorbrewer.v1.min.js"></script>
+    <script src="js/spectra_d3.js"></script>
+  </body>
 </html>
