@@ -556,6 +556,7 @@ SPECTRA = (function() {
          curCh2 = re.exec(e.target.channelID)[0];
          mouseFlag = true;
          loadSpectra();
+         edgeMouseOut.call(this, e);
        }
 
       function nodeMouseClick(e) {
