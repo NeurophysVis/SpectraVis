@@ -788,13 +788,13 @@ SPECTRA = (function() {
       var powerG, powerLegendRect, legendScale, colorInd, powerAxisG, powerAxis, formatter,
           edgeStatG, edgeStatLegendRect, edgeStatAxisG, edgeStatAxis, anatomicalG;
 
-      formatter = d3.format('.2f');
+      formatter = d3.format('.1f');
       colorInd = d3.range(0, 1, 1.0 / (NUM_COLORS - 1));
       colorInd.push(1);
 
       legendScale = d3.scale.ordinal()
         .domain(colorInd)
-        .rangeBands([0, 175]);
+        .rangeBands([0, legendWidth]);
 
       // Power Legend
       powerG = svgSpectraLegend.selectAll('g#powerLegend').data([{}]);
@@ -806,7 +806,6 @@ SPECTRA = (function() {
         .append('rect')
           .attr('class', 'power')
           .attr('x', function(d) {return legendScale(d);})
-          .attr('y', 0)
           .attr('height', 10)
           .attr('width', legendScale.rangeBand());
       powerLegendRect
@@ -815,7 +814,7 @@ SPECTRA = (function() {
       powerAxis = d3.svg.axis()
         .scale(legendScale)
         .orient('bottom')
-        .tickValues([colorInd[0], 0, colorInd[colorInd.length - 1]])
+        .tickValues([colorInd[0], colorInd[((colorInd.length - 1) / 2)], colorInd[colorInd.length - 1]])
         .tickFormat(function(d) {
           return formatter(powerScale.invert(+d));
         })
@@ -826,9 +825,8 @@ SPECTRA = (function() {
           .attr('transform', 'translate(0,9)')
           .attr('class', 'powerAxis')
           .append('text')
-            .attr('transform', 'translate(' + legendScale.rangeBand() * NUM_COLORS / 2 + ', -10)')
-            .attr('x', 0)
-            .attr('y', 0)
+            .attr('x', legendScale.rangeBand() * NUM_COLORS / 2)
+            .attr('y', -10)
             .attr('text-anchor', 'middle')
             .text('Difference in Power');
       powerAxisG.call(powerAxis);
@@ -843,7 +841,6 @@ SPECTRA = (function() {
         .append('rect')
           .attr('class', 'edgeStat')
           .attr('x', function(d) {return legendScale(d);})
-          .attr('y', 0)
           .attr('height', 10)
           .attr('width', legendScale.rangeBand());
       edgeStatLegendRect
@@ -852,7 +849,7 @@ SPECTRA = (function() {
       edgeStatAxis = d3.svg.axis()
         .scale(legendScale)
         .orient('bottom')
-        .tickValues([colorInd[0], 0, colorInd[colorInd.length - 1]])
+        .tickValues([colorInd[0], colorInd[((colorInd.length - 1) / 2)], colorInd[colorInd.length - 1]])
         .tickFormat(function(d) {
           return formatter(edgeStatScale.invert(+d));
         })
@@ -864,9 +861,8 @@ SPECTRA = (function() {
           .attr('transform', 'translate(0,9)')
           .attr('class', 'edgeStatAxis')
         .append('text')
-          .attr('transform', 'translate(' + legendScale.rangeBand() * NUM_COLORS / 2 + ', -10)')
-          .attr('x', 0)
-          .attr('y', 0)
+          .attr('x', legendScale.rangeBand() * NUM_COLORS / 2)
+          .attr('y', -10)
           .attr('text-anchor', 'middle')
           .text(edgeStatTypeName);
       edgeStatAxisG.exit()
@@ -896,7 +892,6 @@ SPECTRA = (function() {
       anatomicalText.enter()
         .append('text')
           .attr('x', ((NODE_RADIUS / 2) * 2) + 5)
-          .attr('y', 0)
           .attr('font-size', ((NODE_RADIUS / 2) * 2))
           .attr('alignment-baseline', 'middle')
           .text(String);
