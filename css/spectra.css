@@ -74,3 +74,6 @@ output {
 button#PlayButtonPanel {
   width: 50%;
 }
+.dropdown li {
+  cursor: pointer;
+}
