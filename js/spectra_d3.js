@@ -379,10 +379,9 @@ SPECTRA = (function() {
 
     function drawNetwork() {
       var nodesGroup, edgesGroup, nodeG, strokeStyle, nodeClickNames = [],
-          brainImage, edge;
+          brainImage, edge, edgeLine;
 
       // Replace x and y coordinates of nodes with properly scaled x,y
-
       if (networkView != 'Topological' || typeof channel === 'undefined') {
         channel = params.channel.map(function(n) {
           var obj = copyObject(n);
@@ -402,12 +401,9 @@ SPECTRA = (function() {
       // Replace source name by source object
       edge = params.edge.map(function(e) {
         var obj = copyObject(e);
-        obj.source = channel.filter(function(n) {return n.channelID === e.source;});
-
-        obj.source = obj.source[0];
-        obj.target = channel.filter(function(n) {return n.channelID === e.target;});
-
-        obj.target = obj.target[0];
+        obj.source = channel.filter(function(n) {return n.channelID === e.source;})[0];
+        obj.target = channel.filter(function(n) {return n.channelID === e.target;})[0];
+        obj.data = obj.data[curTimeInd][curFreqInd];
         return obj;
       });
 
@@ -434,17 +430,21 @@ SPECTRA = (function() {
         .append('g')
           .attr('id', 'NODES');
 
-      edgeLine = edgesGroup.selectAll('.edge').data(edge, function(e) {return e.source.channelID + '_' + e.target.channelID;});
+      edgeLine = edgesGroup.selectAll('.edge').data(edge, function(e) {return curSubject + '_' + e.source.channelID + '_' + e.target.channelID;});
 
       edgeLine.enter()
         .append('line')
           .attr('class', 'edge')
-          .style('stroke-width', EDGE_WIDTH);
+          .style('stroke-width', EDGE_WIDTH)
+          .attr('x1', function(d) {return d.source.x;})
+          .attr('y1', function(d) {return d.source.y;})
+          .attr('x2', function(d) {return d.target.x;})
+          .attr('y2', function(d) {return d.target.y;});
       edgeLine.exit()
         .remove();
       edgeLine
         .style('stroke', function(d) {
-            return edgeStatColor(edgeStatScale(d.data[curTimeInd][curFreqInd]));
+            return edgeStatColor(edgeStatScale(d.data));
           })
         .on('mouseover', edgeMouseOver)
         .on('mouseout', edgeMouseOut)
@@ -511,7 +511,7 @@ SPECTRA = (function() {
       function weights(e) {
         var minDistance = 50;
         var distanceRange = 100;
-        var initialScaling = (2 * Math.abs(Math.abs(edgeStatScale(e.data[curTimeInd][curFreqInd]) - 0.5) - 0.5) + .01);
+        var initialScaling = (2 * Math.abs(Math.abs(edgeStatScale(e.data) - 0.5) - 0.5) + .01);
         return minDistance + (distanceRange * initialScaling);
       }
 
@@ -522,7 +522,7 @@ SPECTRA = (function() {
         curEdge
           .style('stroke-width', 2 * EDGE_WIDTH)
           .style('stroke', function() {
-            if (e.data[curTimeInd][curFreqInd] < 0) {
+            if (e.data < 0) {
               return edgeStatColor(0);
             } else {
               return edgeStatColor(1);
@@ -606,7 +606,7 @@ SPECTRA = (function() {
         var isEdge;
         switch (edgeStatType) {
           case 'C2s_coh':
-            if (e.data[curTimeInd][curFreqInd] === 0) {
+            if (e.data === 0) {
               isEdge = false;
             } else {isEdge = true;}
 
@@ -1117,16 +1117,15 @@ SPECTRA = (function() {
 
         d3.select('#playButton').text('Stop')
         stopAnimation = !stopAnimation;
-        d3.timer(function(interval, timeSliderStep) {
+        var intervalID = setInterval(function() {
           if (curTimeInd < timeMaxStepInd && stopAnimation === false) {
             curTimeInd++;
             updateTimeSlider.call({value: tAx[curTimeInd]});
           } else {
             d3.select('#playButton').text('Start')
             stopAnimation = true;
-            return true;
+            clearInterval(intervalID);
           }
-        })
       });
     }
 
