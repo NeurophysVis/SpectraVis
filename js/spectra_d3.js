@@ -1126,6 +1126,7 @@ SPECTRA = (function() {
             stopAnimation = true;
             clearInterval(intervalID);
           }
+        }, 100)
       });
     }
 
