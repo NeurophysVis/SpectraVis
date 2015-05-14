@@ -1,44 +1,54 @@
 SPECTRA = (function() {
-  params = {};
-  var NUM_COLORS = 11;
-  colorbrewer.PiYG[NUM_COLORS].reverse();
-  colorbrewer.RdBu[NUM_COLORS].reverse();
 
+
+  params = {};
+  var networkWidth, networkHeight, svgNetworkMap, subjectObject, curSubject, subjects;
+  var NUM_COLORS = 11;
   var NODE_RADIUS = 10;
   var EDGE_WIDTH = 2;
   var stopAnimation = true;
+  var curCh1 = [];
+  var curCh2 = [];
+  var curFreqInd = 0;
+  var curTimeInd = 0;
+  var mouseFlag = true;
+  var edgeStatType = 'C2s_coh';
+  var edgeArea = 'All';
+  var networkView = 'Anatomical';
+  colorbrewer.PiYG[NUM_COLORS].reverse();
+  colorbrewer.RdBu[NUM_COLORS].reverse();
   var powerColors = colorbrewer.PiYG[NUM_COLORS];
   var networkColors = colorbrewer.RdBu[NUM_COLORS];
-  var subjects;
   var margin = {top: 40, right: 40, bottom: 40, left: 40};
-  var panelWidth = document.getElementById('Ch1Panel').offsetWidth - margin.left - margin.right;
-  var panelHeight = document.getElementById('Ch1Panel').offsetWidth * (4 / 5) - margin.top - margin.bottom;
+  var panelWidth = document.getElementById('SpectraCh1Panel').offsetWidth - margin.left - margin.right;
+  var panelHeight = document.getElementById('SpectraCh1Panel').offsetWidth * (4 / 5) - margin.top - margin.bottom;
+  var legendWidth = document.getElementById('legendKey').offsetWidth - margin.left - margin.right;
+  var colorbarLegendHeight = 60 - margin.top - margin.bottom;
+  var anatomicalLegendHeight = 100 - margin.top - margin.bottom;
+  var timeSliceWidth = panelWidth;
+  var timeSliceHeight =  180 - margin.top - margin.bottom;
 
-  var svgCh1 = d3.select('#Ch1Panel')
+  // Heatmap Panels
+  var svgCh1 = d3.select('#SpectraCh1Panel')
         .append('svg')
           .attr('width', panelWidth + margin.left + margin.right)
           .attr('height', panelHeight + margin.top + margin.bottom)
         .append('g')
           .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
-
-  var svgCh2 = d3.select('#Ch2Panel')
-        .append('svg')
-          .attr('width', panelWidth + margin.left + margin.right)
-          .attr('height', panelHeight + margin.top + margin.bottom)
-        .append('g')
-          .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
-
   var svgEdgeStat = d3.select('#EdgeStatPanel')
         .append('svg')
           .attr('width', panelWidth + margin.left + margin.right)
           .attr('height', panelHeight + margin.top + margin.bottom)
         .append('g')
           .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+  var svgCh2 = d3.select('#SpectraCh2Panel')
+        .append('svg')
+          .attr('width', panelWidth + margin.left + margin.right)
+          .attr('height', panelHeight + margin.top + margin.bottom)
+        .append('g')
+          .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
-  var legendWidth = document.getElementById('legendKey').offsetWidth - margin.left - margin.right;
-  var colorbarLegendHeight = 60 - margin.top - margin.bottom;
-  var anatomicalLegendHeight = 100 - margin.top - margin.bottom;
-
+  // Legend SVG
   var svgSpectraLegend = d3.selectAll('#legendKey').select('#spectraLegend')
         .append('svg')
           .attr('width', legendWidth + margin.left + margin.right)
@@ -73,20 +83,21 @@ SPECTRA = (function() {
         .attr('font-weight', 700)
         .text('Brain Areas');
 
-  var timeSliceWidth = panelWidth;
-  var timeSliceHeight =  180 - margin.top - margin.bottom;
-
+  // Time Slice SVG
   var svgTimeSlice = d3.select('#freqSlice')
         .append('svg')
           .attr('width', timeSliceWidth + margin.left + margin.right)
           .attr('height', timeSliceHeight + margin.top + margin.bottom)
         .append('g')
           .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+
+  // Set up tool tip
   var toolTip = d3.select('body')
          .append('div')
            .attr('id', 'helpToolTip')
            .style('opacity', 1e-6);
 
+  // Set up help information
   d3.select('span.glyphicon-question-sign')
     .on('mouseover', function() {
       toolTip
@@ -106,22 +117,7 @@ SPECTRA = (function() {
         .style('opacity', 1e-6);
     })
 
-  var networkWidth;
-  var networkHeight;
-  var svgNetworkMap;
-  var subjectObject;
-
-  // Load data
-  var curSubject;
-  var curCh1 = [];
-  var curCh2 = [];
-  var curFreqInd = 0;
-  var curTimeInd = 0;
-  var mouseFlag = true;
-  var edgeStatType = 'C2s_coh';
-  var edgeArea = 'All';
-  var networkView = 'Anatomical';
-
+  // Set up edge stat and edge area dropdown menus
   var edgeStatTypeDropdown = d3.select('#EdgeStatTypeDropdown');
   edgeStatTypeDropdown.selectAll('button')
     .html(edgeStatType + '    <span class="caret"></span>');
@@ -130,10 +126,12 @@ SPECTRA = (function() {
   edgeAreaDropdown.selectAll('button')
     .html(edgeArea + '    <span class="caret"></span>');
 
+  // Load subject data
   d3.json('DATA/subjects.json', createSubjectMenu)
 
   // Functions
   function createSubjectMenu(isError, subjectData) {
+    // Populate dropdown menu with subjects
     subjects = subjectData;
     var subjectDropdown = d3.select('#SubjectDropdown');
     var subjectMenu = subjectDropdown.selectAll('.dropdown-menu').selectAll('li').data(subjects);
@@ -145,15 +143,17 @@ SPECTRA = (function() {
           return '<a role="menuitem" tabindex="-1">' + d.subjectID + '</a>';
         });
 
+    // Default to the first subject
     curSubject = subjects[0].subjectID;
     subjectDropdown.selectAll('button')
       .html(curSubject + '    <span class="caret"></span>');
 
-    loadData();
+    // Load channel data
+    loadChannelData();
   }
 
-  // Load Files
-  function loadData() {
+  // Load channel file and set the network svg to be the right aspect ratio for the brain
+  function loadChannelData() {
     var channelFile = 'channels_' + curSubject + '.json';
 
     subjectObject = subjects.filter(function(d) {return d.subjectID === curSubject;})[0];
@@ -175,6 +175,7 @@ SPECTRA = (function() {
     d3.json('DATA/' + channelFile, function(isError, channelData) {
 
       params.channel = channelData;
+      // Default to first two channels if no channels are not already specified
       if (curCh1.length === 0 || curCh2.length === 0) {
         curCh1 = params.channel[0].channelID;
         curCh2 = params.channel[1].channelID;
@@ -185,6 +186,7 @@ SPECTRA = (function() {
   }
 
   function loadEdges() {
+    // Load the edge file for the current subject
     var edgeFile = 'edges_' + curSubject + '_' + edgeStatType + '.json';
     d3.json('DATA/' + edgeFile, function(isError, edgeData) {
       params.edge = edgeData;
@@ -220,11 +222,12 @@ SPECTRA = (function() {
 
     tAx = visInfo.tax; // Time Axis
     fAx = visInfo.fax; // Frequency Axis
+    // Get the edge statistic corresponding to the selected channels
     edgeStat = params.edge.filter(function(e) {
       return e.source === curCh1 && e.target === curCh2;
-    });
+    })[0];
 
-    edgeStat = edgeStat[0];
+    // Get teh edge statastic name and units
     edgeStatTypeName = edgeInfo
       .filter(function(e) {return e.edgeTypeID === edgeStatType;})[0]
       .edgeTypeName;
@@ -232,17 +235,22 @@ SPECTRA = (function() {
       .filter(function(e) {return e.edgeTypeID === edgeStatType;})[0]
       .units;
 
+    // Set up scales and slider values
     setupScales();
     setupSliders();
 
+    // Draw data
     drawNetwork();
     drawHeatmap(svgCh1, spect1, powerScale, heatmapPowerColor);
     drawHeatmap(svgCh2, spect2, powerScale, heatmapPowerColor);
     drawHeatmap(svgEdgeStat, edgeStat, edgeStatScale, edgeStatColor);
+    drawTimeSlice();
 
+    // Draw legends and titles
     drawTitles();
     drawLegends();
-    drawTimeSlice();
+
+    // Handle buttons
     subjectLoad();
     edgeStatTypeLoad();
     edgeAreaLoad();
@@ -1070,7 +1078,7 @@ SPECTRA = (function() {
           curSubject = this.id;
           curCh1 = [];
           curCh2 = [];
-          loadData();
+          loadChannelData();
         })
     }
 
