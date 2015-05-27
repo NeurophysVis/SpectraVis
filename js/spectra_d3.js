@@ -162,13 +162,15 @@ SPECTRA = (function() {
         .attr('role', 'menuitem')
         .attr('tabindex', -1)
         .html(function(d) {return d.edgeTypeName;});
+
     edgeOptions.exit()
       .remove();
 
     // Default to the first subject
-    edgeStatType = edgeInfo[0].edgeTypeName;
+    edgeStatType = edgeInfo[0].edgeTypeID;
+    var edgeTypeName = edgeInfo[0].edgeTypeName;
     edgeDropdown.selectAll('button')
-      .html(edgeStatType)
+      .html(edgeTypeName)
         .append('span')
           .attr('class', 'caret');
 
@@ -589,8 +591,8 @@ SPECTRA = (function() {
        }
 
       function nodeMouseClick(e) {
-         var curNode = d3.select(this),
-             nodeInd = nodeClickNames.indexOf(e.channelID);
+         var curNode = d3.select(this);
+         var nodeInd = nodeClickNames.indexOf(e.channelID);
 
          if (nodeInd > -1) {
            // If clicked on node is in the array, remove
@@ -814,11 +816,11 @@ SPECTRA = (function() {
     }
 
     function drawLegends() {
-      var powerG, powerLegendRect, legendScale, colorInd, powerAxisG, powerAxis, formatter,
+      var powerG, powerLegendRect, legendScale, powerAxisG, powerAxis,
           edgeStatG, edgeStatLegendRect, edgeStatAxisG, edgeStatAxis, anatomicalG;
 
-      formatter = d3.format('.1f');
-      colorInd = d3.range(0, 1, 1.0 / (NUM_COLORS - 1));
+      var formatter = d3.format('.1f');
+      var colorInd = d3.range(0, 1, 1.0 / (NUM_COLORS - 1));
       colorInd.push(1);
 
       legendScale = d3.scale.ordinal()
@@ -1107,7 +1109,10 @@ SPECTRA = (function() {
       edgeStatTypeDropdown = d3.select('#EdgeStatTypeDropdown');
       edgeStatTypeDropdown.selectAll('li')
         .on('click', function() {
-          edgeStatTypeDropdown.selectAll('button').html(this.id + '    <span class="caret"></span>');
+          edgeStatTypeDropdown.selectAll('button')
+            .html(d3.select(this).select('a').html())
+              .append('span')
+                .attr('class', 'caret');
           edgeStatType = this.id;
           force.stop();
 
