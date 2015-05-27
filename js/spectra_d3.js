@@ -2,7 +2,7 @@ SPECTRA = (function() {
 
 
   params = {};
-  var networkWidth, networkHeight, svgNetworkMap, subjectObject, curSubject, subjects;
+  var networkWidth, networkHeight, svgNetworkMap, subjectObject, curSubject, edgeStatType;
   var NUM_COLORS = 11;
   var NODE_RADIUS = 10;
   var EDGE_WIDTH = 2;
@@ -12,7 +12,6 @@ SPECTRA = (function() {
   var curFreqInd = 0;
   var curTimeInd = 0;
   var mouseFlag = true;
-  var edgeStatType = 'C2s_coh';
   var edgeArea = 'All';
   var networkView = 'Anatomical';
   colorbrewer.PiYG[NUM_COLORS].reverse();
@@ -117,24 +116,26 @@ SPECTRA = (function() {
         .style('opacity', 1e-6);
     })
 
-  // Set up edge stat and edge area dropdown menus
-  var edgeStatTypeDropdown = d3.select('#EdgeStatTypeDropdown');
-  edgeStatTypeDropdown.selectAll('button')
-    .html(edgeStatType + '    <span class="caret"></span>');
-
+  // Set up edge area dropdown menus
   var edgeAreaDropdown = d3.select('#EdgeAreaDropdown');
   edgeAreaDropdown.selectAll('button')
-    .html(edgeArea + '    <span class="caret"></span>');
+    .html(edgeArea)
+      .append('span')
+        .attr('class', 'caret');
 
   // Load subject data
-  d3.json('DATA/subjects.json', createSubjectMenu)
+  queue()
+      .defer(d3.json, 'DATA/subjects.json')
+      .defer(d3.json, 'DATA/visInfo.json')
+      .defer(d3.json, 'DATA/edgeTypes.json')
+      .await(createMenu);
 
   // Functions
-  function createSubjectMenu(isError, subjectData) {
+  function createMenu(error, subjectData, visInfo, edgeInfo) {
     // Populate dropdown menu with subjects
-    subjects = subjectData;
+    params.subjects = subjectData;
     var subjectDropdown = d3.select('#SubjectDropdown');
-    var subjectMenu = subjectDropdown.selectAll('.dropdown-menu').selectAll('li').data(subjects);
+    var subjectMenu = subjectDropdown.selectAll('.dropdown-menu').selectAll('li').data(subjectData);
     subjectMenu.enter()
       .append('li')
         .attr('id', function(d) {return d.subjectID;})
@@ -144,9 +145,34 @@ SPECTRA = (function() {
         });
 
     // Default to the first subject
-    curSubject = subjects[0].subjectID;
+    curSubject = subjectData[0].subjectID;
     subjectDropdown.selectAll('button')
-      .html(curSubject + '    <span class="caret"></span>');
+      .html(curSubject)
+        .append('span')
+          .attr('class', 'caret');
+
+    // Create dropdown for edge types
+    params.edgeInfo = edgeInfo;
+    var edgeDropdown = d3.select('#EdgeStatTypeDropdown');
+    var edgeOptions = edgeDropdown.select('ul').selectAll('li').data(edgeInfo);
+    edgeOptions.enter()
+      .append('li')
+        .attr('id', function(d) {return d.edgeTypeID;})
+      .append('a')
+        .attr('role', 'menuitem')
+        .attr('tabindex', -1)
+        .html(function(d) {return d.edgeTypeName;});
+    edgeOptions.exit()
+      .remove();
+
+    // Default to the first subject
+    edgeStatType = edgeInfo[0].edgeTypeName;
+    edgeDropdown.selectAll('button')
+      .html(edgeStatType)
+        .append('span')
+          .attr('class', 'caret');
+
+    params.visInfo = visInfo;
 
     // Load channel data
     loadChannelData();
@@ -156,7 +182,7 @@ SPECTRA = (function() {
   function loadChannelData() {
     var channelFile = 'channels_' + curSubject + '.json';
 
-    subjectObject = subjects.filter(function(d) {return d.subjectID === curSubject;})[0];
+    subjectObject = params.subjects.filter(function(d) {return d.subjectID === curSubject;})[0];
 
     var aspectRatio = subjectObject.brainXpixels / subjectObject.brainYpixels;
     networkWidth = document.getElementById('NetworkPanel').offsetWidth - margin.left - margin.right;
@@ -180,7 +206,6 @@ SPECTRA = (function() {
         curCh1 = params.channel[0].channelID;
         curCh2 = params.channel[1].channelID;
       }
-
       loadEdges();
     });
   }
@@ -197,20 +222,16 @@ SPECTRA = (function() {
   function loadSpectra() {
     var spectCh1File = 'spectrogram_' + curSubject + '_' + curCh1 + '.json';
     var spectCh2File = 'spectrogram_' + curSubject + '_' + curCh2 + '.json';
-    var visInfoFile = 'visInfo.json';
-    var edgeTypesFile = 'edgeTypes.json';
 
     // Load the rest of the files in parallel
     queue()
         .defer(d3.json, 'DATA/' + spectCh1File)
         .defer(d3.json, 'DATA/' + spectCh2File)
-        .defer(d3.json, 'DATA/' + visInfoFile)
-        .defer(d3.json, 'DATA/' + edgeTypesFile)
         .await(display);
   }
 
   // Draw
-  function display(isError, spect1, spect2, visInfo, edgeInfo) {
+  function display(isError, spect1, spect2) {
 
     var timeScale, timeScaleLinear, freqScale, powerScale, tAx, fAx,
         heatmapPowerColor, networkXScale, networkYScale, force, timeSlider,
@@ -220,18 +241,18 @@ SPECTRA = (function() {
         edgeStatLineFun, timeSlicePowerScale, timeSliceNetworkStatScale, spect1Line,
         spect2Line, edgeStatLine, heatmapPowerColor, edgeStatColor;
 
-    tAx = visInfo.tax; // Time Axis
-    fAx = visInfo.fax; // Frequency Axis
+    tAx = params.visInfo.tax; // Time Axis
+    fAx = params.visInfo.fax; // Frequency Axis
     // Get the edge statistic corresponding to the selected channels
     edgeStat = params.edge.filter(function(e) {
       return e.source === curCh1 && e.target === curCh2;
     })[0];
 
-    // Get teh edge statastic name and units
-    edgeStatTypeName = edgeInfo
+    // Get the edge statastic name and units
+    edgeStatTypeName = params.edgeInfo
       .filter(function(e) {return e.edgeTypeID === edgeStatType;})[0]
       .edgeTypeName;
-    edgeStatTypeUnits = edgeInfo
+    edgeStatTypeUnits = params.edgeInfo
       .filter(function(e) {return e.edgeTypeID === edgeStatType;})[0]
       .units;
 
@@ -293,7 +314,7 @@ SPECTRA = (function() {
         .domain(d3.range(0, 1, 1.0 / (NUM_COLORS - 1)))
         .range(networkColors);
       networkColorScale = d3.scale.ordinal()
-        .domain(visInfo.brainAreas)
+        .domain(params.visInfo.brainAreas)
         .range(colorbrewer.Pastel1[7]);
 
       powerMin = d3.min(
@@ -698,7 +719,7 @@ SPECTRA = (function() {
             .attr('y', 0)
             .attr('text-anchor', 'middle')
             .attr('dy', 2 + 'em')
-            .text('Time (' + visInfo.tunits + ')');
+            .text('Time (' + params.visInfo.tunits + ')');
       timeAxisG.call(timeAxis);
 
       freqAxisG = curPlot.selectAll('g.freqAxis').data([{}]);
@@ -710,7 +731,7 @@ SPECTRA = (function() {
           .attr('dy', -2 + 'em')
           .attr('transform', 'rotate(-90)')
           .attr('text-anchor', 'middle')
-          .text('Frequency (' + visInfo.funits + ')');
+          .text('Frequency (' + params.visInfo.funits + ')');
       freqAxisG.call(freqAxis);
 
       zeroG = curPlot.selectAll('g.zeroLine').data([[[0, panelHeight]]]);
@@ -878,7 +899,7 @@ SPECTRA = (function() {
       edgeStatAxisG.call(edgeStatAxis);
 
       // Anatomical legend
-      anatomicalG = svgAnatomicalLegend.selectAll('g.anatomical').data(visInfo.brainAreas, String);
+      anatomicalG = svgAnatomicalLegend.selectAll('g.anatomical').data(params.visInfo.brainAreas, String);
       anatomicalG.enter()
         .append('g')
           .attr('class', 'anatomical')
@@ -950,7 +971,7 @@ SPECTRA = (function() {
             .attr('y', 0)
             .attr('text-anchor', 'middle')
             .attr('dy', 2 + 'em')
-            .text('Time (' + visInfo.tunits + ')');
+            .text('Time (' + params.visInfo.tunits + ')');
       timeG.call(timeAxis);
 
       edgeStatG = svgTimeSlice.selectAll('g.edgeStatSliceAxis').data([{}]);
@@ -1050,7 +1071,7 @@ SPECTRA = (function() {
           .attr('y', 0)
           .attr('dy', -1 + 'em');
       timeTitle
-        .text(function(d) {return 'Time Slice @ Frequency ' + d + ' ' + visInfo.funits;});
+        .text(function(d) {return 'Time Slice @ Frequency ' + d + ' ' + params.visInfo.funits;});
     }
 
     function rectMouseOver(d, freqInd, timeInd) {
