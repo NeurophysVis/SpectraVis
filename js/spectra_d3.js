@@ -1,6 +1,4 @@
 SPECTRA = (function() {
-
-
   params = {};
   var networkWidth, networkHeight, svgNetworkMap, subjectObject, curSubject, edgeStatType;
   var NUM_COLORS = 11;
@@ -83,7 +81,7 @@ SPECTRA = (function() {
         .text('Brain Areas');
 
   // Time Slice SVG
-  var svgTimeSlice = d3.select('#freqSlice')
+  var svgTimeSlice = d3.select('#timeSlice')
         .append('svg')
           .attr('width', timeSliceWidth + margin.left + margin.right)
           .attr('height', timeSliceHeight + margin.top + margin.bottom)
@@ -203,11 +201,13 @@ SPECTRA = (function() {
     d3.json('DATA/' + channelFile, function(isError, channelData) {
 
       params.channel = channelData;
+
       // Default to first two channels if no channels are not already specified
       if (curCh1.length === 0 || curCh2.length === 0) {
         curCh1 = params.channel[0].channelID;
         curCh2 = params.channel[1].channelID;
       }
+
       loadEdges();
     });
   }
@@ -241,7 +241,7 @@ SPECTRA = (function() {
         edgeStatTypeDropdown, networkColorScale, timeSliderStep, timeMaxStepInd,
         networkXExtent, networkYExtent, edgeStat, edgeStatTypeName, edgeStatTypeUnits, channel, powerLineFun,
         edgeStatLineFun, timeSlicePowerScale, timeSliceNetworkStatScale, spect1Line,
-        spect2Line, edgeStatLine, heatmapPowerColor, edgeStatColor;
+        spect2Line, edgeStatLine, heatmapPowerColor, edgeStatColor, isFreq;
 
     tAx = params.visInfo.tax; // Time Axis
     fAx = params.visInfo.fax; // Frequency Axis
@@ -257,6 +257,9 @@ SPECTRA = (function() {
     edgeStatTypeUnits = params.edgeInfo
       .filter(function(e) {return e.edgeTypeID === edgeStatType;})[0]
       .units;
+    isFreq = params.edgeInfo
+      .filter(function(e) {return e.edgeTypeID === edgeStatType;})[0]
+      .isFreq;
 
     // Set up scales and slider values
     setupScales();
@@ -266,8 +269,18 @@ SPECTRA = (function() {
     drawNetwork();
     drawHeatmap(svgCh1, spect1, powerScale, heatmapPowerColor);
     drawHeatmap(svgCh2, spect2, powerScale, heatmapPowerColor);
-    drawHeatmap(svgEdgeStat, edgeStat, edgeStatScale, edgeStatColor);
-    drawTimeSlice();
+    if (isFreq) {
+      drawHeatmap(svgEdgeStat, edgeStat, edgeStatScale, edgeStatColor)
+      drawTimeSlice();
+    } else {
+      // Remove coherence and time slice charts
+      svgEdgeStat
+        .html('');
+      svgTimeSlice
+        .html('');
+
+      drawCorrelation();
+    }
 
     // Draw legends and titles
     drawTitles();
@@ -434,6 +447,7 @@ SPECTRA = (function() {
         var obj = copyObject(e);
         obj.source = channel.filter(function(n) {return n.channelID === e.source;})[0];
         obj.target = channel.filter(function(n) {return n.channelID === e.target;})[0];
+
         obj.data = obj.data[curTimeInd][curFreqInd];
         return obj;
       });
@@ -637,6 +651,7 @@ SPECTRA = (function() {
         var isEdge;
         switch (edgeStatType) {
           case 'C2s_coh':
+          case 'C2s_corr':
             if (e.data === 0) {
               isEdge = false;
             } else {isEdge = true;}
@@ -1076,10 +1091,13 @@ SPECTRA = (function() {
         .text(function(d) {return 'Time Slice @ Frequency ' + d + ' ' + params.visInfo.funits;});
     }
 
+    function drawCorrelation() {
+
+    }
     function rectMouseOver(d, freqInd, timeInd) {
       // Mouse click can freeze visualization in place
       if (mouseFlag) {
-        curFreqInd = freqInd;
+        curFreqInd = isFreq ? freqInd : 0;
         curTimeInd = timeInd;
         force.stop();
         drawNetwork();
@@ -1114,8 +1132,15 @@ SPECTRA = (function() {
               .append('span')
                 .attr('class', 'caret');
           edgeStatType = this.id;
-          force.stop();
 
+          isFreq = params.edgeInfo
+            .filter(function(e) {return e.edgeTypeID === edgeStatType;})[0]
+            .isFreq;
+          curFreqInd = isFreq ? curFreqInd : 0;
+          freqSlider.property('value', fAx[curFreqInd]);
+          freqSliderText.text(fAx[curFreqInd] + ' Hz');
+
+          force.stop();
           loadEdges();
         })
     }
@@ -1183,7 +1208,7 @@ SPECTRA = (function() {
     }
 
     function updateFreqSlider() {
-      curFreqInd = fAx.indexOf(+this.value);
+      curFreqInd = isFreq ? fAx.indexOf(+this.value) : 0;
       force.stop();
       drawNetwork();
       drawTimeSlice();
