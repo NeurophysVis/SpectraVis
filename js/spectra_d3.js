@@ -276,7 +276,7 @@ SPECTRA = (function() {
       // Remove coherence and time slice charts
       svgEdgeStat.selectAll('rect')
           .attr('opacity', 1E-6);
-      svgEdgeStat.selectAll('.freqAxis')
+      svgEdgeStat.selectAll('.axis#freq')
         .remove();
       svgTimeSlice
         .attr('opacity', 1E-6);
@@ -732,10 +732,11 @@ SPECTRA = (function() {
                    .tickValues(['10', '20', '40', '60', '90', '150', '200'])
                    .tickSize(0, 0, 0);
 
-      timeAxisG = curPlot.selectAll('g.timeAxis').data([{}]);
+      timeAxisG = curPlot.selectAll('g.axis.hideAxisLines#time').data([{}]);
       timeAxisG.enter()
           .append('g')
-            .attr('class', 'timeAxis')
+            .attr('class', 'axis hideAxisLines')
+            .attr('id', 'time')
             .attr('transform', 'translate(0,' + panelHeight + ')')
           .append('text')
             .attr('x', timeScaleLinear(0))
@@ -745,10 +746,11 @@ SPECTRA = (function() {
             .text('Time (' + params.visInfo.tunits + ')');
       timeAxisG.call(timeAxis);
 
-      freqAxisG = curPlot.selectAll('g.freqAxis').data([{}]);
+      freqAxisG = curPlot.selectAll('g.axis.hideAxisLines#freq').data([{}]);
       freqAxisG.enter()
         .append('g')
-          .attr('class', 'freqAxis')
+          .attr('class', 'axis hideAxisLines')
+          .attr('id', 'freq')
         .append('text')
           .attr('x', -panelHeight / 2)
           .attr('dy', -2 + 'em')
@@ -871,11 +873,12 @@ SPECTRA = (function() {
           return formatter(powerScale.invert(+d));
         })
         .tickSize(0, 0, 0);
-      powerAxisG = powerG.selectAll('g.powerAxis').data([{}]);
+      powerAxisG = powerG.selectAll('g.axis.hideAxisLines#power').data([{}]);
       powerAxisG.enter()
         .append('g')
           .attr('transform', 'translate(0,9)')
-          .attr('class', 'powerAxis')
+          .attr('class', 'axis hideAxisLines')
+          .attr('id', 'power')
           .append('text')
             .attr('x', legendScale.rangeBand() * NUM_COLORS / 2)
             .attr('y', -10)
@@ -906,12 +909,13 @@ SPECTRA = (function() {
           return formatter(edgeStatScale.invert(+d));
         })
         .tickSize(0, 0, 0);
-      edgeStatAxisG = edgeStatG.selectAll('g.edgeStatAxis').data([edgeStatTypeName], function(d) {return [d];});
+      edgeStatAxisG = edgeStatG.selectAll('g.axis.hideAxisLines#edgeStat').data([edgeStatTypeName], function(d) {return [d];});
 
       edgeStatAxisG.enter()
         .append('g')
           .attr('transform', 'translate(0,9)')
-          .attr('class', 'edgeStatAxis')
+          .attr('class', 'axis hideAxisLines')
+          .attr('id', 'edgeStat')
         .append('text')
           .attr('x', legendScale.rangeBand() * NUM_COLORS / 2)
           .attr('y', -10)
@@ -984,10 +988,11 @@ SPECTRA = (function() {
         .tickValues(timeSlicePowerScale.domain())
         .tickSize(0, 0, 0);
 
-      timeG = svgTimeSlice.selectAll('g.timeSliceAxis').data([{}]);
+      timeG = svgTimeSlice.selectAll('g.axis#timeSlice').data([{}]);
       timeG.enter()
         .append('g')
-          .attr('class', 'timeSliceAxis')
+          .attr('class', 'axis')
+          .attr('id', 'timeSlice')
           .attr('transform', 'translate(0,' + timeSliceHeight + ')')
           .append('text')
             .attr('x', timeSliceWidth / 2)
@@ -997,10 +1002,11 @@ SPECTRA = (function() {
             .text('Time (' + params.visInfo.tunits + ')');
       timeG.call(timeAxis);
 
-      edgeStatG = svgTimeSlice.selectAll('g.edgeStatSliceAxis').data([{}]);
+      edgeStatG = svgTimeSlice.selectAll('g.axis#edgeStatSlice').data([{}]);
       edgeStatG.enter()
         .append('g')
-          .attr('class', 'edgeStatSliceAxis')
+          .attr('class', 'axis')
+          .attr('id', 'edgeStatSlice')
           .attr('transform', 'translate(' + timeSliceWidth + ',0)');
       edgeStatText = edgeStatG.selectAll('text').data([{}]);
       edgeStatText.enter()
@@ -1014,10 +1020,11 @@ SPECTRA = (function() {
         .text(edgeStatTypeName);
       edgeStatG.call(edgeStatAxis)
 
-      powerG = svgTimeSlice.selectAll('g.powerSliceAxis').data([{}]);
+      powerG = svgTimeSlice.selectAll('g.axis#powerSlice').data([{}]);
       powerG.enter()
         .append('g')
-          .attr('class', 'powerSliceAxis')
+          .attr('class', 'axis')
+          .attr('id', 'powerSlice')
           .append('text')
             .attr('x', -timeSliceHeight / 2)
             .attr('y', 0)
@@ -1123,10 +1130,11 @@ SPECTRA = (function() {
                    .tickValues([d3.min(tAx), 0, d3.max(tAx)])
                    .tickSize(0, 0, 0);
 
-      var timeAxisG = svgEdgeStat.selectAll('g.timeAxis').data([{}]);
+      var timeAxisG = svgEdgeStat.selectAll('g.axis.hideAxisLines#time').data([{}]);
       timeAxisG.enter()
           .append('g')
-            .attr('class', 'timeAxis')
+            .attr('class', 'axis hideAxisLines')
+            .attr('id', 'time')
             .attr('transform', 'translate(0,' + panelHeight + ')')
           .append('text')
             .attr('x', timeScaleLinear(0))
@@ -1141,10 +1149,11 @@ SPECTRA = (function() {
                    .orient('left')
                    .ticks(3)
                    .tickSize(0, 0, 0);
-      var corrAxisG = svgEdgeStat.selectAll('g.corrAxis').data([{}]);
+      var corrAxisG = svgEdgeStat.selectAll('g.axis#corr').data([{}]);
       corrAxisG.enter()
         .append('g')
-          .attr('class', 'corrAxis');
+          .attr('class', 'axis')
+          .attr('id', 'corr');
       corrAxisG.call(corrAxis);
 
     }
