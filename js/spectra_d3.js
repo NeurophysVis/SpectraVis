@@ -782,6 +782,35 @@ SPECTRA = (function() {
         .attr('stroke-width', 2)
         .attr('fill', 'none')
         .style('opacity', 0.7);
+
+      function rectMouseOver(d, freqInd, timeInd) {
+        // Mouse click can freeze visualization in place
+        if (mouseFlag) {
+          curFreqInd = isFreq ? freqInd : 0;
+          curTimeInd = timeInd;
+          force.stop();
+
+          if (isFreq) drawTimeSlice();
+          updateTimeSlider.call({value: tAx[curTimeInd]});
+          updateFreqSlider.call({value: fAx[curFreqInd]});
+        };
+      }
+
+      function rectMouseClick() {
+        mouseFlag = !mouseFlag;
+        if (!mouseFlag) {
+          svgNetworkMap.append('text')
+            .attr('x', networkWidth)
+            .attr('y', networkHeight)
+            .attr('text-anchor', 'end')
+            .attr('id', 'HOLD')
+            .text('HOLD');
+        } else {
+          svgNetworkMap.select('text#HOLD').remove();
+        }
+
+      }
+
     }
 
     function drawTitles() {
@@ -1153,23 +1182,6 @@ SPECTRA = (function() {
           .attr('id', 'corr');
       corrAxisG.call(corrAxis);
 
-    }
-
-    function rectMouseOver(d, freqInd, timeInd) {
-      // Mouse click can freeze visualization in place
-      if (mouseFlag) {
-        curFreqInd = isFreq ? freqInd : 0;
-        curTimeInd = timeInd;
-        force.stop();
-
-        if (isFreq) drawTimeSlice();
-        updateTimeSlider.call({value: tAx[curTimeInd]});
-        updateFreqSlider.call({value: fAx[curFreqInd]});
-      };
-    }
-
-    function rectMouseClick() {
-      mouseFlag = !mouseFlag;
     }
 
     function subjectLoad() {
