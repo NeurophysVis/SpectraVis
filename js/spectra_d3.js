@@ -271,6 +271,11 @@ SPECTRA = (function() {
     drawHeatmap(svgCh1, spect1, powerScale, heatmapPowerColor);
     drawHeatmap(svgCh2, spect2, powerScale, heatmapPowerColor);
     if (isFreq) {
+      svgEdgeStat.selectAll('g#corr').remove();
+      svgEdgeStat.selectAll('rect')
+          .attr('opacity', 1);
+      svgTimeSlice
+        .attr('opacity', 1);
       drawHeatmap(svgEdgeStat, edgeStat, edgeStatScale, edgeStatColor);
       drawTimeSlice();
     } else {
@@ -1113,7 +1118,12 @@ SPECTRA = (function() {
         .y(function(d) {return corrScale(d);})
         .interpolate('linear');
 
-      var corrLine = svgEdgeStat.selectAll('path#corrLine').data([edgeStatData]);
+      var corrG = svgEdgeStat.selectAll('g#corr').data([{}]);
+      corrG.enter()
+        .append('g')
+          .attr('id', 'corr');
+
+      var corrLine = corrG.selectAll('path#corrLine').data([edgeStatData]);
       corrLine.enter()
         .append('path')
           .attr('id', 'corrLine')
@@ -1131,7 +1141,7 @@ SPECTRA = (function() {
                    .tickValues([d3.min(tAx), 0, d3.max(tAx)])
                    .tickSize(0, 0, 0);
 
-      var timeAxisG = svgEdgeStat.selectAll('g.axis.hideAxisLines#time').data([{}]);
+      var timeAxisG = corrG.selectAll('g.axis.hideAxisLines#time').data([{}]);
       timeAxisG.enter()
           .append('g')
             .attr('class', 'axis hideAxisLines')
