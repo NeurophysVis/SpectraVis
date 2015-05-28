@@ -117,7 +117,7 @@ SPECTRA = (function() {
   // Set up edge area dropdown menus
   var edgeAreaDropdown = d3.select('#EdgeAreaDropdown');
   edgeAreaDropdown.selectAll('button')
-    .html(edgeArea)
+    .text(edgeArea)
       .append('span')
         .attr('class', 'caret');
 
@@ -138,14 +138,15 @@ SPECTRA = (function() {
       .append('li')
         .attr('id', function(d) {return d.subjectID;})
         .attr('role', 'presentation')
-        .html(function(d) {
-          return '<a role="menuitem" tabindex="-1">' + d.subjectID + '</a>';
-        });
+        .append('a')
+          .attr('role', 'menuitem')
+          .attr('tabindex', -1)
+          .text(function(d) {return d.subjectID});
 
     // Default to the first subject
     curSubject = subjectData[0].subjectID;
     subjectDropdown.selectAll('button')
-      .html(curSubject)
+      .text(curSubject)
         .append('span')
           .attr('class', 'caret');
 
@@ -159,7 +160,7 @@ SPECTRA = (function() {
       .append('a')
         .attr('role', 'menuitem')
         .attr('tabindex', -1)
-        .html(function(d) {return d.edgeTypeName;});
+        .text(function(d) {return d.edgeTypeName;});
 
     edgeOptions.exit()
       .remove();
@@ -168,7 +169,7 @@ SPECTRA = (function() {
     edgeStatType = edgeInfo[0].edgeTypeID;
     var edgeTypeName = edgeInfo[0].edgeTypeName;
     edgeDropdown.selectAll('button')
-      .html(edgeTypeName)
+      .text(edgeTypeName)
         .append('span')
           .attr('class', 'caret');
 
@@ -270,17 +271,18 @@ SPECTRA = (function() {
     drawHeatmap(svgCh1, spect1, powerScale, heatmapPowerColor);
     drawHeatmap(svgCh2, spect2, powerScale, heatmapPowerColor);
     if (isFreq) {
-      drawHeatmap(svgEdgeStat, edgeStat, edgeStatScale, edgeStatColor)
+      console.log('drawHeatmap: ' + edgeStatScale.domain())
+      drawHeatmap(svgEdgeStat, edgeStat, edgeStatScale, edgeStatColor);
       drawTimeSlice();
     } else {
-      // Remove coherence and time slice charts
+      // Hide coherence and time slice charts
+      drawHeatmap(svgEdgeStat, edgeStat, edgeStatScale, edgeStatColor);
       svgEdgeStat.selectAll('rect')
           .attr('opacity', 1E-6);
       svgEdgeStat.selectAll('.axis#freq')
         .remove();
       svgTimeSlice
         .attr('opacity', 1E-6);
-
       console.log('drawCorrelation: ' + edgeStatScale.domain())
       drawCorrelation();
     }
@@ -781,19 +783,19 @@ SPECTRA = (function() {
         .attr('fill', 'none')
         .style('opacity', 0.7);
 
-      // add a 'hover' line that we'll show as a user moves their mouse (or finger)
-      // so we can use it to show detailed values of each line
-      hoverLineG = curPlot.append('g.hover-line')
-        .attr('class', 'hover-line');
-
-      // add the line to the group
-      hoverLine = hoverLineG
-       .append('line')
-         .attr('x1', 10).attr('x2', 10) // vertical line so same value on each
-         .attr('y1', 0).attr('y2', panelHeight); // top to bottom
-
-      // hide it by default
-      hoverLine.classed('hide', true);
+      // // add a 'hover' line that we'll show as a user moves their mouse (or finger)
+      // // so we can use it to show detailed values of each line
+      // hoverLineG = curPlot.append('g.hover-line')
+      //   .attr('class', 'hover-line');
+      //
+      // // add the line to the group
+      // hoverLine = hoverLineG
+      //  .append('line')
+      //    .attr('x1', 10).attr('x2', 10) // vertical line so same value on each
+      //    .attr('y1', 0).attr('y2', panelHeight); // top to bottom
+      //
+      // // hide it by default
+      // hoverLine.classed('hide', true);
     }
 
     function drawTitles() {
@@ -1168,7 +1170,6 @@ SPECTRA = (function() {
         curFreqInd = isFreq ? freqInd : 0;
         curTimeInd = timeInd;
         force.stop();
-        drawNetwork();
         console.log('Mouseover: ' + edgeStatScale.domain())
         if (isFreq) drawTimeSlice();
         updateTimeSlider.call({value: tAx[curTimeInd]});
@@ -1184,7 +1185,10 @@ SPECTRA = (function() {
       subjectDropdown = d3.select('#SubjectDropdown');
       subjectDropdown.selectAll('li')
         .on('click', function() {
-          subjectDropdown.selectAll('button').html(this.id + '    <span class="caret"></span>');
+          subjectDropdown.selectAll('button')
+            .text(this.id)
+            .append('span')
+              .attr('class', 'caret');
           curSubject = this.id;
           curCh1 = [];
           curCh2 = [];
@@ -1197,7 +1201,7 @@ SPECTRA = (function() {
       edgeStatTypeDropdown.selectAll('li')
         .on('click', function() {
           edgeStatTypeDropdown.selectAll('button')
-            .html(d3.select(this).select('a').html())
+            .text(d3.select(this).select('a').html())
               .append('span')
                 .attr('class', 'caret');
           edgeStatType = this.id;
@@ -1218,7 +1222,10 @@ SPECTRA = (function() {
       edgeAreaDropdown = d3.select('#EdgeAreaDropdown');
       edgeAreaDropdown.selectAll('li')
         .on('click', function() {
-          edgeAreaDropdown.selectAll('button').html(this.id + '    <span class="caret"></span>');
+          edgeAreaDropdown.selectAll('button')
+            .text(this.id)
+              .append('span')
+                .attr('class', 'caret');
           edgeArea = this.id;
           force.stop();
           drawNetwork();
