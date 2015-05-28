@@ -281,6 +281,7 @@ SPECTRA = (function() {
       svgTimeSlice
         .attr('opacity', 1E-6);
 
+      console.log('drawCorrelation: ' + edgeStatScale.domain())
       drawCorrelation();
     }
 
@@ -408,6 +409,8 @@ SPECTRA = (function() {
       networkYScale = d3.scale.linear()
         .domain(networkYExtent)
         .range([networkHeight, 0]);
+
+      console.log('setupScales: ' + edgeStatExtent)
       edgeStatScale = d3.scale.linear()
         .domain(edgeStatExtent)
         .range([0, 1]);
@@ -493,6 +496,7 @@ SPECTRA = (function() {
           .attr('y2', function(d) {return d.target.y;});
       edgeLine.exit()
         .remove();
+      console.log('drawNetwork: ' + edgeStatScale.domain())
       edgeLine
         .style('stroke', function(d) {
             return edgeStatColor(edgeStatScale(d.data));
@@ -1165,6 +1169,7 @@ SPECTRA = (function() {
         curTimeInd = timeInd;
         force.stop();
         drawNetwork();
+        console.log('Mouseover: ' + edgeStatScale.domain())
         if (isFreq) drawTimeSlice();
         updateTimeSlider.call({value: tAx[curTimeInd]});
         updateFreqSlider.call({value: fAx[curFreqInd]});
