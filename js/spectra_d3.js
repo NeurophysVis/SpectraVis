@@ -241,7 +241,7 @@ SPECTRA = (function() {
         edgeStatTypeDropdown, networkColorScale, timeSliderStep, timeMaxStepInd,
         networkXExtent, networkYExtent, edgeStat, edgeStatTypeName, edgeStatTypeUnits, channel, powerLineFun,
         edgeStatLineFun, timeSlicePowerScale, timeSliceNetworkStatScale, spect1Line,
-        spect2Line, edgeStatLine, heatmapPowerColor, edgeStatColor, isFreq;
+        spect2Line, edgeStatLine, heatmapPowerColor, edgeStatColor, isFreq, corrScale;
 
     tAx = params.visInfo.tax; // Time Axis
     fAx = params.visInfo.fax; // Frequency Axis
@@ -274,10 +274,12 @@ SPECTRA = (function() {
       drawTimeSlice();
     } else {
       // Remove coherence and time slice charts
-      svgEdgeStat
-        .html('');
+      svgEdgeStat.selectAll('rect')
+          .attr('opacity', 1E-6);
+      svgEdgeStat.selectAll('.freqAxis')
+        .remove();
       svgTimeSlice
-        .html('');
+        .attr('opacity', 1E-6);
 
       drawCorrelation();
     }
@@ -409,6 +411,10 @@ SPECTRA = (function() {
       edgeStatScale = d3.scale.linear()
         .domain(edgeStatExtent)
         .range([0, 1]);
+
+      corrScale = d3.scale.linear()
+          .domain(edgeStatExtent)
+          .range([0, panelHeight]);
 
       function symmetricExtent(min, max)  {
         if (Math.abs(min) >= Math.abs(max)) {
@@ -1092,8 +1098,57 @@ SPECTRA = (function() {
     }
 
     function drawCorrelation() {
+      var edgeStatData = edgeStat.data.map(function(d) {return d[0];});
+
+      var lineFun = d3.svg.line()
+        .x(function(d, i) {return timeScaleLinear(tAx[i]);})
+        .y(function(d) {return corrScale(d);})
+        .interpolate('linear');
+
+      var corrLine = svgEdgeStat.selectAll('path#corrLine').data([edgeStatData]);
+      corrLine.enter()
+        .append('path')
+          .attr('id', 'corrLine')
+          .attr('fill', 'none')
+          .attr('stroke', 'blue');
+      corrLine
+        .transition()
+          .duration(5)
+          .ease('linear')
+        .attr('d', lineFun);
+      var timeAxis = d3.svg.axis()
+                   .scale(timeScaleLinear)
+                   .orient('bottom')
+                   .ticks(3)
+                   .tickValues([d3.min(tAx), 0, d3.max(tAx)])
+                   .tickSize(0, 0, 0);
+
+      var timeAxisG = svgEdgeStat.selectAll('g.timeAxis').data([{}]);
+      timeAxisG.enter()
+          .append('g')
+            .attr('class', 'timeAxis')
+            .attr('transform', 'translate(0,' + panelHeight + ')')
+          .append('text')
+            .attr('x', timeScaleLinear(0))
+            .attr('y', 0)
+            .attr('text-anchor', 'middle')
+            .attr('dy', 2 + 'em')
+            .text('Time (' + params.visInfo.tunits + ')');
+      timeAxisG.call(timeAxis);
+
+      var corrAxis = d3.svg.axis()
+                   .scale(corrScale)
+                   .orient('left')
+                   .ticks(3)
+                   .tickSize(0, 0, 0);
+      var corrAxisG = svgEdgeStat.selectAll('g.corrAxis').data([{}]);
+      corrAxisG.enter()
+        .append('g')
+          .attr('class', 'corrAxis');
+      corrAxisG.call(corrAxis);
 
     }
+
     function rectMouseOver(d, freqInd, timeInd) {
       // Mouse click can freeze visualization in place
       if (mouseFlag) {
@@ -1101,7 +1156,7 @@ SPECTRA = (function() {
         curTimeInd = timeInd;
         force.stop();
         drawNetwork();
-        drawTimeSlice();
+        if (isFreq) drawTimeSlice();
         updateTimeSlider.call({value: tAx[curTimeInd]});
         updateFreqSlider.call({value: fAx[curFreqInd]});
       };
@@ -1211,7 +1266,7 @@ SPECTRA = (function() {
       curFreqInd = isFreq ? fAx.indexOf(+this.value) : 0;
       force.stop();
       drawNetwork();
-      drawTimeSlice();
+      if (isFreq) drawTimeSlice();
       freqSlider.property('value', fAx[curFreqInd]);
       freqSliderText.text(fAx[curFreqInd] + ' Hz');
     }
