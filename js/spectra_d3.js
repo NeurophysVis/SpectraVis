@@ -267,6 +267,8 @@ SPECTRA = (function() {
     setupSliders();
 
     var powerChart = heatmap()
+      .height(panelHeight)
+      .width(panelWidth)
       .yScale(freqScale)
       .xScale(timeScale)
       .intensityScale(powerScale)
@@ -275,6 +277,8 @@ SPECTRA = (function() {
       .rectMouseClick(rectMouseClick);
 
     var cohChart = heatmap()
+      .height(panelHeight)
+      .width(panelWidth)
       .yScale(freqScale)
       .xScale(timeScale)
       .intensityScale(edgeStatScale)
@@ -283,8 +287,12 @@ SPECTRA = (function() {
       .rectMouseClick(rectMouseClick);
 
     var edgeStatOverTimeChart = timeseries()
+      .height(panelHeight)
+      .width(panelWidth)
       .yScale(corrScale)
-      .xScale(timeScale);
+      .xScale(timeScale)
+      .rectMouseOver(rectMouseOver)
+      .rectMouseClick(rectMouseClick);
 
     // Draw data
     drawNetwork();
@@ -729,6 +737,8 @@ SPECTRA = (function() {
       var yAxisG;
       var rectMouseOver = function() {};
       var rectMouseClick = function() {};
+      var height = 500;
+      var width = 500;
 
       function chart(selection) {
 
@@ -736,6 +746,9 @@ SPECTRA = (function() {
           var heatmapG, heatmapRect, xAxis, yAxis, zeroG, xAxisG, yAxisG,
             zeroLine;
           var curPlot = d3.select(this);
+
+          xScale.rangeBands([0, width]);
+          yScale.rangeBands([height, 0]);
 
           heatmapG = curPlot.selectAll('g.heatmapX').data(curData.data);
           heatmapG.enter()
@@ -784,7 +797,7 @@ SPECTRA = (function() {
               .append('g')
                 .attr('class', 'axis')
                 .attr('id', 'x')
-                .attr('transform', 'translate(0,' + panelHeight + ')')
+                .attr('transform', 'translate(0,' + height + ')')
               .append('text')
                 .attr('x', xScale(0))
                 .attr('y', 0)
@@ -799,14 +812,14 @@ SPECTRA = (function() {
               .attr('class', 'axis')
               .attr('id', 'y')
             .append('text')
-              .attr('x', -panelHeight / 2)
+              .attr('x', -height / 2)
               .attr('dy', -2 + 'em')
               .attr('transform', 'rotate(-90)')
               .attr('text-anchor', 'middle')
               .text('Frequency (' + params.visInfo.funits + ')');
           yAxisG.call(yAxis);
 
-          zeroG = curPlot.selectAll('g.zeroLine').data([[[0, panelHeight]]]);
+          zeroG = curPlot.selectAll('g.zeroLine').data([[[0, height]]]);
           zeroG.enter()
             .append('g')
               .attr('class', 'zeroLine');
@@ -862,6 +875,18 @@ SPECTRA = (function() {
         rectMouseClick = fun;
         return chart;
       }
+
+      chart.width = function(value) {
+        if (!arguments.length) return width;
+        width = value;
+        return chart;
+      };
+
+      chart.height = function(value) {
+        if (!arguments.length) return height;
+        height = value;
+        return chart;
+      };
 
       return chart;
     }
@@ -1181,14 +1206,21 @@ SPECTRA = (function() {
 
     function timeseries() {
 
-      var xScale;
-      var yScale;
+      var xScale = d3.scale.ordinal();
+      var yScale = d3.scale.linear();
+      var height = 600;
+      var width = 600;
+      var rectMouseOver = function() {};
+      var rectMouseClick = function() {};
 
       function chart(selection) {
 
         selection.each(function(curData) {
           var curPlot = d3.select(this);
           var data = curData.data.map(function(d) {return d[0];});
+
+          xScale.rangeBands([0, width]);
+          yScale.range([height, 0]);
 
           var lineFun = d3.svg.line()
             .x(function(d, i) {return xScale(xScale.domain()[i]);})
@@ -1230,11 +1262,11 @@ SPECTRA = (function() {
           xAxisG.enter()
             .append('g')
               .attr('class', 'axis')
-              .attr('transform', 'translate(0,' + panelHeight + ')')
+              .attr('transform', 'translate(0,' + height + ')')
               .attr('id', 'x');
           xAxisG.call(xAxis);
 
-          var zeroG = curPlot.selectAll('g.zeroLine').data([[[0, panelHeight]]]);
+          var zeroG = curPlot.selectAll('g.zeroLine').data([[[0, height]]]);
           zeroG.enter()
             .append('g')
               .attr('class', 'zeroLine');
@@ -1266,7 +1298,7 @@ SPECTRA = (function() {
           heatmapRect.enter()
             .append('rect')
               .attr('opacity', 1e-6)
-              .attr('height', panelHeight)
+              .attr('height', height)
               .attr('width', xScale.rangeBand())
               .style('fill', 'white');
           heatmapRect
@@ -1289,6 +1321,30 @@ SPECTRA = (function() {
         yScale = scale;
         return chart;
       }
+
+      chart.rectMouseOver = function(fun) {
+        if (!arguments.length) return rectMouseOver;
+        rectMouseOver = fun;
+        return chart;
+      }
+
+      chart.rectMouseClick = function(fun) {
+        if (!arguments.length) return rectMouseClick;
+        rectMouseClick = fun;
+        return chart;
+      }
+
+      chart.width = function(value) {
+        if (!arguments.length) return width;
+        width = value;
+        return chart;
+      };
+
+      chart.height = function(value) {
+        if (!arguments.length) return height;
+        height = value;
+        return chart;
+      };
 
       return chart;
 
