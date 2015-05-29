@@ -270,13 +270,21 @@ SPECTRA = (function() {
       .yScale(freqScale)
       .xScale(timeScale)
       .intensityScale(powerScale)
-      .colorScale(heatmapPowerColor);
+      .colorScale(heatmapPowerColor)
+      .rectMouseOver(rectMouseOver)
+      .rectMouseClick(rectMouseClick);
 
     var cohChart = heatmap()
       .yScale(freqScale)
       .xScale(timeScale)
       .intensityScale(edgeStatScale)
-      .colorScale(edgeStatColor);
+      .colorScale(edgeStatColor)
+      .rectMouseOver(rectMouseOver)
+      .rectMouseClick(rectMouseClick);
+
+    var edgeStatOverTimeChart = timeseries()
+      .yScale(corrScale)
+      .xScale(timeScale);
 
     // Draw data
     drawNetwork();
@@ -289,27 +297,23 @@ SPECTRA = (function() {
       .call(powerChart);
 
     if (isFreq) {
-      svgEdgeStat.selectAll('g#corr').remove();
-      svgEdgeStat.selectAll('rect')
-          .attr('opacity', 1);
-      svgTimeSlice
-        .attr('opacity', 1);
+      svgEdgeStat
+        .html('');
       svgEdgeStat
         .datum(edgeStat)
         .call(cohChart);
       drawTimeSlice();
     } else {
-      // Hide coherence and time slice charts
+      // Remove coherence and time slice charts
+      svgEdgeStat
+        .html('')
+      svgTimeSlice
+        .html('');
+
       svgEdgeStat
         .datum(edgeStat)
-        .call(cohChart);
-      svgEdgeStat.selectAll('rect')
-          .attr('opacity', 1E-6);
-      svgEdgeStat.selectAll('.axis#freq')
-        .remove();
-      svgTimeSlice
-        .attr('opacity', 1E-6);
-      drawCorrelation();
+        .call(edgeStatOverTimeChart);
+
     }
 
     // Draw legends and titles
@@ -721,6 +725,10 @@ SPECTRA = (function() {
       var colorScale = d3.scale.linear();
       var xScale = d3.scale.ordinal();
       var yScale = d3.scale.ordinal();
+      var xAxisG;
+      var yAxisG;
+      var rectMouseOver = function() {};
+      var rectMouseClick = function() {};
 
       function chart(selection) {
 
@@ -729,18 +737,16 @@ SPECTRA = (function() {
             zeroLine;
           var curPlot = d3.select(this);
 
-          heatmapG = curPlot.selectAll('g.time').data(curData.data,
-            function(d, i) {return xScale.domain()[i];});
+          heatmapG = curPlot.selectAll('g.heatmapX').data(curData.data);
           heatmapG.enter()
             .append('g')
               .attr('transform', function(d, i) {
                   return 'translate(' + xScale(xScale.domain()[i]) + ',0)';
                 })
-              .attr('class', 'time');
+              .attr('class', 'heatmapX');
           heatmapG.exit()
             .remove();
-          heatmapRect = heatmapG.selectAll('rect').data(function(d) {return d;},
-            function(d, i) {return yScale.domain()[i];});
+          heatmapRect = heatmapG.selectAll('rect').data(function(d) {return d;});
 
           heatmapRect.enter()
             .append('rect')
@@ -758,6 +764,8 @@ SPECTRA = (function() {
               })
             .on('mouseover', rectMouseOver)
             .on('click', rectMouseClick);
+          heatmapRect.exit()
+            .remove();
 
           xAxis = d3.svg.axis()
            .scale(xScale)
@@ -771,11 +779,11 @@ SPECTRA = (function() {
            .tickValues(['10', '20', '40', '60', '90', '150', '200'])
            .tickSize(0, 0, 0);
 
-          xAxisG = curPlot.selectAll('g.axis.hideAxisLines#time').data([{}]);
+          xAxisG = curPlot.selectAll('g.axis#x').data([{}]);
           xAxisG.enter()
               .append('g')
-                .attr('class', 'axis hideAxisLines')
-                .attr('id', 'time')
+                .attr('class', 'axis')
+                .attr('id', 'x')
                 .attr('transform', 'translate(0,' + panelHeight + ')')
               .append('text')
                 .attr('x', xScale(0))
@@ -785,11 +793,11 @@ SPECTRA = (function() {
                 .text('Time (' + params.visInfo.tunits + ')');
           xAxisG.call(xAxis);
 
-          yAxisG = curPlot.selectAll('g.axis.hideAxisLines#freq').data([{}]);
+          yAxisG = curPlot.selectAll('g.axis#y').data([{}]);
           yAxisG.enter()
             .append('g')
-              .attr('class', 'axis hideAxisLines')
-              .attr('id', 'freq')
+              .attr('class', 'axis')
+              .attr('id', 'y')
             .append('text')
               .attr('x', -panelHeight / 2)
               .attr('dy', -2 + 'em')
@@ -840,6 +848,18 @@ SPECTRA = (function() {
       chart.yScale = function(scale) {
         if (!arguments.length) return yScale;
         yScale = scale;
+        return chart;
+      }
+
+      chart.rectMouseOver = function(fun) {
+        if (!arguments.length) return rectMouseOver;
+        rectMouseOver = fun;
+        return chart;
+      }
+
+      chart.rectMouseClick = function(fun) {
+        if (!arguments.length) return rectMouseClick;
+        rectMouseClick = fun;
         return chart;
       }
 
@@ -1159,62 +1179,118 @@ SPECTRA = (function() {
         .text(function(d) {return 'Time Slice @ Frequency ' + d + ' ' + params.visInfo.funits;});
     }
 
-    function drawCorrelation() {
-      var edgeStatData = edgeStat.data.map(function(d) {return d[0];});
+    function timeseries() {
 
-      var lineFun = d3.svg.line()
-        .x(function(d, i) {return timeScaleLinear(tAx[i]);})
-        .y(function(d) {return corrScale(d);})
-        .interpolate('linear');
+      var xScale;
+      var yScale;
 
-      var corrG = svgEdgeStat.selectAll('g#corr').data([{}]);
-      corrG.enter()
-        .append('g')
-          .attr('id', 'corr');
+      function chart(selection) {
 
-      var corrLine = corrG.selectAll('path#corrLine').data([edgeStatData]);
-      corrLine.enter()
-        .append('path')
-          .attr('id', 'corrLine')
-          .attr('fill', 'none')
-          .attr('stroke', 'blue');
-      corrLine
-        .transition()
-          .duration(5)
-          .ease('linear')
-        .attr('d', lineFun);
-      var timeAxis = d3.svg.axis()
-                   .scale(timeScaleLinear)
-                   .orient('bottom')
-                   .ticks(3)
-                   .tickValues([d3.min(tAx), 0, d3.max(tAx)])
-                   .tickSize(0, 0, 0);
+        selection.each(function(curData) {
+          var curPlot = d3.select(this);
+          var data = curData.data.map(function(d) {return d[0];});
 
-      var timeAxisG = corrG.selectAll('g.axis.hideAxisLines#time').data([{}]);
-      timeAxisG.enter()
-          .append('g')
-            .attr('class', 'axis hideAxisLines')
-            .attr('id', 'time')
-            .attr('transform', 'translate(0,' + panelHeight + ')')
-          .append('text')
-            .attr('x', timeScaleLinear(0))
-            .attr('y', 0)
-            .attr('text-anchor', 'middle')
-            .attr('dy', 2 + 'em')
-            .text('Time (' + params.visInfo.tunits + ')');
-      timeAxisG.call(timeAxis);
+          var lineFun = d3.svg.line()
+            .x(function(d, i) {return xScale(xScale.domain()[i]);})
+            .y(function(d) {return yScale(d);})
+            .interpolate('linear');
 
-      var corrAxis = d3.svg.axis()
-                   .scale(corrScale)
-                   .orient('left')
-                   .ticks(3)
-                   .tickSize(0, 0, 0);
-      var corrAxisG = svgEdgeStat.selectAll('g.axis#corr').data([{}]);
-      corrAxisG.enter()
-        .append('g')
-          .attr('class', 'axis')
-          .attr('id', 'corr');
-      corrAxisG.call(corrAxis);
+          var line = curPlot.selectAll('path.timeseries').data([data]);
+          line.enter()
+            .append('path')
+              .attr('class', 'timeseries')
+              .attr('fill', 'none')
+              .attr('stroke', 'blue');
+          line
+            .transition()
+              .duration(5)
+              .ease('linear')
+            .attr('d', lineFun);
+
+          var yAxis = d3.svg.axis()
+           .scale(yScale)
+           .orient('left')
+           .ticks(3)
+           .tickValues([d3.min(yScale.domain()), 0, d3.max(yScale.domain())])
+           .tickSize(0, 0, 0);
+          var yAxisG = curPlot.selectAll('g.axis#y').data([{}]);
+          yAxisG.enter()
+            .append('g')
+              .attr('class', 'axis')
+              .attr('id', 'y');
+          yAxisG.call(yAxis);
+
+          var xAxis = d3.svg.axis()
+           .scale(xScale)
+           .orient('bottom')
+           .ticks(3)
+           .tickValues([d3.min(xScale.domain()), 0, d3.max(xScale.domain())])
+           .tickSize(0, 0, 0);
+          var xAxisG = curPlot.selectAll('g.axis#x').data([{}]);
+          xAxisG.enter()
+            .append('g')
+              .attr('class', 'axis')
+              .attr('transform', 'translate(0,' + panelHeight + ')')
+              .attr('id', 'x');
+          xAxisG.call(xAxis);
+
+          var zeroG = curPlot.selectAll('g.zeroLine').data([[[0, panelHeight]]]);
+          zeroG.enter()
+            .append('g')
+              .attr('class', 'zeroLine');
+          var zeroLine = zeroG.selectAll('path').data(function(d) {return d;});
+
+          zeroLine.enter()
+            .append('path');
+          zeroLine
+            .attr('d', d3.svg.line()
+              .x(xScale(0))
+              .y(function(d) { return d; })
+              .interpolate('linear'))
+            .attr('stroke', 'black')
+            .attr('stroke-width', 2)
+            .attr('fill', 'none')
+            .style('opacity', 0.7);
+
+          var heatmapG = curPlot.selectAll('g.heatmapX').data(curData.data);
+          heatmapG.enter()
+            .append('g')
+              .attr('transform', function(d, i) {
+                  return 'translate(' + xScale(xScale.domain()[i]) + ', 0)';
+                })
+              .attr('class', 'heatmapX');
+          heatmapG.exit()
+            .remove();
+          var heatmapRect = heatmapG.selectAll('rect').data(function(d) {return d;});
+
+          heatmapRect.enter()
+            .append('rect')
+              .attr('opacity', 1e-6)
+              .attr('height', panelHeight)
+              .attr('width', xScale.rangeBand())
+              .style('fill', 'white');
+          heatmapRect
+            .on('mouseover', rectMouseOver)
+            .on('click', rectMouseClick);
+          heatmapRect.exit()
+            .remove();
+        })
+
+      }
+
+      chart.xScale = function(scale) {
+        if (!arguments.length) return xScale;
+        xScale = scale;
+        return chart;
+      }
+
+      chart.yScale = function(scale) {
+        if (!arguments.length) return yScale;
+        yScale = scale;
+        return chart;
+      }
+
+      return chart;
 
     }
 
@@ -1314,19 +1390,19 @@ SPECTRA = (function() {
 
     function updateTimeSlider() {
       curTimeInd = tAx.indexOf(+this.value);
-      force.stop();
-      drawNetwork();
       timeSlider.property('value', tAx[curTimeInd]);
       timeSliderText.text(tAx[curTimeInd] + ' ms');
+      force.stop();
+      if (!this.noUpdate) drawNetwork();
     }
 
     function updateFreqSlider() {
       curFreqInd = isFreq ? fAx.indexOf(+this.value) : 0;
-      force.stop();
-      drawNetwork();
-      if (isFreq) drawTimeSlice();
       freqSlider.property('value', fAx[curFreqInd]);
       freqSliderText.text(fAx[curFreqInd] + ' Hz');
+      force.stop();
+      if (!this.noUpdate) drawNetwork();
+      if (isFreq) drawTimeSlice();
     }
 
     function rectMouseOver(d, freqInd, timeInd) {
@@ -1337,7 +1413,7 @@ SPECTRA = (function() {
         force.stop();
 
         if (isFreq) drawTimeSlice();
-        updateTimeSlider.call({value: tAx[curTimeInd]});
+        updateTimeSlider.call({value: tAx[curTimeInd], noUpdate: true});
         updateFreqSlider.call({value: fAx[curFreqInd]});
       };
     }
