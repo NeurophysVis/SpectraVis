@@ -1,25 +1,14 @@
 
-.timeAxis text, .freqAxis text,
-.powerAxis text, .edgeStatAxis text,
-.powerSliceAxis text, .edgeStatSliceAxis text,
-.timeSliceAxis text
-{
-  font: 11px sans-serif;
-  color: #777;
-  font-weight: 400;
-}
-.timeAxis line, .freqAxis line,
-.powerAxis line, .edgeStatAxis line,
-.powerSliceAxis line, .edgeStatSliceAxis line,
-.timeSliceAxis line,
-.powerSliceAxis path, .edgeStatSliceAxis path,
-.timeSliceAxis path {
+.axis path, .axis line {
   fill: none;
   stroke: #000;
   shape-rendering: crispEdges;
 }
-.timeAxis path, .freqAxis path,
-.powerAxis path, .edgeStatAxis path {
+.axis text {
+  font: 11px sans-serif;
+  color: #777;
+}
+.hideAxisLines path {
   display: none;
 }
 .edge {
