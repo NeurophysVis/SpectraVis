@@ -657,6 +657,7 @@ SPECTRA = (function() {
          curCh1 = re.exec(e.source.channelID)[0];
          curCh2 = re.exec(e.target.channelID)[0];
          mouseFlag = true;
+         svgNetworkMap.select('text#HOLD').remove();
          loadSpectra();
          edgeMouseOut.call(this, e);
        }
@@ -683,6 +684,7 @@ SPECTRA = (function() {
            curCh1 = re.exec(nodeClickNames[0])[0];
            curCh2 = re.exec(nodeClickNames[1])[0];
            mouseFlag = true;
+           svgNetworkMap.select('text#HOLD').remove();
            d3.selectAll('circle.node')
              .filter(function(n) {
                return (n.channelID === nodeClickNames[0].toString()) || (n.channelID === nodeClickNames[1].toString());
