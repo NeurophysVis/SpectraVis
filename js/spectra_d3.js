@@ -538,10 +538,10 @@ SPECTRA = (function() {
         .append('line')
           .attr('class', 'edge')
           .style('stroke-width', EDGE_WIDTH)
-          .attr('x1', function(d) {return d.source.x;})
-          .attr('y1', function(d) {return d.source.y;})
-          .attr('x2', function(d) {return d.target.x;})
-          .attr('y2', function(d) {return d.target.y;});
+          .attr('x1', function(d) {return xPos(d.source);})
+          .attr('y1', function(d) {return yPos(d.source);})
+          .attr('x2', function(d) {return xPos(d.target);})
+          .attr('y2', function(d) {return yPos(d.target);});
       edgeLine.exit()
         .remove();
       edgeLine
@@ -558,7 +558,7 @@ SPECTRA = (function() {
         .append('g')
           .attr('class', 'gnode')
           .attr('transform', function(d) {
-            return 'translate(' + [d.x, d.y] + ')';
+            return 'translate(' + [xPos(d), yPos(d)] + ')';
           })
           .on('click', nodeMouseClick);
       nodeG.exit().remove();
@@ -585,17 +585,19 @@ SPECTRA = (function() {
 
       // For every iteration of force simulation 'tick'
       force.on('tick', function() {
-        edgeLine.attr('x1', function(d) {return d.source.x;})
-          .attr('y1', function(d) {return d.source.y;})
-          .attr('x2', function(d) {return d.target.x;})
-          .attr('y2', function(d) {return d.target.y;});
 
         // Translate the groups
         nodeG.attr('transform', function(d) {
-          return 'translate(' + [d.x, d.y] + ')';
+          return 'translate(' + [xPos(d), yPos(d)] + ')';
         });
 
+        edgeLine.attr('x1', function(d) {return xPos(d.source);})
+          .attr('y1', function(d) {return yPos(d.source);})
+          .attr('x2', function(d) {return xPos(d.target);})
+          .attr('y2', function(d) {return yPos(d.target);});
+
         if (networkView != 'Topological') {force.stop();}
+
       });
 
       brainImage = brainImageG.selectAll('image').data([subjectObject], function(d) {return d.brainFilename;});
@@ -609,6 +611,14 @@ SPECTRA = (function() {
       brainImage.exit()
         .remove();
       if (networkView === 'Topological') {brainImage.remove();};
+
+      function xPos(d) {
+        return Math.max(NODE_RADIUS, Math.min(networkWidth - NODE_RADIUS, d.x))
+      }
+
+      function yPos(d) {
+        return Math.max(NODE_RADIUS, Math.min(networkHeight - NODE_RADIUS, d.y))
+      }
 
       function weights(e) {
         var minDistance = 75;
