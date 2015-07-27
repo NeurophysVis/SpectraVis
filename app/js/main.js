@@ -531,6 +531,16 @@ SPECTRA = (function() {
       var nodeCircle;
       var nodeText;
 
+      // Display state of application in url
+      window.history.pushState({}, '', '?curSubject=' + curSubject +
+                                                              '&edgeStat=' + edgeInfo.edgeTypeID +
+                                                              '&edgeArea=' + edgeArea +
+                                                              '&networkView=' + networkView +
+                                                              '&time=' + tAx[curTimeInd] +
+                                                              '&freq=' + fAx[curFreqInd] +
+                                                              '&curCh1=' + curCh1 +
+                                                              '&curCh2=' + curCh2);
+
       // Replace x and y coordinates of nodes with properly scaled x,y
       if (networkView != 'Topological' || typeof channel === 'undefined') {
         channel = params.channel.map(function(n) {
