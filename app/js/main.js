@@ -1,6 +1,11 @@
 SPECTRA = (function() {
   params = {};
-  var networkWidth, networkHeight, svgNetworkMap, subjectObject, curSubject, edgeStatType;
+  var networkWidth;
+  var networkHeight;
+  var svgNetworkMap;
+  var subjectObject;
+  var curSubject;
+  var edgeStatType;
   var NUM_COLORS = 11;
   var NODE_RADIUS = 10;
   var EDGE_WIDTH = 2;
@@ -236,13 +241,41 @@ SPECTRA = (function() {
   // Draw
   function display(isError, spect1, spect2) {
 
-    var timeScale, timeScaleLinear, freqScale, powerScale, tAx, fAx,
-        heatmapPowerColor, networkXScale, networkYScale, force, timeSlider,
-        freqSlider, timeSliderText, freqSliderText, subjectDropdown, edgeStatScale,
-        edgeStatTypeDropdown, networkColorScale, timeSliderStep, timeMaxStepInd,
-        networkXExtent, networkYExtent, edgeStat, channel, powerLineFun,
-        edgeStatLineFun, timeSlicePowerScale, timeSliceNetworkStatScale, spect1Line,
-        spect2Line, edgeStatLine, heatmapPowerColor, edgeStatColor, isFreq, corrScale;
+    var timeScale;
+    var timeScaleLinear;
+    var freqScale;
+    var powerScale;
+    var tAx;
+    var fAx;
+    var heatmapPowerColor;
+    var networkXScale;
+    var networkYScale;
+    var force;
+    var timeSlider;
+    var freqSlider;
+    var timeSliderText;
+    var freqSliderText;
+    var subjectDropdown;
+    var edgeStatScale;
+    var edgeStatTypeDropdown;
+    var networkColorScale;
+    var timeSliderStep;
+    var timeMaxStepInd;
+    var networkXExtent;
+    var networkYExtent;
+    var edgeStat;
+    var channel;
+    var powerLineFun;
+    var edgeStatLineFun;
+    var timeSlicePowerScale;
+    var timeSliceNetworkStatScale;
+    var spect1Line;
+    var spect2Line;
+    var edgeStatLine;
+    var heatmapPowerColor;
+    var edgeStatColor;
+    var isFreq;
+    var corrScale;
 
     tAx = params.visInfo.tax; // Time Axis
     fAx = params.visInfo.fax; // Frequency Axis
@@ -254,6 +287,7 @@ SPECTRA = (function() {
     // Get the edge statastic name and units
     var edgeInfo = params.edgeInfo
       .filter(function(e) {return e.edgeTypeID === edgeStatType;})[0];
+
     isFreq = edgeInfo.isFreq;
 
     // Set up scales and slider values
@@ -379,8 +413,12 @@ SPECTRA = (function() {
     }
 
     function setupScales() {
-      var powerMin, powerMax, powerExtent,
-          edgeStatMin, edgeStatMax, edgeStatExtent;
+      var powerMin;
+      var powerMax;
+      var powerExtent;
+      var edgeStatMin;
+      var edgeStatMax;
+      var edgeStatExtent;
 
       heatmapPowerColor = d3.scale.linear()
         .domain(d3.range(0, 1, 1.0 / (NUM_COLORS - 1)))
@@ -479,8 +517,17 @@ SPECTRA = (function() {
     }
 
     function drawNetwork() {
-      var nodesGroup, edgesGroup, nodeG, strokeStyle, nodeClickNames = [],
-          brainImage, edge, edgeLine, brainImageG, nodeCircle, nodeText;
+      var nodesGroup;
+      var edgesGroup;
+      var nodeG;
+      var strokeStyle;
+      var nodeClickNames = [];
+      var brainImage;
+      var edge;
+      var edgeLine;
+      var brainImageG
+      var nodeCircle;
+      var nodeText;
 
       // Replace x and y coordinates of nodes with properly scaled x,y
       if (networkView != 'Topological' || typeof channel === 'undefined') {
@@ -503,6 +550,7 @@ SPECTRA = (function() {
       edge = params.edge.map(function(e) {
         var obj = copyObject(e);
         obj.source = channel.filter(function(n) {return n.channelID === e.source;})[0];
+
         obj.target = channel.filter(function(n) {return n.channelID === e.target;})[0];
 
         obj.data = obj.data[curTimeInd][curFreqInd];
@@ -542,6 +590,7 @@ SPECTRA = (function() {
           .attr('y1', function(d) {return yPos(d.source);})
           .attr('x2', function(d) {return xPos(d.target);})
           .attr('y2', function(d) {return yPos(d.target);});
+
       edgeLine.exit()
         .remove();
       edgeLine
@@ -757,7 +806,9 @@ SPECTRA = (function() {
       var xScale = d3.scale.ordinal();
       var yScale = d3.scale.ordinal();
       var rectMouseOver = function() {};
+
       var rectMouseClick = function() {};
+
       var height = 500;
       var width = 500;
       var xLabel = '';
@@ -766,8 +817,14 @@ SPECTRA = (function() {
       function chart(selection) {
 
         selection.each(function(data) {
-          var heatmapG, heatmapRect, xAxis, yAxis, zeroG, xAxisG, yAxisG,
-            zeroLine;
+          var heatmapG;
+          var heatmapRect;
+          var xAxis;
+          var yAxis;
+          var zeroG;
+          var xAxisG;
+          var yAxisG;
+          var zeroLine;
           var curPlot = d3.select(this);
 
           xScale.rangeBands([0, width]);
@@ -927,7 +984,10 @@ SPECTRA = (function() {
     }
 
     function drawTitles() {
-      var titleCh1, titleCh2, titleCoh, titleSubjectEdge;
+      var titleCh1;
+      var titleCh2;
+      var titleCoh;
+      var titleSubjectEdge;
       titleCh1 = svgCh1.selectAll('text.title').data([spect1.channelID]);
       titleCh1.exit().remove();
       titleCh1.enter()
@@ -973,10 +1033,18 @@ SPECTRA = (function() {
     }
 
     function drawLegends() {
-      var powerG, powerLegendRect, legendScale, powerAxisG, powerAxis,
-          edgeStatG, edgeStatLegendRect, edgeStatAxisG, edgeStatAxis, anatomicalG,
-          anatomicalCircle, anatomicalText;
-
+      var powerG;
+      var powerLegendRect;
+      var legendScale;
+      var powerAxisG;
+      var powerAxis;
+      var edgeStatG;
+      var edgeStatLegendRect;
+      var edgeStatAxisG;
+      var edgeStatAxis;
+      var anatomicalG;
+      var anatomicalCircle;
+      var anatomicalText;
       var formatter = d3.format('.1f');
       var colorInd = d3.range(0, 1, 1.0 / (NUM_COLORS - 1));
       colorInd.push(1);
@@ -1136,7 +1204,9 @@ SPECTRA = (function() {
       var height = 600;
       var width = 600;
       var rectMouseOver = function() {};
+
       var rectMouseClick = function() {};
+
       var xLabel = '';
       var yLabel = '';
       var yAxisOrientation = 'left';

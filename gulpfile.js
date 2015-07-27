@@ -42,6 +42,5 @@ gulp.task('minifyCSS', function() {
     .pipe(gulp.dest('public/css'));
 });
 
-
 gulp.task('default', ['createMainJS', 'createVendorJS', 'minifyCSS']);
 gulp.task('build', ['createMainJS', 'createVendorJS', 'minifyCSS']);
