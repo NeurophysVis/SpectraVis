@@ -106,5 +106,19 @@
     </div> <!-- end container div-->
     <script src="js/vendor.js"></script>
     <script src="js/main.js"></script>
+    <script>
+      // Extract parameters from the browser
+      var extractedParams;
+      var query = window.location.search.substring(1);
+      var vars = query.split("&");
+      vars.forEach(function(v) {
+        var p = v.split("=");
+        p[1] = decodeURI(p[1]);
+        extractedParams[p[0]] = p[1]
+      });
+
+      // Initialized visualization
+      // spectraVis.init(extractedParams);
+  </script>
   </body>
 </html>

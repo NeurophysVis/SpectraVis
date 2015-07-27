@@ -1,4 +1,5 @@
-SPECTRA = (function() {
+(function() {
+  spectraVis = {}
   params = {};
   var networkWidth;
   var networkHeight;
