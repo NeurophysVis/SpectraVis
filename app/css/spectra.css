@@ -66,6 +66,9 @@ button#PlayButtonPanel {
 .dropdown li {
   cursor: pointer;
 }
+.dropdown button {
+  overflow: hidden;
+}
 
 g#spect2Slice > g#x.axis, g#spect2Slice > g.zeroLine {
   display: none;
