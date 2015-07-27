@@ -275,6 +275,7 @@ SPECTRA = (function() {
     var heatmapPowerColor;
     var edgeStatColor;
     var isFreq;
+    var isWeightedNetwork;
     var corrScale;
 
     tAx = params.visInfo.tax; // Time Axis
@@ -289,6 +290,7 @@ SPECTRA = (function() {
       .filter(function(e) {return e.edgeTypeID === edgeStatType;})[0];
 
     isFreq = edgeInfo.isFreq;
+    isWeightedNetwork = edgeInfo.isFreq;
 
     // Set up scales and slider values
     setupScales();
