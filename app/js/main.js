@@ -343,7 +343,7 @@
     var powerTimeSlice = timeseries()
       .height(timeSliceHeight)
       .width(timeSliceWidth)
-      .yScale(powerScale)
+      .yScale(timeSlicePowerScale)
       .xScale(timeScale)
       .yAxisOrientation('right')
       .xLabel('Time (' + params.visInfo.tunits + ')')
