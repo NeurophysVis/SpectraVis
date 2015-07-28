@@ -1,5 +1,7 @@
 var gulp = require('gulp');
 var gutil = require('gulp-util');
+var imagemin = require('gulp-imagemin');
+var pngquant = require('imagemin-pngquant');
 var streamify = require('gulp-streamify');
 var autoprefixer = require('gulp-autoprefixer');
 var cssmin = require('gulp-cssmin');
@@ -42,5 +44,15 @@ gulp.task('minifyCSS', function() {
     .pipe(gulp.dest('public/css'));
 });
 
-gulp.task('default', ['createMainJS', 'createVendorJS', 'minifyCSS']);
-gulp.task('build', ['createMainJS', 'createVendorJS', 'minifyCSS']);
+gulp.task('compressImages', function() {
+  return gulp.src('app/img/*')
+         .pipe(imagemin({
+             progressive: true,
+             svgoPlugins: [{removeViewBox: false}],
+             use: [pngquant()]
+         }))
+         .pipe(gulp.dest('public/DATA/brainImages'));
+});
+
+gulp.task('default', ['createMainJS', 'createVendorJS', 'minifyCSS', 'compressImages']);
+gulp.task('build', ['createMainJS', 'createVendorJS', 'minifyCSS', 'compressImages']);

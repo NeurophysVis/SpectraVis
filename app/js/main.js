@@ -128,6 +128,7 @@
       .append('span')
         .attr('class', 'caret');
 
+  // Display loading spinner gif
   spinner = d3.select('#NetworkPanel')
     .append('div')
       .attr('id', 'load')
@@ -288,7 +289,11 @@
     var isWeightedNetwork;
     var corrScale;
 
+    // Remove loading spinner gif
     d3.select('#NetworkPanel').select('#load')
+      .transition()
+      .duration(5000)
+      .attr('opacity', 1e-6)
       .remove();
 
     tAx = params.visInfo.tax; // Time Axis
