@@ -30,6 +30,7 @@
   var anatomicalLegendHeight = 100 - margin.top - margin.bottom;
   var timeSliceWidth = panelWidth;
   var timeSliceHeight =  180 - margin.top - margin.bottom;
+  var spinner;
 
   // Heatmap Panels
   var svgCh1 = d3.select('#SpectraCh1Panel')
@@ -126,6 +127,14 @@
     .text(edgeArea)
       .append('span')
         .attr('class', 'caret');
+
+  spinner = d3.select('#NetworkPanel')
+    .append('div')
+      .attr('id', 'load')
+      .attr('width', panelWidth)
+      .attr('height', panelHeight)
+      .attr('position', 'relative')
+      .html('<img src="img/loader.gif" id="loading">');
 
   // Load subject data
   queue()
@@ -278,6 +287,9 @@
     var isFreq;
     var isWeightedNetwork;
     var corrScale;
+
+    d3.select('#NetworkPanel').select('#load')
+      .remove();
 
     tAx = params.visInfo.tax; // Time Axis
     fAx = params.visInfo.fax; // Frequency Axis
