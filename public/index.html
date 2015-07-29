@@ -13,11 +13,11 @@
     <div class="container">
       <!-- Title Panel -->
       <div class="row" id="TitlePanel">
-         <h1 class="col-md-3">SpectraVis
-          <button type="button" class="btn btn-lg bottom-buffer" id="help-button" aria-label="Help">
+         <div class="col-md-3"><h1>SpectraVis</h1>
+          <button type="button" class="btn btn-lg" id="help-button" aria-label="Help">
             <span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
           </button>
-        </h1>
+        </div>
       </div>
       <div class="row top-buffer">
         <!-- Brain Panel -->
@@ -104,6 +104,20 @@
         <div class="col-md-4 col-md-offset-4" id="timeSlice"></div>
       </div>
     </div> <!-- end container div-->
+    <div id="overlay">
+      <div id="helpToolTip">
+        <h4>How to Use SpectraVis</h4>
+        <span id="close">&times;</span>
+        <div id="toolTip-content">
+          <p><strong>Click</strong> on any two nodes or the edge between them to load the spectra and coherences/correlations between those two nodes. </p>
+          <p><strong>Mouse over</strong> the spectra or cohereograms/correlograms to see the network at that time and/or frequency </p>
+          <p><strong>Click on</strong> the spectra or cohereograms/correlograms to freeze the network at a particular time and frequency value</p>
+          <br>
+          <p><strong>Edge Area</strong> allows you to look at only edges between areas, edges within areas, or all edges</p>
+          <p><strong>Network View</strong> allows you to toggle between viewing the nodes in their anatomical location or in a layout designed to give you a sense of the structure of the network (topological) </p>
+        </div>
+      </div>
+    </div>
     <script src="js/vendor.js"></script>
     <script src="js/main.js"></script>
     <script>
@@ -114,9 +128,10 @@
       vars.forEach(function(v) {
         var p = v.split("=");
         p[1] = decodeURI(p[1]);
-        extractedParams[p[0]] = p[1]
+        if (typeof(p[1]) !== 'undefined') {
+          extractedParams[p[0]] = p[1];
+        }
       });
-
       // Initialized visualization
       // spectraVis.init(extractedParams);
   </script>

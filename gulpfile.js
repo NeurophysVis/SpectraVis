@@ -31,6 +31,12 @@ gulp.task('createVendorJS', function() {
 gulp.task('createMainJS', function() {
   return gulp.src('app/js/*.js')
     .pipe(concat('main.js'))
+    .pipe(gulp.dest('public/js'));
+});
+
+gulp.task('createMainJS-build', function() {
+  return gulp.src('app/js/*.js')
+    .pipe(concat('main.js'))
     .pipe(uglify())
     .pipe(gulp.dest('public/js'));
 });
@@ -54,5 +60,5 @@ gulp.task('compressImages', function() {
          .pipe(gulp.dest('public/DATA/brainImages'));
 });
 
-gulp.task('default', ['createMainJS', 'createVendorJS', 'minifyCSS', 'compressImages']);
-gulp.task('build', ['createMainJS', 'createVendorJS', 'minifyCSS', 'compressImages']);
+gulp.task('default', ['createMainJS', 'createVendorJS', 'minifyCSS']);
+gulp.task('build', ['createMainJS-build', 'createVendorJS', 'minifyCSS', 'compressImages']);

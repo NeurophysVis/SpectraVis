@@ -96,30 +96,16 @@
           .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
   // Set up tool tip
-  var toolTip = d3.select('body')
-         .append('div')
-           .attr('id', 'helpToolTip')
-           .style('opacity', 1e-6);
-
-  // Set up help information
-  d3.select('span.glyphicon-question-sign')
-    .on('mouseover', function() {
+  var toolTip = d3.select('#overlay');
+  toolTip.selectAll('#close')
+     .on('click', function() {
+       toolTip.style('display', 'none');
+     ;});
+  d3.select('#help-button')
+    .on('click', function() {
       toolTip
-        .style('opacity', 0.9)
-        .style('left', d3.event.pageX + 30 + 'px')
-        .style('top', d3.event.pageY + 'px')
-        .html(function() {
-          return '<p>' +
-                 '<strong>Click</strong> on any two nodes or the edge between them to load the spectra and coherences between those two nodes. <br> <br>' +
-                 '<strong>Mouse over</strong> the spectra or cohereograms to see the network at that time and frequency<br> <br>' +
-                 '<strong>Click on</strong> the spectra or cohereograms to freeze the network at a particular time and frequency value' +
-                 '</p>'
-        ;});
-    })
-    .on('mouseout', function() {
-      toolTip
-        .style('opacity', 1e-6);
-    })
+        .style('display', '');
+    });
 
   // Set up edge area dropdown menus
   var edgeAreaDropdown = d3.select('#EdgeAreaDropdown');
@@ -294,7 +280,7 @@
       .transition()
       .duration(5000)
       .attr('opacity', 1e-6)
-      .remove();
+      .style('display', 'none');
 
     tAx = params.visInfo.tax; // Time Axis
     fAx = params.visInfo.fax; // Frequency Axis
@@ -551,13 +537,13 @@
 
       // Display state of application in url
       window.history.pushState({}, '', '?curSubject=' + curSubject +
-                                                              '&edgeStat=' + edgeInfo.edgeTypeID +
-                                                              '&edgeArea=' + edgeArea +
-                                                              '&networkView=' + networkView +
-                                                              '&time=' + tAx[curTimeInd] +
-                                                              '&freq=' + fAx[curFreqInd] +
-                                                              '&curCh1=' + curCh1 +
-                                                              '&curCh2=' + curCh2);
+                                        '&edgeStat=' + edgeInfo.edgeTypeID +
+                                        '&edgeArea=' + edgeArea +
+                                        '&networkView=' + networkView +
+                                        '&time=' + tAx[curTimeInd] +
+                                        '&freq=' + fAx[curFreqInd] +
+                                        '&curCh1=' + curCh1 +
+                                        '&curCh2=' + curCh2);
 
       // Replace x and y coordinates of nodes with properly scaled x,y
       if (networkView != 'Topological' || typeof channel === 'undefined') {
@@ -1419,9 +1405,15 @@
     }
 
     function subjectLoad() {
+
       subjectDropdown = d3.select('#SubjectDropdown');
       subjectDropdown.selectAll('li')
         .on('click', function() {
+
+          // Display loading spinner gif
+          spinner = d3.select('#NetworkPanel').select('#load')
+            .style('display', '');
+
           subjectDropdown.selectAll('button')
             .text(this.id)
             .append('span')
