@@ -10,6 +10,7 @@ var plumber = require('gulp-plumber');
 var browserify = require('browserify');
 var watchify = require('watchify');
 var uglify = require('gulp-uglify');
+var jsonminify = require('gulp-jsonminify');
 
 /*
  |--------------------------------------------------------------------------
@@ -51,7 +52,7 @@ gulp.task('minifyCSS', function() {
 });
 
 gulp.task('compressImages', function() {
-  return gulp.src('app/img/*')
+  return gulp.src('app/DATA/brainImages/*')
          .pipe(imagemin({
              progressive: true,
              svgoPlugins: [{removeViewBox: false}],
@@ -60,5 +61,11 @@ gulp.task('compressImages', function() {
          .pipe(gulp.dest('public/DATA/brainImages'));
 });
 
+gulp.task('minifyJSON', function() {
+  return gulp.src('app/DATA/*.json')
+    .pipe(jsonminify())
+    .pipe(gulp.dest('public/DATA'));
+});
+
 gulp.task('default', ['createMainJS', 'createVendorJS', 'minifyCSS']);
-gulp.task('build', ['createMainJS-build', 'createVendorJS', 'minifyCSS', 'compressImages']);
+gulp.task('build', ['createMainJS-build', 'createVendorJS', 'minifyCSS', 'compressImages', 'minifyJSON']);

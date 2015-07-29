@@ -4,5 +4,6 @@
 node_modules/
 dist/
 app/components/
-DATA/
+app/DATA/
+public/DATA/
 app/img/
