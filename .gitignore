@@ -1,5 +1,8 @@
 *.asv
-*.json
 *.mat
+*.DS_Store
+node_modules/
+dist/
+app/components/
 DATA/
-.DS_Store
+app/img/

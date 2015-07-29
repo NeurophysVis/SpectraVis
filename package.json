@@ -1,0 +1,53 @@
+{
+  "name": "spectravis",
+  "version": "0.1.0",
+  "description": "An interactive visualization tool for spectra, coherences, corrrelations, and associated networks",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/edeno/SpectraVis.git"
+  },
+  "keywords": [
+    "neuroscience",
+    "spectra",
+    "coherence",
+    "correlation",
+    "networks"
+  ],
+  "author": {
+    "name": "Eric Denovellis",
+    "url": "http://ericdeno.com"
+  },
+  "contributors": [
+    {
+      "name": "Emily Stephen",
+      "url": "http://emilystephen.com/"
+    }
+  ],
+  "dependencies": {
+    "d3": "^3.5.6"
+  },
+  "devDependencies": {
+    "bower": "^1.4.1",
+    "browserify": "^11.0.0",
+    "gulp": "^3.9.0",
+    "gulp-autoprefixer": "^2.3.1",
+    "gulp-concat": "^2.6.0",
+    "gulp-cssmin": "^0.1.7",
+    "gulp-imagemin": "^2.3.0",
+    "gulp-plumber": "^1.0.1",
+    "gulp-streamify": "0.0.5",
+    "gulp-uglify": "^1.2.0",
+    "gulp-util": "^3.0.6",
+    "imagemin-pngquant": "^4.1.2",
+    "watchify": "^3.3.0"
+  },
+  "license": "GPL-2.0",
+  "bugs": {
+    "url": "https://github.com/edeno/SpectraVis/issues"
+  },
+  "homepage": "https://github.com/edeno/SpectraVis#readme"
+}
