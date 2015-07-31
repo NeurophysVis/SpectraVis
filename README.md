@@ -3,7 +3,7 @@ SpectraVis
 
 An interactive network visualization tool for exploring [functional brain connectivity](http://www.scholarpedia.org/article/Brain_connectivity) using [d3.js](http://d3js.org/).
 
-![](/SpectraVis.png)
+![](/spectraVis.png)
 
 SpectraVis allows you to:
 + examine how network dynamics change over time and frequency
