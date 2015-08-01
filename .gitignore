@@ -2,7 +2,8 @@
 *.mat
 *.DS_Store
 node_modules/
-dist/
 app/components/
-app/DATA/
-public/DATA/
+app/DATA/*
+app/DATA/brainImages/*
+public/DATA/*
+public/DATA/brainImages/*
