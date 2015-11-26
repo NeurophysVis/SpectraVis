@@ -11,8 +11,8 @@
   var NODE_RADIUS = 10;
   var EDGE_WIDTH = 2;
   var stopAnimation = true;
-  var curCh1 = [];
-  var curCh2 = [];
+  var curCh1 = '';
+  var curCh2 = '';
   var curFreqInd = 0;
   var curTimeInd = 0;
   var mouseFlag = true;
