@@ -1,5 +1,5 @@
 (function() {
-  spectraVis = {}
+  spectraVis = {};
   params = {};
   var networkWidth;
   var networkHeight;
@@ -100,7 +100,8 @@
   toolTip.selectAll('#close')
      .on('click', function() {
        toolTip.style('display', 'none');
-     ;});
+     });
+
   d3.select('#help-button')
     .on('click', function() {
       toolTip
@@ -143,7 +144,7 @@
         .append('a')
           .attr('role', 'menuitem')
           .attr('tabindex', -1)
-          .text(function(d) {return d.subjectID});
+          .text(function(d) {return d.subjectID;});
 
     // Default to the first subject
     curSubject = subjectData[0].subjectID;
@@ -373,7 +374,7 @@
     } else {
       // Remove coherence and time slice charts
       svgEdgeStat
-        .html('')
+        .html('');
       svgTimeSlice
         .html('');
       svgEdgeStat
@@ -414,7 +415,7 @@
       freqSlider.property('max', d3.max(fAx));
       freqSlider.property('step', fAx[1] - fAx[0]);
       freqSlider.property('value', fAx[curFreqInd]);
-      freqSlider.on('input', updateFreqSlider)
+      freqSlider.on('input', updateFreqSlider);
       freqSliderText.text(fAx[curFreqInd] + ' Hz');
     }
 
@@ -443,7 +444,8 @@
 
         d3.min(spect2.data, function(d) {
           return d3.min(d, function(e) {return e;});
-        })]
+        }),
+        ]
 
       );
 
@@ -454,8 +456,8 @@
 
         d3.max(spect2.data, function(d) {
           return d3.max(d, function(e) {return e;});
-        })]
-
+        }),
+        ]
       );
 
       powerExtent = symmetricExtent(powerMin, powerMax);
@@ -465,13 +467,13 @@
 
       edgeStatMin = d3.min(params.edge, function(d) {
         return d3.min(d.data, function(e) {
-          return d3.min(e, function(f) {return f;})
+          return d3.min(e, function(f) {return f;});
         });
       });
 
       edgeStatMax = d3.max(params.edge, function(d) {
         return d3.max(d.data, function(e) {
-          return d3.max(e, function(f) {return f;})
+          return d3.max(e, function(f) {return f;});
         });
       });
 
@@ -531,7 +533,7 @@
       var brainImage;
       var edge;
       var edgeLine;
-      var brainImageG
+      var brainImageG;
       var nodeCircle;
       var nodeText;
 
@@ -668,7 +670,7 @@
       brainImage = brainImageG.selectAll('image').data([subjectObject], function(d) {return d.brainFilename;});
 
       brainImage.enter()
-        .append('image')
+        .append('image');
       brainImage
         .attr('xlink:href', function(d) {return 'DATA/brainImages/' + d.brainFilename;})
         .attr('width', networkWidth)
@@ -678,11 +680,11 @@
       if (networkView === 'Topological') {brainImage.remove();};
 
       function xPos(d) {
-        return Math.max(NODE_RADIUS, Math.min(networkWidth - NODE_RADIUS, d.x))
+        return Math.max(NODE_RADIUS, Math.min(networkWidth - NODE_RADIUS, d.x));
       }
 
       function yPos(d) {
-        return Math.max(NODE_RADIUS, Math.min(networkHeight - NODE_RADIUS, d.y))
+        return Math.max(NODE_RADIUS, Math.min(networkHeight - NODE_RADIUS, d.y));
       }
 
       function weights(e) {
@@ -710,7 +712,7 @@
           .filter(function(n) {
             return (n.channelID === e.source.channelID) || (n.channelID === e.target.channelID);
           })
-          .attr('r', NODE_RADIUS * 1.2)
+          .attr('r', NODE_RADIUS * 1.2);
       }
 
       function edgeMouseOut(e) {
@@ -723,7 +725,7 @@
             .filter(function(n) {
               return (n.channelID === e.source.channelID) || (n.channelID === e.target.channelID);
             })
-            .attr('r', NODE_RADIUS)
+            .attr('r', NODE_RADIUS);
          }
        }
 
@@ -932,45 +934,44 @@
             .attr('stroke-width', 2)
             .attr('fill', 'none')
             .style('opacity', 0.7);
-
-        })
+        });
       }
 
       chart.intensityScale = function(scale) {
         if (!arguments.length) return intensityScale;
         intensityScale = scale;
         return chart;
-      }
+      };
 
       chart.colorScale = function(scale) {
         if (!arguments.length) return colorScale;
         colorScale = scale;
         return chart;
-      }
+      };
 
       chart.xScale = function(scale) {
         if (!arguments.length) return xScale;
         xScale = scale;
         return chart;
-      }
+      };
 
       chart.yScale = function(scale) {
         if (!arguments.length) return yScale;
         yScale = scale;
         return chart;
-      }
+      };
 
       chart.rectMouseOver = function(fun) {
         if (!arguments.length) return rectMouseOver;
         rectMouseOver = fun;
         return chart;
-      }
+      };
 
       chart.rectMouseClick = function(fun) {
         if (!arguments.length) return rectMouseClick;
         rectMouseClick = fun;
         return chart;
-      }
+      };
 
       chart.width = function(value) {
         if (!arguments.length) return width;
@@ -1336,7 +1337,7 @@
             .on('click', rectMouseClick);
           heatmapRect.exit()
             .remove();
-        })
+        });
 
       }
 
@@ -1344,25 +1345,25 @@
         if (!arguments.length) return xScale;
         xScale = scale;
         return chart;
-      }
+      };
 
       chart.yScale = function(scale) {
         if (!arguments.length) return yScale;
         yScale = scale;
         return chart;
-      }
+      };
 
       chart.rectMouseOver = function(fun) {
         if (!arguments.length) return rectMouseOver;
         rectMouseOver = fun;
         return chart;
-      }
+      };
 
       chart.rectMouseClick = function(fun) {
         if (!arguments.length) return rectMouseClick;
         rectMouseClick = fun;
         return chart;
-      }
+      };
 
       chart.width = function(value) {
         if (!arguments.length) return width;
@@ -1398,7 +1399,7 @@
         if (!arguments.length) return lineColor;
         lineColor = value;
         return chart;
-      }
+      };
 
       return chart;
 
@@ -1422,7 +1423,7 @@
           curCh1 = [];
           curCh2 = [];
           loadChannelData();
-        })
+        });
     }
 
     function edgeStatTypeLoad() {
@@ -1444,7 +1445,7 @@
 
           force.stop();
           loadEdges();
-        })
+        });
     }
 
     function edgeAreaLoad() {
@@ -1458,7 +1459,7 @@
           edgeArea = this.id;
           force.stop();
           drawNetwork();
-        })
+        });
     }
 
     function networkViewLoad() {
@@ -1467,30 +1468,30 @@
         .on('click', function() {
           var radioValue = this.value;
           networkViewRadio.selectAll('input')
-            .property('checked', false)
+            .property('checked', false);
           d3.select(this).property('checked', true);
           networkView = radioValue;
           force.stop();
           drawNetwork();
-        })
+        });
     }
 
     function playButtonStart() {
       var playButton = d3.select('#playButton');
       playButton.on('click', function() {
 
-        d3.select('#playButton').text('Stop')
+        d3.select('#playButton').text('Stop');
         stopAnimation = !stopAnimation;
         var intervalID = setInterval(function() {
           if (curTimeInd < timeMaxStepInd && stopAnimation === false) {
             curTimeInd++;
             updateTimeSlider.call({value: tAx[curTimeInd]});
           } else {
-            d3.select('#playButton').text('Start')
+            d3.select('#playButton').text('Start');
             stopAnimation = true;
             clearInterval(intervalID);
           }
-        }, 100)
+        }, 100);
       });
     }
 
