@@ -1094,27 +1094,85 @@
     }
 
     function drawTitles() {
-      var titleCoh;
 
-      spectLabel(svgCh1, curCh1);
-      spectLabel(svgCh2, curCh2);
+      spectTitle(svgCh1, curCh1);
+      spectTitle(svgCh2, curCh2);
+      edgeTitle();
 
-      titleCoh = svgEdgeStat.selectAll('text.title').data([edgeStat]);
-      titleCoh.exit()
-        .remove();
-      titleCoh.enter()
-        .append('text')
-        .attr('x', timeScaleLinear(0))
-        .attr('y', 0)
-        .attr('dy', -0.5 + 'em')
-        .attr('text-anchor', 'middle')
-        .attr('class', 'title');
-      titleCoh
-        .text(function(d) {
-          return edgeInfo.edgeTypeName + ': Ch' + d.source + '-Ch' + d.target;
+      function edgeTitle() {
+        var titleEdge = svgEdgeStat.selectAll('g.title').data([edgeStat], function(d) {
+          return edgeInfo.edgeTypeName + '-' + d.source + '-' + d.target;
         });
 
-      function spectLabel(svgCh, channelID) {
+        titleEdge.exit()
+          .remove();
+        titleEdge.enter()
+          .append('g')
+          .attr('transform', 'translate(' + timeScaleLinear(0) + ', -10)')
+          .attr('class', 'title');
+
+        var titleLabel = titleEdge.selectAll('text.infoLabel').data(function(d) {
+          return [d];
+        });
+
+        titleLabel.enter()
+          .append('text')
+          .attr('class', 'infoLabel')
+          .attr('text-anchor', 'middle');
+        titleLabel
+          .text(function(d) {
+            return edgeInfo.edgeTypeName + ': Ch ' + d.source + '-Ch ' + d.target;
+          });
+
+        var titleCircleG = titleEdge.selectAll('g').data(
+          [
+          channel.filter(function(d) {return d.channelID === curCh1;}),
+
+          channel.filter(function(d) {return d.channelID === curCh2;}),
+          ]
+        );
+
+        titleCircleG.enter()
+          .append('g');
+
+        var titleCircle = titleCircleG.selectAll('circle.node').data(function(d, i) {
+          return [[d, i]];
+        });
+
+        titleCircle.enter()
+          .append('circle')
+          .attr('class', 'node')
+          .attr('r', NODE_RADIUS)
+          .attr('transform', function(d) {
+            return 'translate(' + (60 + d[1] * 45)  + ', ' + (-NODE_RADIUS / 2) + ')';
+          })
+          .attr('fill', '#ddd')
+          .attr('opacity', 1);
+
+        titleCircle
+          .attr('fill', function(d) {
+            return networkColorScale(d[0][0].region);
+          });
+
+        var titleText = titleCircleG.selectAll('text.nodeLabel').data(function(d, i) {
+          return [[d, i]];
+        });
+
+        titleText.enter()
+          .append('text')
+          .attr('class', 'nodeLabel')
+          .attr('transform', function(d) {
+            return 'translate(' + (60 + d[1] * 45)  + ', ' + (-NODE_RADIUS / 2) + ')';
+          });
+
+        titleText
+          .text(function(d) {
+            return d[0][0].channelID;
+          });
+
+      }
+
+      function spectTitle(svgCh, channelID) {
         var titleCh = svgCh.selectAll('g.title')
           .data(channel.filter(function(d) {
             return d.channelID === channelID;
@@ -1129,6 +1187,18 @@
           .attr('transform', 'translate(' + timeScaleLinear(0) + ', -10)')
           .attr('class', 'title');
 
+        titleLabel = titleCh.selectAll('text.infoLabel').data(function(d) {
+          return [d];
+        });
+
+        titleLabel.enter()
+          .append('text')
+          .attr('class', 'infoLabel')
+          .attr('text-anchor', 'middle')
+          .text(function(d) {
+            return 'Spectra: Ch ' + d.channelID;
+          });
+
         var titleCircle = titleCh.selectAll('circle.node').data(function(d) {
           return [d];
         });
@@ -1137,7 +1207,7 @@
           .append('circle')
           .attr('class', 'node')
           .attr('r', NODE_RADIUS)
-          .attr('transform', 'translate(0, ' + (-NODE_RADIUS / 2) + ')')
+          .attr('transform', 'translate(40, ' + (-NODE_RADIUS / 2) + ')')
           .attr('fill', '#ddd')
           .attr('opacity', 1);
 
@@ -1146,27 +1216,19 @@
             return networkColorScale(d.region);
           });
 
-        titleText = titleCh.selectAll('text.nodeLabel').data(function(d) {
+        var titleText = titleCh.selectAll('text.nodeLabel').data(function(d) {
           return [d];
         });
 
         titleText.enter()
           .append('text')
           .attr('class', 'nodeLabel')
-          .attr('transform', 'translate(0, ' + (-NODE_RADIUS / 2) + ')');
+          .attr('transform', 'translate(40, ' + (-NODE_RADIUS / 2) + ')');
         titleText
           .text(function(d) {
             return d.channelID;
           });
 
-        titleLabel = titleCh.selectAll('text.infoLabel').data([{}]);
-
-        titleLabel.enter()
-          .append('text')
-          .attr('class', 'infoLabel')
-          .attr('text-anchor', 'end')
-          .attr('transform', 'translate(-15, 0)')
-          .text('Spectra: Ch ');
       }
     }
 
@@ -1314,7 +1376,7 @@
         .data([edgeStat.data.map(function(d) {
           return d[curFreqInd];
         }),
-      ]);
+       ]);
 
       cohSlice.enter()
         .append('g')
@@ -1326,7 +1388,7 @@
         .data([spect1.data.map(function(d) {
           return d[curFreqInd];
         }),
-      ]);
+       ]);
 
       spect1Slice.enter()
         .append('g')
@@ -1338,7 +1400,7 @@
         .data([spect2.data.map(function(d) {
           return d[curFreqInd];
         }),
-      ]);
+       ]);
 
       spect2Slice.enter()
         .append('g')
