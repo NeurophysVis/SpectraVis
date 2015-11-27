@@ -16,7 +16,7 @@
   var curFreqInd = 0;
   var curTimeInd = 0;
   var mouseFlag = true;
-  var edgeArea = 'All';
+  var edgeFilter = 'All';
   var networkView = 'Anatomical';
   colorbrewer.PiYG[NUM_COLORS].reverse();
   colorbrewer.RdBu[NUM_COLORS].reverse();
@@ -114,9 +114,9 @@
     });
 
   // Set up edge area dropdown menus
-  var edgeAreaDropdown = d3.select('#EdgeAreaDropdown');
-  edgeAreaDropdown.selectAll('button')
-    .text(edgeArea)
+  var edgeFilterDropdown = d3.select('#EdgeFilterDropdown');
+  edgeFilterDropdown.selectAll('button')
+    .text(edgeFilter)
     .append('span')
     .attr('class', 'caret');
 
@@ -408,7 +408,7 @@
     // Handle buttons
     subjectLoad();
     edgeStatTypeLoad();
-    edgeAreaLoad();
+    edgeFilterLoad();
     networkViewLoad();
     playButtonStart();
     resetButton();
@@ -571,7 +571,7 @@
       // Display state of application in url
       window.history.pushState({}, '', '?curSubject=' + curSubject +
         '&edgeStat=' + edgeInfo.edgeTypeID +
-        '&edgeArea=' + edgeArea +
+        '&edgeFilter=' + edgeFilter +
         '&networkView=' + networkView +
         '&time=' + tAx[curTimeInd] +
         '&freq=' + fAx[curFreqInd] +
@@ -613,7 +613,7 @@
         return obj;
       });
 
-      edge = edge.filter(edgeFilter);
+      edge = edge.filter(edgeFiltering);
 
       force = d3.layout.force()
         .nodes(channel)
@@ -858,7 +858,7 @@
         return newObj;
       }
 
-      function edgeFilter(e) {
+      function edgeFiltering(e) {
         var isEdge;
         switch (edgeStatType) {
           case 'C2s_coh':
@@ -873,7 +873,7 @@
           default:
             isEdge = true;
         }
-        switch (edgeArea) {
+        switch (edgeFilter) {
           case 'Within':
             if (e.source.region != e.target.region) {
               isEdge = false;
@@ -1396,7 +1396,7 @@
         .data([spect1.data.map(function(d) {
           return d[curFreqInd];
         }),
-       ]);
+      ]);
 
       spect1Slice.enter()
         .append('g')
@@ -1680,15 +1680,15 @@
         });
     }
 
-    function edgeAreaLoad() {
-      edgeAreaDropdown = d3.select('#EdgeAreaDropdown');
-      edgeAreaDropdown.selectAll('li')
+    function edgeFilterLoad() {
+      edgeFilterDropdown = d3.select('#EdgeFilterDropdown');
+      edgeFilterDropdown.selectAll('li')
         .on('click', function() {
-          edgeAreaDropdown.selectAll('button')
+          edgeFilterDropdown.selectAll('button')
             .text(this.id)
             .append('span')
             .attr('class', 'caret');
-          edgeArea = this.id;
+          edgeFilter = this.id;
           force.stop();
           drawNetwork();
         });
