@@ -22,85 +22,90 @@
   colorbrewer.RdBu[NUM_COLORS].reverse();
   var powerColors = colorbrewer.PiYG[NUM_COLORS];
   var networkColors = colorbrewer.RdBu[NUM_COLORS];
-  var margin = {top: 40, right: 40, bottom: 40, left: 40};
+  var margin = {
+    top: 40,
+    right: 40,
+    bottom: 40,
+    left: 40,
+  };
   var panelWidth = document.getElementById('SpectraCh1Panel').offsetWidth - margin.left - margin.right;
   var panelHeight = document.getElementById('SpectraCh1Panel').offsetWidth * (4 / 5) - margin.top - margin.bottom;
   var legendWidth = document.getElementById('legendKey').offsetWidth - margin.left - margin.right;
   var colorbarLegendHeight = 60 - margin.top - margin.bottom;
   var anatomicalLegendHeight = 100 - margin.top - margin.bottom;
   var timeSliceWidth = panelWidth;
-  var timeSliceHeight =  180 - margin.top - margin.bottom;
+  var timeSliceHeight = 180 - margin.top - margin.bottom;
   var spinner;
 
   // Heatmap Panels
   var svgCh1 = d3.select('#SpectraCh1Panel')
-        .append('svg')
-          .attr('width', panelWidth + margin.left + margin.right)
-          .attr('height', panelHeight + margin.top + margin.bottom)
-        .append('g')
-          .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+    .append('svg')
+    .attr('width', panelWidth + margin.left + margin.right)
+    .attr('height', panelHeight + margin.top + margin.bottom)
+    .append('g')
+    .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
   var svgEdgeStat = d3.select('#EdgeStatPanel')
-        .append('svg')
-          .attr('width', panelWidth + margin.left + margin.right)
-          .attr('height', panelHeight + margin.top + margin.bottom)
-        .append('g')
-          .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+    .append('svg')
+    .attr('width', panelWidth + margin.left + margin.right)
+    .attr('height', panelHeight + margin.top + margin.bottom)
+    .append('g')
+    .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
   var svgCh2 = d3.select('#SpectraCh2Panel')
-        .append('svg')
-          .attr('width', panelWidth + margin.left + margin.right)
-          .attr('height', panelHeight + margin.top + margin.bottom)
-        .append('g')
-          .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+    .append('svg')
+    .attr('width', panelWidth + margin.left + margin.right)
+    .attr('height', panelHeight + margin.top + margin.bottom)
+    .append('g')
+    .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
   // Legend SVG
   var svgSpectraLegend = d3.selectAll('#legendKey').select('#spectraLegend')
-        .append('svg')
-          .attr('width', legendWidth + margin.left + margin.right)
-          .attr('height', colorbarLegendHeight + margin.top + margin.bottom)
-        .append('g')
-          .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+    .append('svg')
+    .attr('width', legendWidth + margin.left + margin.right)
+    .attr('height', colorbarLegendHeight + margin.top + margin.bottom)
+    .append('g')
+    .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
   svgSpectraLegend.append('text')
-        .attr('transform', 'translate(-5, -16)')
-        .attr('font-size', 12)
-        .attr('font-weight', 700)
-        .text('Spectra');
+    .attr('transform', 'translate(-5, -16)')
+    .attr('font-size', 12)
+    .attr('font-weight', 700)
+    .text('Spectra');
   var svgEdgeStatLegend = d3.selectAll('#legendKey').select('#edgeStatLegend')
-        .append('svg')
-          .attr('width', legendWidth + margin.left + margin.right)
-          .attr('height', colorbarLegendHeight + margin.top + margin.bottom)
-        .append('g')
-          .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+    .append('svg')
+    .attr('width', legendWidth + margin.left + margin.right)
+    .attr('height', colorbarLegendHeight + margin.top + margin.bottom)
+    .append('g')
+    .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
   svgEdgeStatLegend.append('text')
-        .attr('transform', 'translate(-5, -16)')
-        .attr('font-size', 12)
-        .attr('font-weight', 700)
-        .text('Edge Statistic');
+    .attr('transform', 'translate(-5, -16)')
+    .attr('font-size', 12)
+    .attr('font-weight', 700)
+    .text('Edge Statistic');
   var svgAnatomicalLegend = d3.selectAll('#legendKey').select('#anatomicalLegend')
-        .append('svg')
-          .attr('width', legendWidth + margin.left + margin.right)
-          .attr('height', anatomicalLegendHeight + margin.top + margin.bottom)
-        .append('g')
-          .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+    .append('svg')
+    .attr('width', legendWidth + margin.left + margin.right)
+    .attr('height', anatomicalLegendHeight + margin.top + margin.bottom)
+    .append('g')
+    .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
   svgAnatomicalLegend.append('text')
-        .attr('transform', 'translate(-5, -16)')
-        .attr('font-size', 12)
-        .attr('font-weight', 700)
-        .text('Brain Areas');
+    .attr('transform', 'translate(-5, -16)')
+    .attr('font-size', 12)
+    .attr('font-weight', 700)
+    .text('Brain Areas');
 
   // Time Slice SVG
   var svgTimeSlice = d3.select('#timeSlice')
-        .append('svg')
-          .attr('width', timeSliceWidth + margin.left + margin.right)
-          .attr('height', timeSliceHeight + margin.top + margin.bottom)
-        .append('g')
-          .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+    .append('svg')
+    .attr('width', timeSliceWidth + margin.left + margin.right)
+    .attr('height', timeSliceHeight + margin.top + margin.bottom)
+    .append('g')
+    .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
   // Set up tool tip
   var toolTip = d3.select('#overlay');
   toolTip.selectAll('#close')
-     .on('click', function() {
-       toolTip.style('display', 'none');
-     });
+    .on('click', function() {
+      toolTip.style('display', 'none');
+    });
 
   d3.select('#help-button')
     .on('click', function() {
@@ -112,24 +117,24 @@
   var edgeAreaDropdown = d3.select('#EdgeAreaDropdown');
   edgeAreaDropdown.selectAll('button')
     .text(edgeArea)
-      .append('span')
-        .attr('class', 'caret');
+    .append('span')
+    .attr('class', 'caret');
 
   // Display loading spinner gif
   spinner = d3.select('#NetworkPanel')
     .append('div')
-      .attr('id', 'load')
-      .attr('width', panelWidth)
-      .attr('height', panelHeight)
-      .attr('position', 'relative')
-      .html('<img src="img/loader.gif" id="loading">');
+    .attr('id', 'load')
+    .attr('width', panelWidth)
+    .attr('height', panelHeight)
+    .attr('position', 'relative')
+    .html('<img src="img/loader.gif" id="loading">');
 
   // Load subject data
   queue()
-      .defer(d3.json, 'DATA/subjects.json')
-      .defer(d3.json, 'DATA/visInfo.json')
-      .defer(d3.json, 'DATA/edgeTypes.json')
-      .await(createMenu);
+    .defer(d3.json, 'DATA/subjects.json')
+    .defer(d3.json, 'DATA/visInfo.json')
+    .defer(d3.json, 'DATA/edgeTypes.json')
+    .await(createMenu);
 
   // Functions
   function createMenu(error, subjectData, visInfo, edgeInfo) {
@@ -139,19 +144,23 @@
     var subjectMenu = subjectDropdown.selectAll('.dropdown-menu').selectAll('li').data(subjectData);
     subjectMenu.enter()
       .append('li')
-        .attr('id', function(d) {return d.subjectID;})
-        .attr('role', 'presentation')
-        .append('a')
-          .attr('role', 'menuitem')
-          .attr('tabindex', -1)
-          .text(function(d) {return d.subjectID;});
+      .attr('id', function(d) {
+        return d.subjectID;
+      })
+      .attr('role', 'presentation')
+      .append('a')
+      .attr('role', 'menuitem')
+      .attr('tabindex', -1)
+      .text(function(d) {
+        return d.subjectID;
+      });
 
     // Default to the first subject
     curSubject = subjectData[0].subjectID;
     subjectDropdown.selectAll('button')
       .text(curSubject)
-        .append('span')
-          .attr('class', 'caret');
+      .append('span')
+      .attr('class', 'caret');
 
     // Create dropdown for edge types
     params.edgeInfo = edgeInfo;
@@ -159,11 +168,15 @@
     var edgeOptions = edgeDropdown.select('ul').selectAll('li').data(edgeInfo);
     edgeOptions.enter()
       .append('li')
-        .attr('id', function(d) {return d.edgeTypeID;})
+      .attr('id', function(d) {
+        return d.edgeTypeID;
+      })
       .append('a')
-        .attr('role', 'menuitem')
-        .attr('tabindex', -1)
-        .text(function(d) {return d.edgeTypeName;});
+      .attr('role', 'menuitem')
+      .attr('tabindex', -1)
+      .text(function(d) {
+        return d.edgeTypeName;
+      });
 
     edgeOptions.exit()
       .remove();
@@ -173,8 +186,8 @@
     var edgeTypeName = edgeInfo[0].edgeTypeName;
     edgeDropdown.selectAll('button')
       .text(edgeTypeName)
-        .append('span')
-          .attr('class', 'caret');
+      .append('span')
+      .attr('class', 'caret');
 
     params.visInfo = visInfo;
 
@@ -186,21 +199,25 @@
   function loadChannelData() {
     var channelFile = 'channels_' + curSubject + '.json';
 
-    subjectObject = params.subjects.filter(function(d) {return d.subjectID === curSubject;})[0];
+    subjectObject = params.subjects.filter(function(d) {
+      return d.subjectID === curSubject;
+    })[0];
 
     var aspectRatio = subjectObject.brainXpixels / subjectObject.brainYpixels;
     networkWidth = document.getElementById('NetworkPanel').offsetWidth - margin.left - margin.right;
-    networkHeight =  document.getElementById('NetworkPanel').offsetWidth * (1 / aspectRatio) - margin.top - margin.bottom;
+    networkHeight = document.getElementById('NetworkPanel').offsetWidth * (1 / aspectRatio) - margin.top - margin.bottom;
 
-    svgNetworkMap = d3.select('#NetworkPanel').selectAll('svg').data([subjectObject], function(d) {return d.subjectID;});
+    svgNetworkMap = d3.select('#NetworkPanel').selectAll('svg').data([subjectObject], function(d) {
+      return d.subjectID;
+    });
 
     svgNetworkMap.exit().remove();
     svgNetworkMap = svgNetworkMap.enter()
       .append('svg')
-        .attr('width', networkWidth + margin.left + margin.right)
-        .attr('height', networkHeight + margin.top + margin.bottom)
+      .attr('width', networkWidth + margin.left + margin.right)
+      .attr('height', networkHeight + margin.top + margin.bottom)
       .append('g')
-        .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+      .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
     d3.json('DATA/' + channelFile, function(isError, channelData) {
 
@@ -231,9 +248,9 @@
 
     // Load the rest of the files in parallel
     queue()
-        .defer(d3.json, 'DATA/' + spectCh1File)
-        .defer(d3.json, 'DATA/' + spectCh2File)
-        .await(display);
+      .defer(d3.json, 'DATA/' + spectCh1File)
+      .defer(d3.json, 'DATA/' + spectCh2File)
+      .await(display);
   }
 
   // Draw
@@ -292,7 +309,9 @@
 
     // Get the edge statastic name and units
     var edgeInfo = params.edgeInfo
-      .filter(function(e) {return e.edgeTypeID === edgeStatType;})[0];
+      .filter(function(e) {
+        return e.edgeTypeID === edgeStatType;
+      })[0];
 
     isFreq = edgeInfo.isFreq;
     isWeightedNetwork = edgeInfo.isFreq;
@@ -439,24 +458,32 @@
 
       powerMin = d3.min(
         [d3.min(spect1.data, function(d) {
-          return d3.min(d, function(e) {return e;});
-        }),
+            return d3.min(d, function(e) {
+              return e;
+            });
+          }),
 
-        d3.min(spect2.data, function(d) {
-          return d3.min(d, function(e) {return e;});
-        }),
+          d3.min(spect2.data, function(d) {
+            return d3.min(d, function(e) {
+              return e;
+            });
+          }),
         ]
 
       );
 
       powerMax = d3.max(
         [d3.max(spect1.data, function(d) {
-          return d3.max(d, function(e) {return e;});
-        }),
+            return d3.max(d, function(e) {
+              return e;
+            });
+          }),
 
-        d3.max(spect2.data, function(d) {
-          return d3.max(d, function(e) {return e;});
-        }),
+          d3.max(spect2.data, function(d) {
+            return d3.max(d, function(e) {
+              return e;
+            });
+          }),
         ]
       );
 
@@ -467,13 +494,17 @@
 
       edgeStatMin = d3.min(params.edge, function(d) {
         return d3.min(d.data, function(e) {
-          return d3.min(e, function(f) {return f;});
+          return d3.min(e, function(f) {
+            return f;
+          });
         });
       });
 
       edgeStatMax = d3.max(params.edge, function(d) {
         return d3.max(d.data, function(e) {
-          return d3.max(e, function(f) {return f;});
+          return d3.max(e, function(f) {
+            return f;
+          });
         });
       });
 
@@ -510,10 +541,10 @@
         .range([0, 1]);
 
       corrScale = d3.scale.linear()
-          .domain(edgeStatExtent)
-          .range([0, panelHeight]);
+        .domain(edgeStatExtent)
+        .range([0, panelHeight]);
 
-      function symmetricExtent(min, max)  {
+      function symmetricExtent(min, max) {
         if (Math.abs(min) >= Math.abs(max)) {
           max = Math.abs(min);
         } else {
@@ -539,13 +570,13 @@
 
       // Display state of application in url
       window.history.pushState({}, '', '?curSubject=' + curSubject +
-                                        '&edgeStat=' + edgeInfo.edgeTypeID +
-                                        '&edgeArea=' + edgeArea +
-                                        '&networkView=' + networkView +
-                                        '&time=' + tAx[curTimeInd] +
-                                        '&freq=' + fAx[curFreqInd] +
-                                        '&curCh1=' + curCh1 +
-                                        '&curCh2=' + curCh2);
+        '&edgeStat=' + edgeInfo.edgeTypeID +
+        '&edgeArea=' + edgeArea +
+        '&networkView=' + networkView +
+        '&time=' + tAx[curTimeInd] +
+        '&freq=' + fAx[curFreqInd] +
+        '&curCh1=' + curCh1 +
+        '&curCh2=' + curCh2);
 
       // Replace x and y coordinates of nodes with properly scaled x,y
       if (networkView != 'Topological' || typeof channel === 'undefined') {
@@ -553,8 +584,11 @@
           var obj = copyObject(n);
           obj.x = networkXScale(n.x);
           obj.y = networkYScale(n.y);
-          if (networkView != 'Topological') {obj.fixed = true;
-          } else {obj.fixed = false;}
+          if (networkView != 'Topological') {
+            obj.fixed = true;
+          } else {
+            obj.fixed = false;
+          }
 
           return obj;
         });
@@ -567,9 +601,13 @@
       // Replace source name by source object
       edge = params.edge.map(function(e) {
         var obj = copyObject(e);
-        obj.source = channel.filter(function(n) {return n.channelID === e.source;})[0];
+        obj.source = channel.filter(function(n) {
+          return n.channelID === e.source;
+        })[0];
 
-        obj.target = channel.filter(function(n) {return n.channelID === e.target;})[0];
+        obj.target = channel.filter(function(n) {
+          return n.channelID === e.target;
+        })[0];
 
         obj.data = obj.data[curTimeInd][curFreqInd];
         return obj;
@@ -588,67 +626,85 @@
       brainImageG = svgNetworkMap.selectAll('g#BRAIN_IMAGE').data([{}]);
       brainImageG.enter()
         .append('g')
-          .attr('id', 'BRAIN_IMAGE');
+        .attr('id', 'BRAIN_IMAGE');
       edgesGroup = svgNetworkMap.selectAll('g#EDGES').data([{}]);
       edgesGroup.enter()
         .append('g')
-          .attr('id', 'EDGES');
+        .attr('id', 'EDGES');
       nodesGroup = svgNetworkMap.selectAll('g#NODES').data([{}]);
       nodesGroup.enter()
         .append('g')
-          .attr('id', 'NODES');
+        .attr('id', 'NODES');
 
-      edgeLine = edgesGroup.selectAll('.edge').data(edge, function(e) {return curSubject + '_' + e.source.channelID + '_' + e.target.channelID;});
+      edgeLine = edgesGroup.selectAll('.edge').data(edge, function(e) {
+        return curSubject + '_' + e.source.channelID + '_' + e.target.channelID;
+      });
 
       edgeLine.enter()
         .append('line')
-          .attr('class', 'edge')
-          .style('stroke-width', EDGE_WIDTH)
-          .attr('x1', function(d) {return xPos(d.source);})
-          .attr('y1', function(d) {return yPos(d.source);})
-          .attr('x2', function(d) {return xPos(d.target);})
-          .attr('y2', function(d) {return yPos(d.target);});
+        .attr('class', 'edge')
+        .style('stroke-width', EDGE_WIDTH)
+        .attr('x1', function(d) {
+          return xPos(d.source);
+        })
+        .attr('y1', function(d) {
+          return yPos(d.source);
+        })
+        .attr('x2', function(d) {
+          return xPos(d.target);
+        })
+        .attr('y2', function(d) {
+          return yPos(d.target);
+        });
 
       edgeLine.exit()
         .remove();
       edgeLine
         .style('stroke', function(d) {
-            return edgeStatColor(edgeStatScale(d.data));
-          })
+          return edgeStatColor(edgeStatScale(d.data));
+        })
         .on('mouseover', edgeMouseOver)
         .on('mouseout', edgeMouseOut)
         .on('click', edgeMouseClick);
 
-      nodeG = nodesGroup.selectAll('g.gnode').data(channel, function(d) {return curSubject + '_' + d.channelID;});
+      nodeG = nodesGroup.selectAll('g.gnode').data(channel, function(d) {
+        return curSubject + '_' + d.channelID;
+      });
 
       nodeG.enter()
         .append('g')
-          .attr('class', 'gnode')
-          .attr('transform', function(d) {
-            return 'translate(' + [xPos(d), yPos(d)] + ')';
-          })
-          .on('click', nodeMouseClick);
+        .attr('class', 'gnode')
+        .attr('transform', function(d) {
+          return 'translate(' + [xPos(d), yPos(d)] + ')';
+        })
+        .on('click', nodeMouseClick);
       nodeG.exit().remove();
 
-      nodeCircle = nodeG.selectAll('circle.node').data(function(d) {return [d];});
+      nodeCircle = nodeG.selectAll('circle.node').data(function(d) {
+        return [d];
+      });
 
       nodeCircle.enter()
         .append('circle')
-          .attr('class', 'node')
-          .attr('r', NODE_RADIUS)
-          .attr('fill', '#ddd')
-          .attr('opacity', 1);
+        .attr('class', 'node')
+        .attr('r', NODE_RADIUS)
+        .attr('fill', '#ddd')
+        .attr('opacity', 1);
       nodeCircle
-          .attr('fill', function(d) {
-            return networkColorScale(d.region);
-          });
+        .attr('fill', function(d) {
+          return networkColorScale(d.region);
+        });
 
-      nodeText = nodeG.selectAll('text.nodeLabel').data(function(d) {return [d];});
+      nodeText = nodeG.selectAll('text.nodeLabel').data(function(d) {
+        return [d];
+      });
 
       nodeText.enter()
         .append('text')
-          .attr('class', 'nodeLabel')
-          .text(function(d) {return d.channelID;});
+        .attr('class', 'nodeLabel')
+        .text(function(d) {
+          return d.channelID;
+        });
 
       // For every iteration of force simulation 'tick'
       force.on('tick', function() {
@@ -658,21 +714,33 @@
           return 'translate(' + [xPos(d), yPos(d)] + ')';
         });
 
-        edgeLine.attr('x1', function(d) {return xPos(d.source);})
-          .attr('y1', function(d) {return yPos(d.source);})
-          .attr('x2', function(d) {return xPos(d.target);})
-          .attr('y2', function(d) {return yPos(d.target);});
+        edgeLine.attr('x1', function(d) {
+            return xPos(d.source);
+          })
+          .attr('y1', function(d) {
+            return yPos(d.source);
+          })
+          .attr('x2', function(d) {
+            return xPos(d.target);
+          })
+          .attr('y2', function(d) {
+            return yPos(d.target);
+          });
 
-        if (networkView != 'Topological') {force.stop();}
+        if (networkView != 'Topological') {
+          force.stop();
+        }
 
       });
 
-      brainImage = brainImageG.selectAll('image').data([subjectObject], function(d) {return d.brainFilename;});
+      brainImage = brainImageG.selectAll('image').data([subjectObject], function(d) {
+        return d.brainFilename;
+      });
 
       brainImage.enter()
         .append('image')
-          .attr('width', networkWidth)
-          .attr('height', networkHeight); // replace link by data URI
+        .attr('width', networkWidth)
+        .attr('height', networkHeight); // replace link by data URI
       if (networkView != 'Topological') {
         getImageBase64('DATA/brainImages/' + subjectObject.brainFilename, function(err, d) {
           brainImage
@@ -682,7 +750,9 @@
 
       brainImage.exit()
         .remove();
-      if (networkView === 'Topological') {brainImage.remove();};
+      if (networkView === 'Topological') {
+        brainImage.remove();
+      };
 
       function xPos(d) {
         return Math.max(NODE_RADIUS, Math.min(networkWidth - NODE_RADIUS, d.x));
@@ -721,62 +791,62 @@
       }
 
       function edgeMouseOut(e) {
-         var curEdge = d3.select(this);
-         if (typeof strokeStyle != 'undefined') {
-           curEdge
-             .style('stroke-width', EDGE_WIDTH)
-             .style('stroke', strokeStyle);
-           d3.selectAll('circle.node')
+        var curEdge = d3.select(this);
+        if (typeof strokeStyle != 'undefined') {
+          curEdge
+            .style('stroke-width', EDGE_WIDTH)
+            .style('stroke', strokeStyle);
+          d3.selectAll('circle.node')
             .filter(function(n) {
               return (n.channelID === e.source.channelID) || (n.channelID === e.target.channelID);
             })
             .attr('r', NODE_RADIUS);
-         }
-       }
+        }
+      }
 
       function edgeMouseClick(e) {
-         var re = /\d+/;
-         curCh1 = re.exec(e.source.channelID)[0];
-         curCh2 = re.exec(e.target.channelID)[0];
-         mouseFlag = true;
-         svgNetworkMap.select('text#HOLD').remove();
-         loadSpectra();
-         edgeMouseOut.call(this, e);
-       }
+        var re = /\d+/;
+        curCh1 = re.exec(e.source.channelID)[0];
+        curCh2 = re.exec(e.target.channelID)[0];
+        mouseFlag = true;
+        svgNetworkMap.select('text#HOLD').remove();
+        loadSpectra();
+        edgeMouseOut.call(this, e);
+      }
 
       function nodeMouseClick(e) {
-         var curNode = d3.select(this);
-         var nodeInd = nodeClickNames.indexOf(e.channelID);
+        var curNode = d3.select(this);
+        var nodeInd = nodeClickNames.indexOf(e.channelID);
 
-         if (nodeInd > -1) {
-           // If clicked on node is in the array, remove
-           curNode.selectAll('circle')
-             .attr('r', NODE_RADIUS);
-           nodeClickNames.splice(nodeInd, 1);
-         } else {
-           // Else add to array
-           curNode.selectAll('circle')
-             .attr('r', 1.2 * NODE_RADIUS);
-           nodeClickNames.push(+e.channelID);
-         }
+        if (nodeInd > -1) {
+          // If clicked on node is in the array, remove
+          curNode.selectAll('circle')
+            .attr('r', NODE_RADIUS);
+          nodeClickNames.splice(nodeInd, 1);
+        } else {
+          // Else add to array
+          curNode.selectAll('circle')
+            .attr('r', 1.2 * NODE_RADIUS);
+          nodeClickNames.push(+e.channelID);
+        }
 
-         if (nodeClickNames.length === 2) {
-           nodeClickNames.sort(d3.ascending);
-           var re = /\d+/;
-           curCh1 = re.exec(nodeClickNames[0])[0];
-           curCh2 = re.exec(nodeClickNames[1])[0];
-           mouseFlag = true;
-           svgNetworkMap.select('text#HOLD').remove();
-           d3.selectAll('circle.node')
-             .filter(function(n) {
-               return (n.channelID === nodeClickNames[0].toString()) || (n.channelID === nodeClickNames[1].toString());
-             })
-             .attr('fill', '#ddd')
-             .attr('r', NODE_RADIUS);
-           nodeClickNames = [];
-           loadSpectra();
-         }
-       }
+        if (nodeClickNames.length === 2) {
+          nodeClickNames.sort(d3.ascending);
+          var re = /\d+/;
+          curCh1 = re.exec(nodeClickNames[0])[0];
+          curCh2 = re.exec(nodeClickNames[1])[0];
+          mouseFlag = true;
+          svgNetworkMap.select('text#HOLD').remove();
+          d3.selectAll('circle.node')
+            .filter(function(n) {
+              return (n.channelID === nodeClickNames[0].toString()) || (n.channelID === nodeClickNames[1].toString());
+            })
+            .attr('fill', '#ddd')
+            .attr('r', NODE_RADIUS);
+          nodeClickNames = [];
+          loadSpectra();
+        }
+      }
 
       function copyObject(obj) {
         var newObj = {};
@@ -795,7 +865,9 @@
           case 'C2s_corr':
             if (e.data === 0) {
               isEdge = false;
-            } else {isEdge = true;}
+            } else {
+              isEdge = true;
+            }
 
             break;
           default:
@@ -805,13 +877,17 @@
           case 'Within':
             if (e.source.region != e.target.region) {
               isEdge = false;
-            } else {isEdge = isEdge & true;}
+            } else {
+              isEdge = isEdge & true;
+            }
 
             break;
           case 'Between':
             if (e.source.region === e.target.region) {
               isEdge = false;
-            } else {isEdge = isEdge & true;}
+            } else {
+              isEdge = isEdge & true;
+            }
 
             break;
           default:
@@ -856,84 +932,96 @@
           heatmapG = curPlot.selectAll('g.heatmapX').data(data);
           heatmapG.enter()
             .append('g')
-              .attr('transform', function(d, i) {
-                  return 'translate(' + xScale(xScale.domain()[i]) + ',0)';
-                })
-              .attr('class', 'heatmapX');
+            .attr('transform', function(d, i) {
+              return 'translate(' + xScale(xScale.domain()[i]) + ',0)';
+            })
+            .attr('class', 'heatmapX');
           heatmapG.exit()
             .remove();
-          heatmapRect = heatmapG.selectAll('rect').data(function(d) {return d;});
+          heatmapRect = heatmapG.selectAll('rect').data(function(d) {
+            return d;
+          });
 
           heatmapRect.enter()
             .append('rect')
-              .attr('x', 0)
-              .attr('y', function(d, i) {return yScale(yScale.domain()[i]);})
-              .attr('height', yScale.rangeBand())
-              .attr('width', xScale.rangeBand())
-              .style('fill', 'white');
+            .attr('x', 0)
+            .attr('y', function(d, i) {
+              return yScale(yScale.domain()[i]);
+            })
+            .attr('height', yScale.rangeBand())
+            .attr('width', xScale.rangeBand())
+            .style('fill', 'white');
           heatmapRect
             .style('fill', function(d) {
-                return colorScale(intensityScale(d));
-              })
+              return colorScale(intensityScale(d));
+            })
             .style('stroke', function(d) {
-                return colorScale(intensityScale(d));
-              })
+              return colorScale(intensityScale(d));
+            })
             .on('mouseover', rectMouseOver)
             .on('click', rectMouseClick);
           heatmapRect.exit()
             .remove();
 
           xAxis = d3.svg.axis()
-           .scale(xScale)
-           .orient('bottom')
-           .ticks(3)
-           .tickValues([d3.min(xScale.domain()), 0, d3.max(xScale.domain())])
-           .tickSize(0, 0, 0);
+            .scale(xScale)
+            .orient('bottom')
+            .ticks(3)
+            .tickValues([d3.min(xScale.domain()), 0, d3.max(xScale.domain())])
+            .tickSize(0, 0, 0);
           yAxis = d3.svg.axis()
-           .scale(yScale)
-           .orient('left')
-           .tickValues(['10', '20', '40', '60', '90', '150', '200'])
-           .tickSize(0, 0, 0);
+            .scale(yScale)
+            .orient('left')
+            .tickValues(['10', '20', '40', '60', '90', '150', '200'])
+            .tickSize(0, 0, 0);
 
           xAxisG = curPlot.selectAll('g.axis#x').data([{}]);
           xAxisG.enter()
-              .append('g')
-                .attr('class', 'axis')
-                .attr('id', 'x')
-                .attr('transform', 'translate(0,' + height + ')')
-              .append('text')
-                .attr('x', xScale(0))
-                .attr('y', 0)
-                .attr('text-anchor', 'middle')
-                .attr('dy', 2 + 'em')
-                .text(xLabel);
+            .append('g')
+            .attr('class', 'axis')
+            .attr('id', 'x')
+            .attr('transform', 'translate(0,' + height + ')')
+            .append('text')
+            .attr('x', xScale(0))
+            .attr('y', 0)
+            .attr('text-anchor', 'middle')
+            .attr('dy', 2 + 'em')
+            .text(xLabel);
           xAxisG.call(xAxis);
 
           yAxisG = curPlot.selectAll('g.axis#y').data([{}]);
           yAxisG.enter()
             .append('g')
-              .attr('class', 'axis')
-              .attr('id', 'y')
+            .attr('class', 'axis')
+            .attr('id', 'y')
             .append('text')
-              .attr('x', -height / 2)
-              .attr('dy', -2 + 'em')
-              .attr('transform', 'rotate(-90)')
-              .attr('text-anchor', 'middle')
-              .text(yLabel);
+            .attr('x', -height / 2)
+            .attr('dy', -2 + 'em')
+            .attr('transform', 'rotate(-90)')
+            .attr('text-anchor', 'middle')
+            .text(yLabel);
           yAxisG.call(yAxis);
 
-          zeroG = curPlot.selectAll('g.zeroLine').data([[[0, height]]]);
+          zeroG = curPlot.selectAll('g.zeroLine').data([
+            [
+              [0, height],
+            ],
+          ]);
           zeroG.enter()
             .append('g')
-              .attr('class', 'zeroLine');
-          zeroLine = zeroG.selectAll('path').data(function(d) {return d;});
+            .attr('class', 'zeroLine');
+          zeroLine = zeroG.selectAll('path').data(function(d) {
+            return d;
+          });
 
           zeroLine.enter()
             .append('path');
           zeroLine
             .attr('d', d3.svg.line()
               .x(xScale(0))
-              .y(function(d) { return d; })
+              .y(function(d) {
+                return d;
+              })
               .interpolate('linear'))
             .attr('stroke', 'black')
             .attr('stroke-width', 2)
@@ -1006,52 +1094,150 @@
     }
 
     function drawTitles() {
-      var titleCh1;
-      var titleCh2;
-      var titleCoh;
-      var titleSubjectEdge;
-      titleCh1 = svgCh1.selectAll('text.title').data([spect1.channelID]);
-      titleCh1.exit().remove();
-      titleCh1.enter()
-        .append('text')
-          .attr('x', timeScaleLinear(0))
-          .attr('y', 0)
-          .attr('dy', -0.5 + 'em')
-          .attr('text-anchor', 'middle')
-          .attr('class', 'title');
-      titleCh1
-          .text(function(d) {
-            return 'Spectra: Ch' + d;
-          });
 
-      titleCh2 = svgCh2.selectAll('text.title').data([spect2.channelID]);
-      titleCh2.exit().remove();
-      titleCh2.enter()
-        .append('text')
-          .attr('x', timeScaleLinear(0))
-          .attr('y', 0)
-          .attr('dy', -0.5 + 'em')
-          .attr('text-anchor', 'middle')
-          .attr('class', 'title');
-      titleCh2
-        .text(function(d) {
-          return 'Spectra: Ch' + d;
+      spectTitle(svgCh1, curCh1);
+      spectTitle(svgCh2, curCh2);
+      edgeTitle();
+
+      function edgeTitle() {
+        var titleEdge = svgEdgeStat.selectAll('g.title').data([edgeStat], function(d) {
+          return edgeInfo.edgeTypeName + '-' + d.source + '-' + d.target;
         });
 
-      titleCoh = svgEdgeStat.selectAll('text.title').data([edgeStat]);
-      titleCoh.exit()
-        .remove();
-      titleCoh.enter()
-        .append('text')
-          .attr('x', timeScaleLinear(0))
-          .attr('y', 0)
-          .attr('dy', -0.5 + 'em')
-          .attr('text-anchor', 'middle')
+        titleEdge.exit()
+          .remove();
+        titleEdge.enter()
+          .append('g')
+          .attr('transform', 'translate(' + timeScaleLinear(0) + ', -10)')
           .attr('class', 'title');
-      titleCoh
+
+        var titleLabel = titleEdge.selectAll('text.infoLabel').data(function(d) {
+          return [d];
+        });
+
+        titleLabel.enter()
+          .append('text')
+          .attr('class', 'infoLabel')
+          .attr('text-anchor', 'middle');
+        titleLabel
           .text(function(d) {
-            return edgeInfo.edgeTypeName + ': Ch' + d.source + '-Ch' + d.target;
+            return edgeInfo.edgeTypeName + ': Ch ' + d.source + '-Ch ' + d.target;
           });
+
+        var titleCircleG = titleEdge.selectAll('g').data(
+          [
+            channel.filter(function(d) {
+              return d.channelID === curCh1;
+            }),
+
+            channel.filter(function(d) {
+              return d.channelID === curCh2;
+            }),
+          ]
+        );
+
+        titleCircleG.enter()
+          .append('g');
+
+        var titleCircle = titleCircleG.selectAll('circle.node').data(function(d, i) {
+          return [
+            [d, i],
+          ];
+        });
+
+        titleCircle.enter()
+          .append('circle')
+          .attr('class', 'node')
+          .attr('r', NODE_RADIUS)
+          .attr('transform', function(d) {
+            return 'translate(' + (60 + d[1] * 45) + ', ' + (-NODE_RADIUS / 2) + ')';
+          })
+          .attr('fill', '#ddd')
+          .attr('opacity', 1);
+
+        titleCircle
+          .attr('fill', function(d) {
+            return networkColorScale(d[0][0].region);
+          });
+
+        var titleText = titleCircleG.selectAll('text.nodeLabel').data(function(d, i) {
+          return [
+            [d, i],
+          ];
+        });
+
+        titleText.enter()
+          .append('text')
+          .attr('class', 'nodeLabel')
+          .attr('transform', function(d) {
+            return 'translate(' + (60 + d[1] * 45) + ', ' + (-NODE_RADIUS / 2) + ')';
+          });
+
+        titleText
+          .text(function(d) {
+            return d[0][0].channelID;
+          });
+
+      }
+
+      function spectTitle(svgCh, channelID) {
+        var titleCh = svgCh.selectAll('g.title')
+          .data(channel.filter(function(d) {
+            return d.channelID === channelID;
+          }), function(d) {
+
+            return d.SubjectID + '_' + d.channelID;
+          });
+
+        titleCh.exit().remove();
+        titleCh.enter()
+          .append('g')
+          .attr('transform', 'translate(' + timeScaleLinear(0) + ', -10)')
+          .attr('class', 'title');
+
+        titleLabel = titleCh.selectAll('text.infoLabel').data(function(d) {
+          return [d];
+        });
+
+        titleLabel.enter()
+          .append('text')
+          .attr('class', 'infoLabel')
+          .attr('text-anchor', 'middle')
+          .text(function(d) {
+            return 'Spectra: Ch ' + d.channelID;
+          });
+
+        var titleCircle = titleCh.selectAll('circle.node').data(function(d) {
+          return [d];
+        });
+
+        titleCircle.enter()
+          .append('circle')
+          .attr('class', 'node')
+          .attr('r', NODE_RADIUS)
+          .attr('transform', 'translate(40, ' + (-NODE_RADIUS / 2) + ')')
+          .attr('fill', '#ddd')
+          .attr('opacity', 1);
+
+        titleCircle
+          .attr('fill', function(d) {
+            return networkColorScale(d.region);
+          });
+
+        var titleText = titleCh.selectAll('text.nodeLabel').data(function(d) {
+          return [d];
+        });
+
+        titleText.enter()
+          .append('text')
+          .attr('class', 'nodeLabel')
+          .attr('transform', 'translate(40, ' + (-NODE_RADIUS / 2) + ')');
+        titleText
+          .text(function(d) {
+            return d.channelID;
+          });
+
+      }
     }
 
     function drawLegends() {
@@ -1079,16 +1265,20 @@
       powerG = svgSpectraLegend.selectAll('g#powerLegend').data([{}]);
       powerG.enter()
         .append('g')
-          .attr('id', 'powerLegend');
+        .attr('id', 'powerLegend');
       powerLegendRect = powerG.selectAll('rect.power').data(colorInd);
       powerLegendRect.enter()
         .append('rect')
-          .attr('class', 'power')
-          .attr('x', function(d) {return legendScale(d);})
-          .attr('height', 10)
-          .attr('width', legendScale.rangeBand());
+        .attr('class', 'power')
+        .attr('x', function(d) {
+          return legendScale(d);
+        })
+        .attr('height', 10)
+        .attr('width', legendScale.rangeBand());
       powerLegendRect
-        .style('fill', function(d) {return heatmapPowerColor(d);});
+        .style('fill', function(d) {
+          return heatmapPowerColor(d);
+        });
 
       powerAxis = d3.svg.axis()
         .scale(legendScale)
@@ -1101,30 +1291,34 @@
       powerAxisG = powerG.selectAll('g.axis.hideAxisLines#power').data([{}]);
       powerAxisG.enter()
         .append('g')
-          .attr('transform', 'translate(0,9)')
-          .attr('class', 'axis hideAxisLines')
-          .attr('id', 'power')
-          .append('text')
-            .attr('x', legendScale.rangeBand() * NUM_COLORS / 2)
-            .attr('y', -10)
-            .attr('text-anchor', 'middle')
-            .text('Difference in Power');
+        .attr('transform', 'translate(0,9)')
+        .attr('class', 'axis hideAxisLines')
+        .attr('id', 'power')
+        .append('text')
+        .attr('x', legendScale.rangeBand() * NUM_COLORS / 2)
+        .attr('y', -10)
+        .attr('text-anchor', 'middle')
+        .text('Difference in Power');
       powerAxisG.call(powerAxis);
 
       // Edge Statistic Legend
       edgeStatG = svgEdgeStatLegend.selectAll('g#edgeStatLegend').data([{}]);
       edgeStatG.enter()
         .append('g')
-          .attr('id', 'edgeStatLegend');
+        .attr('id', 'edgeStatLegend');
       edgeStatLegendRect = edgeStatG.selectAll('rect.edgeStat').data(colorInd);
       edgeStatLegendRect.enter()
         .append('rect')
-          .attr('class', 'edgeStat')
-          .attr('x', function(d) {return legendScale(d);})
-          .attr('height', 10)
-          .attr('width', legendScale.rangeBand());
+        .attr('class', 'edgeStat')
+        .attr('x', function(d) {
+          return legendScale(d);
+        })
+        .attr('height', 10)
+        .attr('width', legendScale.rangeBand());
       edgeStatLegendRect
-        .style('fill', function(d) {return edgeStatColor(d);});
+        .style('fill', function(d) {
+          return edgeStatColor(d);
+        });
 
       edgeStatAxis = d3.svg.axis()
         .scale(legendScale)
@@ -1138,14 +1332,14 @@
 
       edgeStatAxisG.enter()
         .append('g')
-          .attr('transform', 'translate(0,9)')
-          .attr('class', 'axis hideAxisLines')
-          .attr('id', 'edgeStat')
+        .attr('transform', 'translate(0,9)')
+        .attr('class', 'axis hideAxisLines')
+        .attr('id', 'edgeStat')
         .append('text')
-          .attr('x', legendScale.rangeBand() * NUM_COLORS / 2)
-          .attr('y', -10)
-          .attr('text-anchor', 'middle')
-          .text(edgeInfo.edgeTypeName);
+        .attr('x', legendScale.rangeBand() * NUM_COLORS / 2)
+        .attr('y', -10)
+        .attr('text-anchor', 'middle')
+        .text(edgeInfo.edgeTypeName);
       edgeStatAxisG.exit()
         .remove();
       edgeStatAxisG.call(edgeStatAxis);
@@ -1154,69 +1348,86 @@
       anatomicalG = svgAnatomicalLegend.selectAll('g.anatomical').data(params.visInfo.brainAreas, String);
       anatomicalG.enter()
         .append('g')
-          .attr('class', 'anatomical')
-          .attr('transform', function(d, i) {
-            return 'translate(0,' + (i * (((NODE_RADIUS / 2) * 2) + 3))  + ')';
-          });
+        .attr('class', 'anatomical')
+        .attr('transform', function(d, i) {
+          return 'translate(0,' + (i * (((NODE_RADIUS / 2) * 2) + 3)) + ')';
+        });
 
       anatomicalG.exit()
         .remove();
-      anatomicalCircle = anatomicalG.selectAll('circle').data(function(d) {return [d];});
+      anatomicalCircle = anatomicalG.selectAll('circle').data(function(d) {
+        return [d];
+      });
 
       anatomicalCircle.enter()
         .append('circle')
-          .attr('r', NODE_RADIUS / 2)
-          .attr('fill', function(d) {return networkColorScale(d);});
+        .attr('r', NODE_RADIUS / 2)
+        .attr('fill', function(d) {
+          return networkColorScale(d);
+        });
 
-      anatomicalText = anatomicalG.selectAll('text').data(function(d) {return [d];});
+      anatomicalText = anatomicalG.selectAll('text').data(function(d) {
+        return [d];
+      });
 
       anatomicalText.enter()
         .append('text')
-          .attr('x', ((NODE_RADIUS / 2) * 2) + 5)
-          .attr('font-size', ((NODE_RADIUS / 2) * 2))
-          .attr('alignment-baseline', 'middle')
-          .text(String);
+        .attr('x', ((NODE_RADIUS / 2) * 2) + 5)
+        .attr('font-size', ((NODE_RADIUS / 2) * 2))
+        .attr('alignment-baseline', 'middle')
+        .text(String);
     }
 
     function drawTimeSlice() {
 
       var cohSlice = svgTimeSlice.selectAll('g#cohSlice')
-        .data([edgeStat.data.map(function(d) {return d[curFreqInd];})]);
+        .data([edgeStat.data.map(function(d) {
+          return d[curFreqInd];
+        }),
+      ]);
 
       cohSlice.enter()
         .append('g')
-          .attr('id', 'cohSlice');
+        .attr('id', 'cohSlice');
       cohSlice
         .call(cohTimeSlice);
 
       var spect1Slice = svgTimeSlice.selectAll('g#spect1Slice')
-        .data([spect1.data.map(function(d) {return d[curFreqInd];})]);
+        .data([spect1.data.map(function(d) {
+          return d[curFreqInd];
+        }),
+       ]);
 
       spect1Slice.enter()
         .append('g')
-          .attr('id', 'spect1Slice');
+        .attr('id', 'spect1Slice');
       spect1Slice
         .call(powerTimeSlice);
 
       var spect2Slice = svgTimeSlice.selectAll('g#spect2Slice')
-        .data([spect2.data.map(function(d) {return d[curFreqInd];})]);
+        .data([spect2.data.map(function(d) {
+          return d[curFreqInd];
+        }),
+      ]);
 
       spect2Slice.enter()
-          .append('g')
-            .attr('id', 'spect2Slice');
+        .append('g')
+        .attr('id', 'spect2Slice');
       spect2Slice
         .call(powerTimeSlice);
 
       var timeTitle = svgTimeSlice.selectAll('text.title').data([fAx[curFreqInd]]);
       timeTitle.enter()
         .append('text')
-          .attr('text-anchor', 'middle')
-          .attr('class', 'title')
-          .attr('x', timeSliceWidth / 2)
-          .attr('y', 0)
-          .attr('dy', -1 + 'em');
+        .attr('text-anchor', 'middle')
+        .attr('class', 'title')
+        .attr('x', timeSliceWidth / 2)
+        .attr('y', 0)
+        .attr('dy', -1 + 'em');
       timeTitle
-        .text(function(d) {return 'Time Slice @ Frequency ' + d + ' ' + params.visInfo.funits;});
+        .text(function(d) {
+          return 'Time Slice @ Frequency ' + d + ' ' + params.visInfo.funits;
+        });
     }
 
     function timeseries() {
@@ -1245,75 +1456,87 @@
           var orient = (yAxisOrientation === 'right') ? 1 : -1;
 
           var lineFun = d3.svg.line()
-            .x(function(d, i) {return xScale(xScale.domain()[i]);})
-            .y(function(d) {return yScale(d);})
+            .x(function(d, i) {
+              return xScale(xScale.domain()[i]);
+            })
+            .y(function(d) {
+              return yScale(d);
+            })
             .interpolate('linear');
 
           var line = curPlot.selectAll('path.timeseries').data([data]);
           line.enter()
             .append('path')
-              .attr('class', 'timeseries')
-              .attr('fill', 'none')
-              .attr('stroke', lineColor);
+            .attr('class', 'timeseries')
+            .attr('fill', 'none')
+            .attr('stroke', lineColor);
           line
             .transition()
-              .duration(5)
-              .ease('linear')
+            .duration(5)
+            .ease('linear')
             .attr('d', lineFun);
 
           var yAxis = d3.svg.axis()
-           .scale(yScale)
-           .orient(yAxisOrientation)
-           .ticks(3)
-           .tickValues([d3.min(yScale.domain()), 0, d3.max(yScale.domain())])
-           .tickSize(0, 0, 0);
+            .scale(yScale)
+            .orient(yAxisOrientation)
+            .ticks(3)
+            .tickValues([d3.min(yScale.domain()), 0, d3.max(yScale.domain())])
+            .tickSize(0, 0, 0);
           var yAxisG = curPlot.selectAll('g.axis#y').data([{}]);
 
           yAxisG.enter()
             .append('g')
-              .attr('class', 'axis')
-              .attr('id', 'y')
-              .attr('transform', 'translate(' + (yAxisOrientation === 'right' ? width : 0) + ',0)')
+            .attr('class', 'axis')
+            .attr('id', 'y')
+            .attr('transform', 'translate(' + (yAxisOrientation === 'right' ? width : 0) + ',0)')
             .append('text')
-              .attr('x', orient * height / 2)
-              .attr('dy', -2.5 + 'em')
-              .attr('transform', 'rotate(' + (orient * 90) + ')')
-              .attr('text-anchor', 'middle')
-              .text(yLabel);
+            .attr('x', orient * height / 2)
+            .attr('dy', -2.5 + 'em')
+            .attr('transform', 'rotate(' + (orient * 90) + ')')
+            .attr('text-anchor', 'middle')
+            .text(yLabel);
           yAxisG.call(yAxis);
 
           var xAxis = d3.svg.axis()
-           .scale(xScale)
-           .orient('bottom')
-           .ticks(3)
-           .tickValues([d3.min(xScale.domain()), 0, d3.max(xScale.domain())])
-           .tickSize(0, 0, 0);
+            .scale(xScale)
+            .orient('bottom')
+            .ticks(3)
+            .tickValues([d3.min(xScale.domain()), 0, d3.max(xScale.domain())])
+            .tickSize(0, 0, 0);
           var xAxisG = curPlot.selectAll('g.axis#x').data([{}]);
           xAxisG.enter()
             .append('g')
-              .attr('class', 'axis')
-              .attr('transform', 'translate(0,' + height + ')')
-              .attr('id', 'x')
+            .attr('class', 'axis')
+            .attr('transform', 'translate(0,' + height + ')')
+            .attr('id', 'x')
             .append('text')
-              .attr('x', xScale(0))
-              .attr('y', 0)
-              .attr('text-anchor', 'middle')
-              .attr('dy', 3 + 'em')
-              .text(xLabel);
+            .attr('x', xScale(0))
+            .attr('y', 0)
+            .attr('text-anchor', 'middle')
+            .attr('dy', 3 + 'em')
+            .text(xLabel);
           xAxisG.call(xAxis);
 
-          var zeroG = curPlot.selectAll('g.zeroLine').data([[[0, height]]]);
+          var zeroG = curPlot.selectAll('g.zeroLine').data([
+            [
+              [0, height],
+            ],
+          ]);
           zeroG.enter()
             .append('g')
-              .attr('class', 'zeroLine');
-          var zeroLine = zeroG.selectAll('path').data(function(d) {return d;});
+            .attr('class', 'zeroLine');
+          var zeroLine = zeroG.selectAll('path').data(function(d) {
+            return d;
+          });
 
           zeroLine.enter()
             .append('path');
           zeroLine
             .attr('d', d3.svg.line()
               .x(xScale(0))
-              .y(function(d) { return d; })
+              .y(function(d) {
+                return d;
+              })
               .interpolate('linear'))
             .attr('stroke', 'black')
             .attr('stroke-width', 2)
@@ -1323,20 +1546,22 @@
           var heatmapG = curPlot.selectAll('g.heatmapX').data(data);
           heatmapG.enter()
             .append('g')
-              .attr('transform', function(d, i) {
-                  return 'translate(' + xScale(xScale.domain()[i]) + ', 0)';
-                })
-              .attr('class', 'heatmapX');
+            .attr('transform', function(d, i) {
+              return 'translate(' + xScale(xScale.domain()[i]) + ', 0)';
+            })
+            .attr('class', 'heatmapX');
           heatmapG.exit()
             .remove();
-          var heatmapRect = heatmapG.selectAll('rect').data(function(d) {return d;});
+          var heatmapRect = heatmapG.selectAll('rect').data(function(d) {
+            return d;
+          });
 
           heatmapRect.enter()
             .append('rect')
-              .attr('opacity', 1e-6)
-              .attr('height', height)
-              .attr('width', xScale.rangeBand())
-              .style('fill', 'white');
+            .attr('opacity', 1e-6)
+            .attr('height', height)
+            .attr('width', xScale.rangeBand())
+            .style('fill', 'white');
           heatmapRect
             .on('mouseover', rectMouseOver)
             .on('click', rectMouseClick);
@@ -1423,7 +1648,7 @@
           subjectDropdown.selectAll('button')
             .text(this.id)
             .append('span')
-              .attr('class', 'caret');
+            .attr('class', 'caret');
           curSubject = this.id;
           curCh1 = [];
           curCh2 = [];
@@ -1437,12 +1662,14 @@
         .on('click', function() {
           edgeStatTypeDropdown.selectAll('button')
             .text(d3.select(this).select('a').html())
-              .append('span')
-                .attr('class', 'caret');
+            .append('span')
+            .attr('class', 'caret');
           edgeStatType = this.id;
 
           isFreq = params.edgeInfo
-            .filter(function(e) {return e.edgeTypeID === edgeStatType;})[0]
+            .filter(function(e) {
+              return e.edgeTypeID === edgeStatType;
+            })[0]
             .isFreq;
           curFreqInd = isFreq ? curFreqInd : 0;
           freqSlider.property('value', fAx[curFreqInd]);
@@ -1459,8 +1686,8 @@
         .on('click', function() {
           edgeAreaDropdown.selectAll('button')
             .text(this.id)
-              .append('span')
-                .attr('class', 'caret');
+            .append('span')
+            .attr('class', 'caret');
           edgeArea = this.id;
           force.stop();
           drawNetwork();
@@ -1490,7 +1717,9 @@
         var intervalID = setInterval(function() {
           if (curTimeInd < timeMaxStepInd && stopAnimation === false) {
             curTimeInd++;
-            updateTimeSlider.call({value: tAx[curTimeInd]});
+            updateTimeSlider.call({
+              value: tAx[curTimeInd],
+            });
           } else {
             d3.select('#playButton').text('Start');
             stopAnimation = true;
@@ -1506,7 +1735,9 @@
         curTimeInd = 0;
         stopAnimation = true;
         force.stop();
-        updateTimeSlider.call({value: tAx[curTimeInd]});
+        updateTimeSlider.call({
+          value: tAx[curTimeInd],
+        });
       });
     }
 
@@ -1536,8 +1767,13 @@
         curTimeInd = timeInd;
         force.stop();
 
-        updateTimeSlider.call({value: tAx[curTimeInd], noUpdate: true});
-        updateFreqSlider.call({value: fAx[curFreqInd]});
+        updateTimeSlider.call({
+          value: tAx[curTimeInd],
+          noUpdate: true,
+        });
+        updateFreqSlider.call({
+          value: fAx[curFreqInd],
+        });
       };
     }
 
@@ -1559,7 +1795,9 @@
       var uInt8Array = new Uint8Array(input);
       var i = uInt8Array.length;
       var biStr = []; //new Array(i);
-      while (i--) { biStr[i] = String.fromCharCode(uInt8Array[i]);  }
+      while (i--) {
+        biStr[i] = String.fromCharCode(uInt8Array[i]);
+      }
 
       var base64 = window.btoa(biStr.join(''));
       return base64;
@@ -1571,12 +1809,14 @@
       xhr.open('GET', url, true); // url is the url of a PNG/JPG image.
       xhr.responseType = 'arraybuffer';
       xhr.callback = callback;
-      xhr.onload  = function() {
+      xhr.onload = function() {
         img64 = converterEngine(this.response); // convert BLOB to base64
         this.callback(null, img64); // callback : err, data
       };
 
-      xhr.onerror = function() { callback('B64 ERROR', null); };
+      xhr.onerror = function() {
+        callback('B64 ERROR', null);
+      };
 
       xhr.send();
     };
