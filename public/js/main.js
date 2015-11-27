@@ -673,14 +673,12 @@
         .append('image')
           .attr('width', networkWidth)
           .attr('height', networkHeight); // replace link by data URI
-
-      getImageBase64('DATA/brainImages/brainImage_D.png', function(err, d) {
-        brainImage
-          .attr('xlink:href', 'data:image/png;base64,' + d);
-      });
-
-      // brainImage
-      //   .attr('xlink:href', function(d) {return 'DATA/brainImages/' + d.brainFilename;})
+      if (networkView != 'Topological') {
+        getImageBase64('DATA/brainImages/' + subjectObject.brainFilename, function(err, d) {
+          brainImage
+            .attr('xlink:href', 'data:image/png;base64,' + d);
+        });
+      }
 
       brainImage.exit()
         .remove();
