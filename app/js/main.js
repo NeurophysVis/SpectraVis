@@ -1120,9 +1120,22 @@
           .attr('class', 'infoLabel')
           .attr('text-anchor', 'middle');
         titleLabel
-          .text(function(d) {
-            return edgeInfo.edgeTypeName + ': Ch ' + d.source + '-Ch ' + d.target;
-          });
+          .text(edgeInfo.edgeTypeName + ':');
+
+        var boundBox = titleLabel.node().getBBox();
+
+        var titleLine = titleEdge.selectAll('line.nodeLabel').data([{}]);
+
+        titleLine.enter()
+          .append('line')
+          .attr('class', 'edge')
+          .style('stroke-width', EDGE_WIDTH)
+          .attr('stroke', 'black');
+        titleLine
+          .attr('x1', boundBox.x + boundBox.width + NODE_RADIUS)
+          .attr('y1', -NODE_RADIUS / 2)
+          .attr('x2', boundBox.x + boundBox.width + NODE_RADIUS + 35)
+          .attr('y2', -NODE_RADIUS / 2);
 
         var titleCircleG = titleEdge.selectAll('g').data(
           [
@@ -1139,6 +1152,11 @@
         titleCircleG.enter()
           .append('g');
 
+        titleCircleG
+          .attr('transform', function(d, i) {
+            return 'translate(' + (boundBox.x + boundBox.width + NODE_RADIUS + i * 35) + ', ' + (-NODE_RADIUS / 2) + ')';
+          });
+
         var titleCircle = titleCircleG.selectAll('circle.node').data(function(d, i) {
           return [
             [d, i],
@@ -1149,9 +1167,6 @@
           .append('circle')
           .attr('class', 'node')
           .attr('r', NODE_RADIUS)
-          .attr('transform', function(d) {
-            return 'translate(' + (60 + d[1] * 45) + ', ' + (-NODE_RADIUS / 2) + ')';
-          })
           .attr('fill', '#ddd')
           .attr('opacity', 1);
 
@@ -1168,15 +1183,13 @@
 
         titleText.enter()
           .append('text')
-          .attr('class', 'nodeLabel')
-          .attr('transform', function(d) {
-            return 'translate(' + (60 + d[1] * 45) + ', ' + (-NODE_RADIUS / 2) + ')';
-          });
+          .attr('class', 'nodeLabel');
 
         titleText
           .text(function(d) {
             return d[0][0].channelID;
           });
+
 
       }
 
