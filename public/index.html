@@ -122,7 +122,7 @@
     <script src="js/main.js"></script>
     <script>
       // Extract parameters from the browser
-      var extractedParams;
+      var extractedParams = [];
       var query = window.location.search.substring(1);
       var vars = query.split("&");
       vars.forEach(function(v) {
@@ -134,6 +134,6 @@
       });
       // Initialized visualization
       // spectraVis.init(extractedParams);
-  </script>
+    </script>
   </body>
 </html>
