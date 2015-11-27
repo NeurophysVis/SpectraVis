@@ -1134,7 +1134,7 @@
         titleLine
           .attr('x1', boundBox.x + boundBox.width + NODE_RADIUS)
           .attr('y1', -NODE_RADIUS / 2)
-          .attr('x2', boundBox.x + boundBox.width + NODE_RADIUS + 35)
+          .attr('x2', boundBox.x + boundBox.width + NODE_RADIUS + 30)
           .attr('y2', -NODE_RADIUS / 2);
 
         var titleCircleG = titleEdge.selectAll('g').data(
@@ -1154,7 +1154,7 @@
 
         titleCircleG
           .attr('transform', function(d, i) {
-            return 'translate(' + (boundBox.x + boundBox.width + NODE_RADIUS + i * 35) + ', ' + (-NODE_RADIUS / 2) + ')';
+            return 'translate(' + (boundBox.x + boundBox.width + NODE_RADIUS + i * 30) + ', ' + (-NODE_RADIUS / 2) + ')';
           });
 
         var titleCircle = titleCircleG.selectAll('circle.node').data(function(d, i) {
@@ -1189,7 +1189,6 @@
           .text(function(d) {
             return d[0][0].channelID;
           });
-
 
       }
 
