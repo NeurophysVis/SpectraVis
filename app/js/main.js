@@ -1010,19 +1010,46 @@
       var titleCh2;
       var titleCoh;
       var titleSubjectEdge;
-      titleCh1 = svgCh1.selectAll('text.title').data([spect1.channelID]);
+
+      titleCh1 = svgCh1.selectAll('g.title').data(channel.filter(function(d) {return d.channelID === spect1.channelID;}));
+
       titleCh1.exit().remove();
       titleCh1.enter()
-        .append('text')
-          .attr('x', timeScaleLinear(0))
-          .attr('y', 0)
-          .attr('dy', -0.5 + 'em')
-          .attr('text-anchor', 'middle')
-          .attr('class', 'title');
-      titleCh1
-          .text(function(d) {
-            return 'Spectra: Ch' + d;
+        .append('g')
+          .attr('transform', 'translate(' + timeScaleLinear(0) + ', -5)');
+
+      var titleCircle = titleCh1.selectAll('circle.node').data(function(d) {return [d];});
+
+      titleCircle.enter()
+        .append('circle')
+        .attr('class', 'node')
+        .attr('r', NODE_RADIUS)
+        .attr('transform', 'translate(0, ' + (-NODE_RADIUS / 2) + ')')
+        .attr('fill', '#ddd')
+        .attr('opacity', 1);
+
+      titleCircle
+          .attr('fill', function(d) {
+            return networkColorScale(d.region);
           });
+
+      titleText = titleCh1.selectAll('text.nodeLabel').data(function(d) {return [d];});
+
+      titleText.enter()
+        .append('text')
+          .attr('class', 'nodeLabel')
+          .attr('transform', 'translate(0, ' + (-NODE_RADIUS / 2) + ')');
+      titleText
+          .text(function(d) {return d.channelID;});
+
+      titleLabel = titleCh1.selectAll('text.infoLabel').data([{}]);
+
+      titleLabel.enter()
+        .append('text')
+          .attr('class', 'infoLabel')
+          .attr('text-anchor', 'end')
+          .attr('transform', 'translate(-15, 0)')
+          .text('Spectra: Ch ');
 
       titleCh2 = svgCh2.selectAll('text.title').data([spect2.channelID]);
       titleCh2.exit().remove();
