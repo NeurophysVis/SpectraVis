@@ -1126,9 +1126,13 @@
 
         var titleCircleG = titleEdge.selectAll('g').data(
           [
-          channel.filter(function(d) {return d.channelID === curCh1;}),
+            channel.filter(function(d) {
+              return d.channelID === curCh1;
+            }),
 
-          channel.filter(function(d) {return d.channelID === curCh2;}),
+            channel.filter(function(d) {
+              return d.channelID === curCh2;
+            }),
           ]
         );
 
@@ -1136,7 +1140,9 @@
           .append('g');
 
         var titleCircle = titleCircleG.selectAll('circle.node').data(function(d, i) {
-          return [[d, i]];
+          return [
+            [d, i],
+          ];
         });
 
         titleCircle.enter()
@@ -1144,7 +1150,7 @@
           .attr('class', 'node')
           .attr('r', NODE_RADIUS)
           .attr('transform', function(d) {
-            return 'translate(' + (60 + d[1] * 45)  + ', ' + (-NODE_RADIUS / 2) + ')';
+            return 'translate(' + (60 + d[1] * 45) + ', ' + (-NODE_RADIUS / 2) + ')';
           })
           .attr('fill', '#ddd')
           .attr('opacity', 1);
@@ -1155,14 +1161,16 @@
           });
 
         var titleText = titleCircleG.selectAll('text.nodeLabel').data(function(d, i) {
-          return [[d, i]];
+          return [
+            [d, i],
+          ];
         });
 
         titleText.enter()
           .append('text')
           .attr('class', 'nodeLabel')
           .attr('transform', function(d) {
-            return 'translate(' + (60 + d[1] * 45)  + ', ' + (-NODE_RADIUS / 2) + ')';
+            return 'translate(' + (60 + d[1] * 45) + ', ' + (-NODE_RADIUS / 2) + ')';
           });
 
         titleText
@@ -1376,7 +1384,7 @@
         .data([edgeStat.data.map(function(d) {
           return d[curFreqInd];
         }),
-       ]);
+      ]);
 
       cohSlice.enter()
         .append('g')
@@ -1400,7 +1408,7 @@
         .data([spect2.data.map(function(d) {
           return d[curFreqInd];
         }),
-       ]);
+      ]);
 
       spect2Slice.enter()
         .append('g')
