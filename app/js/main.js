@@ -1120,13 +1120,14 @@
             return d.channelID === channelID;
           }), function(d) {
 
-            return curSubject + '_' + d.channelID;
+            return d.SubjectID + '_' + d.channelID;
           });
 
         titleCh.exit().remove();
         titleCh.enter()
           .append('g')
-          .attr('transform', 'translate(' + timeScaleLinear(0) + ', -10)');
+          .attr('transform', 'translate(' + timeScaleLinear(0) + ', -10)')
+          .attr('class', 'title');
 
         var titleCircle = titleCh.selectAll('circle.node').data(function(d) {
           return [d];
