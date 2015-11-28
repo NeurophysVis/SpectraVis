@@ -693,7 +693,11 @@
       nodeCircle
         .attr('fill', function(d) {
           return networkColorScale(d.region);
-        });
+        })
+        .style('stroke', 'white');
+
+      nodeCircle.filter(function(d) {return d.channelID == curCh1 || d.channelID == curCh2;})
+        .style('stroke', 'black');
 
       nodeText = nodeG.selectAll('text.nodeLabel').data(function(d) {
         return [d];
