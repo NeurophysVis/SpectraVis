@@ -860,6 +860,8 @@
 
       function edgeFiltering(e) {
         var isEdge;
+
+        // If edge type is binary, don't display edges corresponding to no edge
         switch (edgeStatType) {
           case 'C2s_coh':
           case 'C2s_corr':
@@ -873,6 +875,8 @@
           default:
             isEdge = true;
         }
+
+        // Now filter by edge connection type (within brain area, etc)
         switch (edgeFilter) {
           case 'Within':
             if (e.source.region != e.target.region) {
