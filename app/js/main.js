@@ -1223,9 +1223,9 @@
           .append('text')
           .attr('class', 'infoLabel')
           .attr('text-anchor', 'middle')
-          .text(function(d) {
-            return 'Spectra: Ch ' + d.channelID;
-          });
+          .text('Spectra: Ch');
+
+        var boundBox = titleLabel.node().getBBox();
 
         var titleCircle = titleCh.selectAll('circle.node').data(function(d) {
           return [d];
@@ -1235,7 +1235,7 @@
           .append('circle')
           .attr('class', 'node')
           .attr('r', NODE_RADIUS)
-          .attr('transform', 'translate(40, ' + (-NODE_RADIUS / 2) + ')')
+          .attr('transform', 'translate(' + (-boundBox.x  + NODE_RADIUS + 5) + ', ' + (-NODE_RADIUS / 2) + ')')
           .attr('fill', '#ddd')
           .attr('opacity', 1);
 
@@ -1251,7 +1251,7 @@
         titleText.enter()
           .append('text')
           .attr('class', 'nodeLabel')
-          .attr('transform', 'translate(40, ' + (-NODE_RADIUS / 2) + ')');
+          .attr('transform', 'translate(' + (-boundBox.x  + NODE_RADIUS + 5) + ', ' + (-NODE_RADIUS / 2) + ')');
         titleText
           .text(function(d) {
             return d.channelID;
