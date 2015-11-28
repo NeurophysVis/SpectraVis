@@ -816,7 +816,7 @@
 
       function nodeMouseClick(e) {
         var curNode = d3.select(this);
-        var nodeInd = nodeClickNames.indexOf(e.channelID);
+        var nodeInd = nodeClickNames.indexOf(+e.channelID);
 
         if (nodeInd > -1) {
           // If clicked on node is in the array, remove
