@@ -22,6 +22,7 @@ gulp.task('createVendorJS', function() {
     'app/components/d3/d3.js',
     'app/components/queue-async/queue.js',
     'app/components/colorbrewer/colorbrewer.js',
+    'app/components/spin.js/spin.js',
   ]).pipe(concat('vendor.js'))
     .pipe(uglify())
     .pipe(gulp.dest('public/js'));

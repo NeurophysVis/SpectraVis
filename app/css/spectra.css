@@ -75,6 +75,7 @@ g#spect2Slice > g#x.axis, g#spect2Slice > g.zeroLine {
   right: 0;
   bottom: 0;
   margin: auto;
+  z-index: 200;
 }
 #close {
   position: absolute;
@@ -93,7 +94,7 @@ g#spect2Slice > g#x.axis, g#spect2Slice > g.zeroLine {
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 10;
+  z-index: 200;
   background: rgba(0, 0, 0, 0.5);
 }
 #helpToolTip {
@@ -107,7 +108,7 @@ g#spect2Slice > g#x.axis, g#spect2Slice > g.zeroLine {
   visibility: visible;
   outline: medium none;
   position: fixed;
-  z-index: 11;
+  z-index: 2e9;
   top: 50%;
   left: 50%;
   margin-top: -22em;  /* negative half the size of height */

@@ -35,7 +35,9 @@
   var anatomicalLegendHeight = 100 - margin.top - margin.bottom;
   var timeSliceWidth = panelWidth;
   var timeSliceHeight = 180 - margin.top - margin.bottom;
-  var spinner;
+  var spinnerOpts = {
+    zIndex: 100,
+  };
 
   // Heatmap Panels
   var svgCh1 = d3.select('#SpectraCh1Panel')
@@ -120,14 +122,11 @@
     .append('span')
     .attr('class', 'caret');
 
-  // Display loading spinner gif
-  spinner = d3.select('#NetworkPanel')
-    .append('div')
-    .attr('id', 'load')
-    .attr('width', panelWidth)
-    .attr('height', panelHeight)
-    .attr('position', 'relative')
-    .html('<img src="img/loader.gif" id="loading">');
+  // Spinners
+  var networkSpinner = new Spinner(spinnerOpts);
+  var spect1Spinner = new Spinner(spinnerOpts);
+  var spect2Spinner = new Spinner(spinnerOpts);
+  var edgeSpinner = new Spinner(spinnerOpts);
 
   // Load subject data
   queue()
@@ -197,6 +196,9 @@
 
   // Load channel file and set the network svg to be the right aspect ratio for the brain
   function loadChannelData() {
+
+    networkSpinner.spin(document.getElementById('NetworkPanel'));
+
     var channelFile = 'channels_' + curSubject + '.json';
 
     subjectObject = params.subjects.filter(function(d) {
@@ -243,6 +245,12 @@
   }
 
   function loadSpectra() {
+
+    // Start loading spinners
+    spect1Spinner.spin(document.getElementById('SpectraCh1Panel'));
+    spect2Spinner.spin(document.getElementById('SpectraCh2Panel'));
+    edgeSpinner.spin(document.getElementById('EdgeStatPanel'));
+
     var spectCh1File = 'spectrogram_' + curSubject + '_' + curCh1 + '.json';
     var spectCh2File = 'spectrogram_' + curSubject + '_' + curCh2 + '.json';
 
@@ -292,13 +300,6 @@
     var isFreq;
     var isWeightedNetwork;
     var corrScale;
-
-    // Remove loading spinner gif
-    d3.select('#NetworkPanel').select('#load')
-      .transition()
-      .duration(5000)
-      .attr('opacity', 1e-6)
-      .style('display', 'none');
 
     tAx = params.visInfo.tax; // Time Axis
     fAx = params.visInfo.fax; // Frequency Axis
@@ -374,15 +375,20 @@
       .lineColor('green');
 
     // Draw data
+    networkSpinner.stop();
     drawNetwork();
 
+    spect1Spinner.stop();
     svgCh1
       .datum(spect1.data)
       .call(powerChart);
+
+    spect2Spinner.stop();
     svgCh2
       .datum(spect2.data)
       .call(powerChart);
 
+    edgeSpinner.stop();
     if (isFreq) {
       svgEdgeStat
         .html('');
@@ -1660,10 +1666,6 @@
       subjectDropdown = d3.select('#SubjectDropdown');
       subjectDropdown.selectAll('li')
         .on('click', function() {
-
-          // Display loading spinner gif
-          spinner = d3.select('#NetworkPanel').select('#load')
-            .style('display', '');
 
           subjectDropdown.selectAll('button')
             .text(this.id)
