@@ -42,7 +42,7 @@ output {
 }
 #sidebar {
   background: rgba(221, 221, 221, 0.4);
-  padding: 30px;
+  padding: 15px 30px;
   border-radius: 25px;
 }
 button#PlayButtonPanel {
