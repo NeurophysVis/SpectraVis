@@ -106,7 +106,7 @@ g#spect2Slice > g#x.axis, g#spect2Slice > g.zeroLine {
   display: none;
   padding: 4px 20px;
 }
-#permalink .text {
+#permalink > input {
   width: 330px;
   margin: 10px 5px;
 }

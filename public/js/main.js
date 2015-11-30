@@ -122,6 +122,17 @@
     .on('click', function() {
       permalink
         .style('display', 'block');
+      var linkString = window.location.origin + window.location.pathname + '?' +
+        'curSubject=' + curSubject +
+        '&edgeStat=' + edgeStatType +
+        '&edgeFilter=' + edgeFilter +
+        '&networkView=' + networkView +
+        '&time=' + params.visInfo.tax[curTimeInd] +
+        '&freq=' + params.visInfo.fax[curFreqInd] +
+        '&curCh1=' + curCh1 +
+        '&curCh2=' + curCh2;
+      permalink.selectAll('input').attr('value', linkString);
+      permalink.selectAll('.bookmark').attr('href', linkString);
     });
 
   permalink.selectAll('.close')
