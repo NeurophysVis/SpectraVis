@@ -188,6 +188,10 @@
       .append('span')
       .attr('class', 'caret');
 
+    // Set brain area legend height
+    d3.selectAll('#legendKey').selectAll('#anatomicalLegend').selectAll('svg')
+      .attr('height', 29 + visInfo.brainAreas.length * 12);
+
     params.visInfo = visInfo;
 
     // Load channel data
