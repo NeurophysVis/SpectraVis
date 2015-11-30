@@ -134,14 +134,19 @@
     // Extract parameters from the browser
     var extractedParams = [];
     var query = window.location.search.substring(1);
-    var vars = query.split("&");
-    vars.forEach(function(v) {
-      var p = v.split("=");
-      p[1] = decodeURI(p[1]);
-      if (typeof(p[1]) !== 'undefined') {
-        extractedParams[p[0]] = p[1];
-      }
-    });
+    if (query !== "") {
+      var vars = query.split("&");
+      vars.forEach(function(v) {
+        var p = v.split("=");
+        var isUndefined = (typeof(p[1]) === 'undefined');
+        var isEmpty = (p[1] === "");
+        if (isUndefined || isEmpty) {
+          extractedParams[p[0]] = null;
+        } else {
+          extractedParams[p[0]] = decodeURI(p[1]);
+        }
+      });
+    }
     // Initialized visualization
     // spectraVis.init(extractedParams);
   </script>
