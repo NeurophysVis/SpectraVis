@@ -214,10 +214,9 @@
     svgNetworkMap.exit().remove();
     svgNetworkMap = svgNetworkMap.enter()
       .append('svg')
-      .attr('width', networkWidth + margin.left + margin.right)
-      .attr('height', networkHeight + margin.top + margin.bottom)
-      .append('g')
-      .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+      .attr('width', networkWidth)
+      .attr('height', networkHeight)
+      .append('g');
     networkSpinner.spin(document.getElementById('NetworkPanel'));
     svgNetworkMap.style('display', 'none');
     d3.json('DATA/' + channelFile, function(isError, channelData) {
