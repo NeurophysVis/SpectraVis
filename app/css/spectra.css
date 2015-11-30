@@ -32,9 +32,6 @@ output {
   padding-top: 0px;
   text-align: center;
 }
-.top-buffer {
-  margin-top: 50px;
-}
 .bottom-buffer {
   margin-bottom: 10px;
 }
@@ -42,8 +39,6 @@ output {
   background: white;
   outline:none;
 }
-#TitlePanel h1 {
-  display: inline-block;
 }
 #sidebar {
   background: rgba(221, 221, 221, 0.4);
@@ -75,17 +70,6 @@ g#spect2Slice > g#x.axis, g#spect2Slice > g.zeroLine {
   bottom: 0;
   margin: auto;
   z-index: 200;
-}
-#close {
-  position: absolute;
-  top: 5px;
-  right: 15px;
-  cursor: pointer;
-  font-size: 22px;
-  font-weight: bold;
-}
-#close:hover {
-  color:#ddd;
 }
 #overlay {
   position: fixed;
