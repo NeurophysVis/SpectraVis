@@ -35,10 +35,8 @@ output {
 .bottom-buffer {
   margin-bottom: 10px;
 }
-#help-button {
-  background: white;
-  outline:none;
-}
+#export-link-help > button {
+  border-style: none;
 }
 #sidebar {
   background: rgba(221, 221, 221, 0.4);
@@ -97,4 +95,21 @@ g#spect2Slice > g#x.axis, g#spect2Slice > g.zeroLine {
   border: 1px solid #e3e3e3;
   border-radius: 4px;
 }
+#permalink {
+  position: absolute;
+  z-index: 200;
+  background: #EEE;
+  border: 1px solid #888;
+  width: 370px;
+  margin: 25px 10px;
+  font-size: 8pt;
+  display: none;
+  padding: 4px 20px;
+}
+#permalink .text {
+  width: 330px;
+  margin: 10px 5px;
+}
+#permalink > label {
+  margin-top: 5px;
 }

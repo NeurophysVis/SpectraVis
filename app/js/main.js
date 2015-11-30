@@ -104,15 +104,18 @@
   // Set up tool tip
   var toolTip = d3.select('#overlay');
   toolTip.selectAll('#close')
+  // Set up permalink button
+  var permalink = d3.select('#permalink');
+  var linkButton = d3.select('button#link');
+  linkButton
     .on('click', function() {
       permalink
         .style('display', 'block');
     });
 
-  d3.select('#help-button')
+  permalink.selectAll('.close')
     .on('click', function() {
-      toolTip
-        .style('display', '');
+      permalink.style('display', 'none');
     });
 
   // Set up edge area dropdown menus

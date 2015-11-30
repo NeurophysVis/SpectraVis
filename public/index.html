@@ -15,12 +15,26 @@
   <div class="container">
     <!-- Title Panel -->
     <div class="row" id="TitlePanel">
-      <div class="col-md-3">
-        <h1>SpectraVis</h1>
-        <button type="button" class="btn btn-lg" id="help-button" aria-label="Help">
-          <span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
-        </button>
+      <h3>SpectraVis</h3>
+    </div>
+    <div id="export-link-help" class="row btn-group btn-group-xs" role="group">
+      <button type="button" class="btn btn-default" id="link" title="Link to this view of the visualization">
+        <span class="glyphicon glyphicon-paperclip" aria-hidden="true"></span>
+        Link
+      </button>
+      <div id="permalink">
+        <button type="button" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <label>Copy the text below or bookmark this <a class="bookmark" href="">link</a>.</label>
+        <input class="text">
       </div>
+      <button type="button" class="btn btn-default" id="export" title="Export a screenshot of the visualization">
+        <span class="glyphicon glyphicon-save" aria-hidden="true"></span>
+        Export
+      </button>
+      <button type="button" class="btn btn-default" id="help-button" aria-label="Help" title="Display Help">
+        <span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
+        Help
+      </button>
     </div>
     <div class="row">
       <!-- Brain Panel -->
