@@ -197,8 +197,6 @@
   // Load channel file and set the network svg to be the right aspect ratio for the brain
   function loadChannelData() {
 
-    networkSpinner.spin(document.getElementById('NetworkPanel'));
-
     var channelFile = 'channels_' + curSubject + '.json';
 
     subjectObject = params.subjects.filter(function(d) {
@@ -220,7 +218,8 @@
       .attr('height', networkHeight + margin.top + margin.bottom)
       .append('g')
       .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
-
+    networkSpinner.spin(document.getElementById('NetworkPanel'));
+    svgNetworkMap.style('display', 'none');
     d3.json('DATA/' + channelFile, function(isError, channelData) {
 
       params.channel = channelData;
@@ -250,6 +249,10 @@
     spect1Spinner.spin(document.getElementById('SpectraCh1Panel'));
     spect2Spinner.spin(document.getElementById('SpectraCh2Panel'));
     edgeSpinner.spin(document.getElementById('EdgeStatPanel'));
+    svgCh1.style('display', 'none');
+    svgCh2.style('display', 'none');
+    svgEdgeStat.style('display', 'none');
+    svgTimeSlice.style('display', 'none');
 
     var spectCh1File = 'spectrogram_' + curSubject + '_' + curCh1 + '.json';
     var spectCh2File = 'spectrogram_' + curSubject + '_' + curCh2 + '.json';
@@ -375,20 +378,22 @@
       .lineColor('green');
 
     // Draw data
-    networkSpinner.stop();
     drawNetwork();
+    svgNetworkMap.style('display', '');
+    networkSpinner.stop();
 
-    spect1Spinner.stop();
     svgCh1
       .datum(spect1.data)
       .call(powerChart);
+    svgCh1.style('display', '');
+    spect1Spinner.stop();
 
-    spect2Spinner.stop();
     svgCh2
       .datum(spect2.data)
       .call(powerChart);
+    spect2Spinner.stop();
+    svgCh2.style('display', '');
 
-    edgeSpinner.stop();
     if (isFreq) {
       svgEdgeStat
         .html('');
@@ -406,6 +411,10 @@
         .datum(edgeStat.data)
         .call(corrChart);
     }
+
+    svgEdgeStat.style('display', '');
+    edgeSpinner.stop();
+    svgTimeSlice.style('display', '');
 
     // Draw legends and titles
     drawTitles();
