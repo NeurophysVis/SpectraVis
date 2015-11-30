@@ -22,7 +22,7 @@
         </button>
       </div>
     </div>
-    <div class="row top-buffer">
+    <div class="row">
       <!-- Brain Panel -->
       <div class="col-md-9 text-center" id="NetworkPanel"></div>
       <!-- Sidebar -->
@@ -30,7 +30,7 @@
         <div id="SubjectPanel" class="row bottom-buffer">
           <label class="col-md-6">Subject</label>
           <div class="dropdown col-md-6" id="SubjectDropdown">
-            <button class="btn btn-default dropdown-toggle" type="button" id="subjectButton" data-toggle="dropdown">
+            <button class="btn btn-default btn-sm dropdown-toggle" type="button" id="subjectButton" data-toggle="dropdown">
             </button>
             <ul class="dropdown-menu" role="menu" aria-labelledby="subjectDropdown"></ul>
           </div>
@@ -38,7 +38,7 @@
         <div id="EdgeStatTypePanel" class="row bottom-buffer">
           <label class="col-md-6">Edge Statistic</label>
           <div class="dropdown col-md-6" id="EdgeStatTypeDropdown">
-            <button class="btn btn-default dropdown-toggle" type="button" id="EdgeStatTypeButton" data-toggle="dropdown">
+            <button class="btn btn-default btn-sm dropdown-toggle" type="button" id="EdgeStatTypeButton" data-toggle="dropdown">
             </button>
             <ul class="dropdown-menu" role="menu" aria-labelledby="EdgeStatTypeDropdown">
             </ul>
@@ -47,7 +47,7 @@
         <div id="EdgeFilterPanel" class="row bottom-buffer">
           <label class="col-md-6">Edge Filter</label>
           <div class="dropdown col-md-6" id="EdgeFilterDropdown">
-            <button class="btn btn-default dropdown-toggle" type="button" id="EdgeFilterButton" data-toggle="dropdown">
+            <button class="btn btn-default btn-sm dropdown-toggle" type="button" id="EdgeFilterButton" data-toggle="dropdown">
             </button>
             <ul class="dropdown-menu" role="menu" aria-labelledby="EdgeFilterDropdown">
               <li role="presentation" id="All"><a role="menuitem" tabindex="-1">All Edges</a></li>
@@ -80,16 +80,15 @@
           <output id="freqSlider-value" class="col-md-6 pull-right"></output>
         </div>
         <div id="PlayButtonPanel" class="row bottom-buffer">
-          <button class="btn btn-default col-md-6" type="button" id="playButton">
+          <button class="btn btn-default btn-sm col-md-6" type="button" id="playButton">
             Play
           </button>
-          <button class="btn btn-default col-md-6" type="button" id="resetButton">
+          <button class="btn btn-default btn-sm col-md-6" type="button" id="resetButton">
             Reset
           </button>
         </div>
         <!-- Legend Panel -->
-        <div id="legendKey" class="row bottom-buffer clearfix">
-          <label for="freqSlider" class="col-md-12">Legend</label>
+        <div id="legendKey" class="row">
           <div class="col-md-12" id="anatomicalLegend"></div>
           <div class="col-md-12" id="edgeStatLegend"></div>
           <div class="col-md-12" id="spectraLegend"></div>
