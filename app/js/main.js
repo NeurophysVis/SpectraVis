@@ -23,15 +23,15 @@
   var powerColors = colorbrewer.PiYG[NUM_COLORS];
   var networkColors = colorbrewer.RdBu[NUM_COLORS];
   var margin = {
-    top: 40,
-    right: 40,
-    bottom: 40,
-    left: 40,
+    top: 30,
+    right: 30,
+    bottom: 30,
+    left: 30,
   };
   var panelWidth = document.getElementById('SpectraCh1Panel').offsetWidth - margin.left - margin.right;
   var panelHeight = document.getElementById('SpectraCh1Panel').offsetWidth * (4 / 5) - margin.top - margin.bottom;
-  var legendWidth = document.getElementById('legendKey').offsetWidth - margin.left - margin.right;
-  var colorbarLegendHeight = 60 - margin.top - margin.bottom;
+  var legendWidth = document.getElementById('legendKey').offsetWidth - 5 - 5 - 30; // -30 comes from css padding. Kind of hacky.
+  var colorbarLegendHeight = 60;
   var anatomicalLegendHeight = 100 - margin.top - margin.bottom;
   var timeSliceWidth = panelWidth;
   var timeSliceHeight = 180 - margin.top - margin.bottom;
@@ -62,10 +62,10 @@
   // Legend SVG
   var svgSpectraLegend = d3.selectAll('#legendKey').select('#spectraLegend')
     .append('svg')
-    .attr('width', legendWidth + margin.left + margin.right)
-    .attr('height', colorbarLegendHeight + margin.top + margin.bottom)
+    .attr('width', legendWidth + 5 + 5)
+    .attr('height', 60)
     .append('g')
-    .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+    .attr('transform', 'translate(' + 5 + ',' + 35 + ')');
   svgSpectraLegend.append('text')
     .attr('transform', 'translate(-5, -16)')
     .attr('font-size', 12)
@@ -73,10 +73,10 @@
     .text('Spectra');
   var svgEdgeStatLegend = d3.selectAll('#legendKey').select('#edgeStatLegend')
     .append('svg')
-    .attr('width', legendWidth + margin.left + margin.right)
-    .attr('height', colorbarLegendHeight + margin.top + margin.bottom)
+    .attr('width', legendWidth + 5 + 5)
+    .attr('height', 60)
     .append('g')
-    .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+    .attr('transform', 'translate(' + 5 + ',' + 35 + ')');
   svgEdgeStatLegend.append('text')
     .attr('transform', 'translate(-5, -16)')
     .attr('font-size', 12)
@@ -84,10 +84,9 @@
     .text('Edge Statistic');
   var svgAnatomicalLegend = d3.selectAll('#legendKey').select('#anatomicalLegend')
     .append('svg')
-    .attr('width', legendWidth + margin.left + margin.right)
-    .attr('height', anatomicalLegendHeight + margin.top + margin.bottom)
+    .attr('width', legendWidth + 5 + 5)
     .append('g')
-    .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+    .attr('transform', 'translate(' + 5 + ',' + 35 + ')');
   svgAnatomicalLegend.append('text')
     .attr('transform', 'translate(-5, -16)')
     .attr('font-size', 12)
@@ -97,16 +96,17 @@
   // Time Slice SVG
   var svgTimeSlice = d3.select('#timeSlice')
     .append('svg')
-    .attr('width', timeSliceWidth + margin.left + margin.right)
-    .attr('height', timeSliceHeight + margin.top + margin.bottom)
+    .attr('width', timeSliceWidth + 40 + 40)
+    .attr('height', timeSliceHeight + 40 + 40)
     .append('g')
-    .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+    .attr('transform', 'translate(' + 40 + ',' + 40 + ')');
 
   // Set up tool tip
   var toolTip = d3.select('#overlay');
   toolTip.selectAll('#close')
     .on('click', function() {
-      toolTip.style('display', 'none');
+      permalink
+        .style('display', 'block');
     });
 
   d3.select('#help-button')
