@@ -140,6 +140,23 @@
       permalink.style('display', 'none');
     });
 
+  // Set up export svg button
+  var exportButton = d3.select('button#export');
+  exportButton
+    .on('click', function() {
+      var networkSVG = d3.select('#NetworkPanel').select('svg').node();
+      d3_save_svg.save(networkSVG, {filename: 'Network'});
+
+      var ch1SVG = d3.select('#SpectraCh1Panel').select('svg').node();
+      d3_save_svg.save(ch1SVG, {filename: 'Ch1'});
+
+      var ch2SVG = d3.select('#SpectraCh2Panel').select('svg').node();
+      d3_save_svg.save(ch2SVG, {filename: 'Ch2'});
+
+      var edgeSVG = d3.select('#EdgeStatPanel').select('svg').node();
+      d3_save_svg.save(edgeSVG, {filename: 'Edge'});
+    });
+
   // Set up edge area dropdown menus
   var edgeFilterDropdown = d3.select('#EdgeFilterDropdown');
   edgeFilterDropdown.selectAll('button')
