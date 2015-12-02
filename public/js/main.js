@@ -150,7 +150,7 @@
         edgeStatType + '_' +
         networkView + '_' +
         params.visInfo.tax[curTimeInd] + params.visInfo.tunits + '_' +
-        params.visInfo.fax[curTimeInd] + params.visInfo.funits;
+        params.visInfo.fax[curFreqInd] + params.visInfo.funits;
 
       d3_save_svg.save(networkSVG, {filename: networkSaveName});
 
