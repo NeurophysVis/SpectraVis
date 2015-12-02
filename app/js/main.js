@@ -131,7 +131,7 @@
         '&freq=' + params.visInfo.fax[curFreqInd] +
         '&curCh1=' + curCh1 +
         '&curCh2=' + curCh2;
-      permalink.selectAll('input').attr('value', linkString);
+      permalink.selectAll('textarea').html(linkString);
       permalink.selectAll('.bookmark').attr('href', linkString);
     });
 

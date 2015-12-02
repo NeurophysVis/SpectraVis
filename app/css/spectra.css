@@ -100,16 +100,18 @@ g#spect2Slice > g#x.axis, g#spect2Slice > g.zeroLine {
   z-index: 200;
   background: #EEE;
   border: 1px solid #888;
-  width: 370px;
+  width: 520px;
   margin: 25px 10px;
   font-size: 8pt;
   display: none;
-  padding: 4px 20px;
-}
-#permalink > input {
-  width: 330px;
-  margin: 10px 5px;
+  padding: 10px;
 }
 #permalink > label {
   margin-top: 5px;
+}
+.copy-link {
+  width: 100%;
+  padding: 7px 9px;
+  overflow: hidden;
+  resize: none;
 }

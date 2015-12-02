@@ -23,9 +23,11 @@
         Link
       </button>
       <div id="permalink">
-        <button type="button" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <label>Copy the text below or bookmark this <a class="bookmark" href="">link</a>.</label>
-        <input type="text">
+        <button type="button" class="close" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <label>Copy the text below or bookmark this <a class="bookmark" href="">link</a> to get back to this view of SpectraVis.</label>
+        <textarea class="copy-link" spellcheck="false"></textarea>
       </div>
       <button type="button" class="btn btn-default" id="export" title="Export a screenshot of the visualization">
         <span class="glyphicon glyphicon-save" aria-hidden="true"></span>
@@ -123,10 +125,13 @@
   <!-- end container div-->
   <div id="overlay">
     <div id="helpToolTip">
-      <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
       <h4>How to Use SpectraVis</h4>
       <div id="toolTip-content">
-        <p><strong>WARNING</strong>: This visualization may take a long time to load due to some large files. Please be patient on the first load.</p>
+        <p>
+          <strong>WARNING</strong>: This visualization may take a long time to load due to some large files. Please be patient on the first load.</p>
         <p>
           <strong>Click</strong> on any two nodes or the edge between them to load the spectra and coherences/correlations between those two nodes. </p>
         <p>
