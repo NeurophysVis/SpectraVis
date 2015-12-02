@@ -815,11 +815,13 @@
         return d.brainFilename;
       });
 
-      brainImage.enter()
-        .append('image')
-        .attr('width', networkWidth)
-        .attr('height', networkHeight); // replace link by data URI
-      if (networkView != 'Topological') {
+      if (networkView === 'Anatomical') {
+        brainImage.enter()
+          .append('image')
+          .attr('width', networkWidth)
+          .attr('height', networkHeight);
+
+        // replace link by data URI
         getImageBase64('DATA/brainImages/' + subjectObject.brainFilename, function(err, d) {
           brainImage
             .attr('xlink:href', 'data:image/png;base64,' + d);
