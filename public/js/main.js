@@ -175,6 +175,10 @@
 
       var edgeSVG = d3.select('#EdgeStatPanel').select('svg').node();
       d3_save_svg.save(edgeSVG, {filename: edgeSaveName});
+
+      d3.selectAll('circle.node')[0]
+        .forEach(function(n) {n.setAttribute('style', '');
+      });
     });
 
   // Set up edge area dropdown menus
