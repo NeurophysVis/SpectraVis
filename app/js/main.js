@@ -377,7 +377,8 @@
     fAx = params.visInfo.fax; // Frequency Axis
     // Get the edge statistic corresponding to the selected channels
     edgeStat = params.edge.filter(function(e) {
-      return e.source === curCh1 && e.target === curCh2;
+      return (e.source === curCh1 && e.target === curCh2) ||
+        (e.source === curCh2 && e.target === curCh1);
     })[0];
 
     // Get the edge statastic name and units
@@ -911,7 +912,6 @@
         }
 
         if (nodeClickNames.length === 2) {
-          nodeClickNames.sort(d3.ascending);
           var re = /\d+/;
           curCh1 = re.exec(nodeClickNames[0])[0];
           curCh2 = re.exec(nodeClickNames[1])[0];
