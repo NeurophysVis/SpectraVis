@@ -145,16 +145,36 @@
   exportButton
     .on('click', function() {
       var networkSVG = d3.select('#NetworkPanel').select('svg').node();
-      d3_save_svg.save(networkSVG, {filename: 'Network'});
+      var networkSaveName = 'Network' + '_' +
+        curSubject + '_' +
+        edgeStatType + '_' +
+        networkView + '_' +
+        params.visInfo.tax[curTimeInd] + params.visInfo.tunits + '_' +
+        params.visInfo.fax[curTimeInd] + params.visInfo.funits;
+
+      d3_save_svg.save(networkSVG, {filename: networkSaveName});
+
+      var ch1SaveName = 'Spectra' + '_' +
+        curSubject + '_' +
+        'Ch' + curCh1;
 
       var ch1SVG = d3.select('#SpectraCh1Panel').select('svg').node();
-      d3_save_svg.save(ch1SVG, {filename: 'Ch1'});
+      d3_save_svg.save(ch1SVG, {filename: ch1SaveName});
+
+      var ch2SaveName = 'Spectra' + '_' +
+        curSubject + '_' +
+        'Ch' + curCh2;
 
       var ch2SVG = d3.select('#SpectraCh2Panel').select('svg').node();
-      d3_save_svg.save(ch2SVG, {filename: 'Ch2'});
+      d3_save_svg.save(ch2SVG, {filename: ch2SaveName});
+
+      var edgeSaveName = edgeStatType + '_' +
+        curSubject + '_' +
+        'Ch' + curCh1 + '_' +
+        'Ch' + curCh2;
 
       var edgeSVG = d3.select('#EdgeStatPanel').select('svg').node();
-      d3_save_svg.save(edgeSVG, {filename: 'Edge'});
+      d3_save_svg.save(edgeSVG, {filename: edgeSaveName});
     });
 
   // Set up edge area dropdown menus
