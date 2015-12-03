@@ -115,3 +115,9 @@ g#spect2Slice > g#x.axis, g#spect2Slice > g.zeroLine {
   overflow: hidden;
   resize: none;
 }
+.legendTitle {
+  font-size: 10px;
+}
+.legendCells {
+  transform: translate(0, 3) !important;
+}
