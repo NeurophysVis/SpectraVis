@@ -654,12 +654,12 @@
       var nodeText;
 
       // Replace x and y coordinates of nodes with properly scaled x,y
-      if (networkView != 'Topological' || typeof channel === 'undefined') {
+      if (networkView !== 'Topological' || typeof channel === 'undefined') {
         channel = params.channel.map(function(n) {
           var obj = copyObject(n);
           obj.x = networkXScale(n.x);
           obj.y = networkYScale(n.y);
-          if (networkView != 'Topological') {
+          if (networkView !== 'Topological') {
             obj.fixed = true;
           } else {
             obj.fixed = false;
@@ -806,7 +806,7 @@
             return yPos(d.target);
           });
 
-        if (networkView != 'Topological') {
+        if (networkView !== 'Topological') {
           force.stop();
         }
 
@@ -873,7 +873,7 @@
 
       function edgeMouseOut(e) {
         var curEdge = d3.select(this);
-        if (typeof strokeStyle != 'undefined') {
+        if (typeof strokeStyle !== 'undefined') {
           curEdge
             .style('stroke-width', EDGE_WIDTH)
             .style('stroke', strokeStyle);
@@ -959,7 +959,7 @@
         // Now filter by edge connection type (within brain area, etc)
         switch (edgeFilter) {
           case 'Within':
-            if (e.source.region != e.target.region) {
+            if (e.source.region !== e.target.region) {
               isEdge = false;
             } else {
               isEdge = isEdge & true;
