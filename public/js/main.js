@@ -227,6 +227,8 @@
     networkView = params.networkView || 'Anatomical';
     curCh1 = params.curCh1;
     curCh2 = params.curCh2;
+    curSubject = params.curSubject;
+    edgeTypeID = params.edgeTypeID;
 
     // Load subject data
     queue()
@@ -259,7 +261,7 @@
       });
 
     // Default to the first subject
-    curSubject = params.curSubject || subjectData[0].subjectID;
+    curSubject = curSubject || subjectData[0].subjectID;
     subjectDropdown.selectAll('button')
       .text(curSubject)
       .append('span')
@@ -284,7 +286,7 @@
       .remove();
 
     // Default to the first subject
-    edgeTypeID = params.edgeTypeID || edgeInfo[0].edgeTypeID;
+    edgeTypeID = edgeTypeID || edgeInfo[0].edgeTypeID;
     edgeTypeName = edgeInfo.filter(function(e) {return e.edgeTypeID === edgeTypeID;})[0].edgeTypeName;
     edgeDropdown.selectAll('button')
       .text(edgeTypeName)
