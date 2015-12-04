@@ -427,7 +427,7 @@
     var cohTimeSlice = timeseries()
       .height(timeSliceHeight)
       .width(timeSliceWidth)
-      .yScale(corrScale)
+      .yScale(timeSliceEdgeStatScale)
       .xScale(timeScale)
       .yAxisOrientation('left')
       .xLabel('Time (' + params.visInfo.tunits + ')')
@@ -618,7 +618,10 @@
 
       timeSlicePowerScale = d3.scale.linear()
         .domain(powerExtent)
-        .range([timeSliceHeight, 0]);
+        .range(linspace(timeSliceHeight, 0, NUM_COLORS));
+      timeSliceEdgeStatScale = d3.scale.linear()
+        .domain(powerExtent)
+        .range(linspace(timeSliceHeight, 0, NUM_COLORS));
 
       networkXScale = d3.scale.linear()
         .domain(networkXExtent)
@@ -629,7 +632,7 @@
 
       corrScale = d3.scale.linear()
         .domain(edgeStatExtent)
-        .range([0, panelHeight]);
+        .range(linspace(0, panelHeight, NUM_COLORS));
 
       function symmetricExtent(min, max) {
         if (Math.abs(min) >= Math.abs(max)) {
@@ -1508,7 +1511,6 @@
           var curPlot = d3.select(this);
 
           xScale.rangeBands([0, width]);
-          yScale.range([height, 0]);
 
           var orient = (yAxisOrientation === 'right') ? 1 : -1;
 
