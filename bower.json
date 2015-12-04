@@ -26,6 +26,6 @@
     "queue-async": "~1.0.7",
     "colorbrewer": "~1.0.0",
     "spin.js": "~2.3.2",
-    "lodash": "~3.10.1"
+    "d3-legend": "~1.6.0"
   }
 }
