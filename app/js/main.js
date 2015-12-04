@@ -1713,7 +1713,6 @@
           freqSlider.property('value', fAx[curFreqInd]);
           freqSliderText.text(fAx[curFreqInd] + ' Hz');
 
-          force.stop();
           loadEdges();
         });
     }
@@ -1727,7 +1726,6 @@
             .append('span')
             .attr('class', 'caret');
           edgeFilter = this.id;
-          force.stop();
           drawNetwork();
         });
     }
@@ -1741,7 +1739,6 @@
             .property('checked', false);
           d3.select(this).property('checked', true);
           networkView = radioValue;
-          force.stop();
           drawNetwork();
         });
     }
@@ -1772,7 +1769,6 @@
       resetButton.on('click', function() {
         curTimeInd = 0;
         stopAnimation = true;
-        force.stop();
         updateTimeSlider.call({
           value: tAx[curTimeInd],
         });
@@ -1783,7 +1779,6 @@
       curTimeInd = tAx.indexOf(+this.value);
       timeSlider.property('value', tAx[curTimeInd]);
       timeSliderText.text(tAx[curTimeInd] + ' ms');
-      force.stop();
       if (!this.noUpdate) drawNetwork();
     }
 
@@ -1791,7 +1786,6 @@
       curFreqInd = isFreq ? fAx.indexOf(+this.value) : 0;
       freqSlider.property('value', fAx[curFreqInd]);
       freqSliderText.text(fAx[curFreqInd] + ' Hz');
-      force.stop();
 
       if (!this.noUpdate) drawNetwork();
 
@@ -1803,7 +1797,6 @@
       if (mouseFlag) {
         curFreqInd = isFreq ? freqInd : 0;
         curTimeInd = timeInd;
-        force.stop();
 
         updateTimeSlider.call({
           value: tAx[curTimeInd],
