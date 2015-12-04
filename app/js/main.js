@@ -405,6 +405,7 @@
     var isWeightedNetwork;
     var corrScale;
     var curEdgeInfo;
+    var scaledChannel;
 
     tAx = visInfo.tax; // Time Axis
     fAx = visInfo.fax; // Frequency Axis
@@ -712,34 +713,40 @@
       var nodeCircle;
       var nodeText;
 
-      // Replace x and y coordinates of nodes with properly scaled x,y
-      if (networkView !== 'Topological' || typeof channel === 'undefined') {
-        channel = params.channel.map(function(n) {
+      if (networkView === 'Anatomical') {
+        scaledChannel = channel.map(function(n) {
           var obj = copyObject(n);
           obj.x = networkXScale(n.x);
           obj.y = networkYScale(n.y);
-          if (networkView !== 'Topological') {
-            obj.fixed = true;
-          } else {
-            obj.fixed = false;
-          }
-
+          obj.fixed = true;
           return obj;
         });
       } else {
-        channel.forEach(function(n) {
-          n.fixed = false;
+        scaledChannel = channel.map(function(n, i) {
+          var obj = copyObject(n);
+          if (typeof scaledChannel === 'undefined') {
+            obj.x = networkXScale(n.x);
+            obj.y = networkYScale(n.y);
+          } else {
+            obj.x = scaledChannel[i].x;
+            obj.y = scaledChannel[i].y;
+            obj.px = scaledChannel[i].px;
+            obj.py = scaledChannel[i].py;
+          }
+
+          obj.fixed = false;
+          return obj;
         });
       }
 
       // Replace source name by source object
       edge = edgeData.map(function(e) {
         var obj = copyObject(e);
-        obj.source = channel.filter(function(n) {
+        obj.source = scaledChannel.filter(function(n) {
           return n.channelID === e.source;
         })[0];
 
-        obj.target = channel.filter(function(n) {
+        obj.target = scaledChannel.filter(function(n) {
           return n.channelID === e.target;
         })[0];
 
@@ -750,7 +757,7 @@
       edge = edge.filter(edgeFiltering);
 
       force = d3.layout.force()
-        .nodes(channel)
+        .nodes(scaledChannel)
         .links(edge)
         .charge(-375)
         .linkDistance(networkHeight / 3)
@@ -801,7 +808,7 @@
         .on('mouseout', edgeMouseOut)
         .on('click', edgeMouseClick);
 
-      nodeG = nodesGroup.selectAll('g.gnode').data(channel, function(d) {
+      nodeG = nodesGroup.selectAll('g.gnode').data(scaledChannel, function(d) {
         return curSubject + '_' + d.channelID;
       });
 
@@ -978,16 +985,6 @@
           nodeClickNames = [];
           loadSpectra();
         }
-      }
-
-      function copyObject(obj) {
-        var newObj = {};
-        for (var key in obj) {
-          // Copy all the fields
-          newObj[key] = obj[key];
-        }
-
-        return newObj;
       }
 
       function edgeFiltering(e) {
@@ -1882,5 +1879,15 @@
 
       xhr.send();
     };
+
+    function copyObject(obj) {
+      var newObj = {};
+      for (var key in obj) {
+        // Copy all the fields
+        newObj[key] = obj[key];
+      }
+
+      return newObj;
+    }
   }
 })();
