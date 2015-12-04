@@ -61,22 +61,22 @@
   var svgSpectraLegend = d3.selectAll('#legendKey').select('#spectraLegend')
     .append('svg')
     .attr('width', legendWidth + 5 + 5)
-    .attr('height', 60)
+    .attr('height', 50)
     .append('g')
-    .attr('transform', 'translate(' + 5 + ',' + 35 + ')');
+    .attr('transform', 'translate(' + 5 + ',' + 25 + ')');
   svgSpectraLegend.append('text')
-    .attr('transform', 'translate(-5, -16)')
+    .attr('transform', 'translate(-5, -5)')
     .attr('font-size', 12)
     .attr('font-weight', 700)
     .text('Difference in Power');
   var svgEdgeStatLegend = d3.selectAll('#legendKey').select('#edgeStatLegend')
     .append('svg')
     .attr('width', legendWidth + 5 + 5)
-    .attr('height', 60)
+    .attr('height', 50)
     .append('g')
-    .attr('transform', 'translate(' + 5 + ',' + 35 + ')');
+    .attr('transform', 'translate(' + 5 + ',' + 25 + ')');
   var edgeStatLegendTitle = svgEdgeStatLegend.append('text')
-    .attr('transform', 'translate(-5, -16)')
+    .attr('transform', 'translate(-5, -5)')
     .attr('font-size', 12)
     .attr('font-weight', 700)
     .text('Edge Statistic');
@@ -86,7 +86,7 @@
     .append('g')
     .attr('transform', 'translate(' + 5 + ',' + 35 + ')');
   svgAnatomicalLegend.append('text')
-    .attr('transform', 'translate(-5, -16)')
+    .attr('transform', 'translate(-5, -10)')
     .attr('font-size', 12)
     .attr('font-weight', 700)
     .text('Brain Areas');
@@ -719,7 +719,7 @@
         .nodes(channel)
         .links(edge)
         .charge(-375)
-        .linkDistance(networkHeight / 2)
+        .linkDistance(networkHeight / 3)
         .size([networkWidth, networkHeight])
         .start();
 
