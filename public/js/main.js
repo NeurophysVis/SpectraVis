@@ -6,15 +6,15 @@
   var svgNetworkMap;
   var subjectObject;
   var curSubject;
-  var edgeStatType;
+  var edgeTypeID;
   var NUM_COLORS = 11;
   var NODE_RADIUS = 10;
   var EDGE_WIDTH = 2;
   var stopAnimation = true;
-  var curCh1 = '';
-  var curCh2 = '';
-  var curFreqInd = 0;
-  var curTimeInd = 0;
+  var curCh1;
+  var curCh2;
+  var curFreqInd;
+  var curTimeInd;
   var mouseFlag = true;
   var edgeFilter = 'All';
   var networkView = 'Anatomical';
@@ -42,6 +42,8 @@
   var visInfo;
   var margin;
   var edgeTypeName;
+  var channel;
+  var edgeData;
 
   colorbrewer.PiYG[NUM_COLORS].reverse();
   colorbrewer.RdBu[NUM_COLORS].reverse();
@@ -149,7 +151,7 @@
           .style('display', 'block');
         var linkString = window.location.origin + window.location.pathname + '?' +
           'curSubject=' + curSubject +
-          '&edgeStat=' + edgeStatType +
+          '&edgeStat=' + edgeTypeID +
           '&edgeFilter=' + edgeFilter +
           '&networkView=' + networkView +
           '&time=' + visInfo.tax[curTimeInd] +
@@ -172,7 +174,7 @@
         var networkSVG = d3.select('#NetworkPanel').select('svg').node();
         var networkSaveName = 'Network' + '_' +
           curSubject + '_' +
-          edgeStatType + '_' +
+          edgeTypeID + '_' +
           networkView + '_' +
           visInfo.tax[curTimeInd] + visInfo.tunits + '_' +
           visInfo.fax[curFreqInd] + visInfo.funits;
@@ -193,7 +195,7 @@
         var ch2SVG = d3.select('#SpectraCh2Panel').select('svg').node();
         d3_save_svg.save(ch2SVG, {filename: ch2SaveName});
 
-        var edgeSaveName = edgeStatType + '_' +
+        var edgeSaveName = edgeTypeID + '_' +
           curSubject + '_' +
           'Ch' + curCh1 + '_' +
           'Ch' + curCh2;
@@ -218,6 +220,13 @@
     spect1Spinner = new Spinner(spinnerOpts);
     spect2Spinner = new Spinner(spinnerOpts);
     edgeSpinner = new Spinner(spinnerOpts);
+
+    curFreqInd = params.curFreqInd || 0;
+    curTimeInd = params.curTimeInd || 0;
+    edgeFilter = params.edgeFilter || 'All';
+    networkView = params.networkView || 'Anatomical';
+    curCh1 = params.curCh1;
+    curCh2 = params.curCh2;
 
     // Load subject data
     queue()
@@ -250,7 +259,7 @@
       });
 
     // Default to the first subject
-    curSubject = subjectData[0].subjectID;
+    curSubject = params.curSubject || subjectData[0].subjectID;
     subjectDropdown.selectAll('button')
       .text(curSubject)
       .append('span')
@@ -275,8 +284,8 @@
       .remove();
 
     // Default to the first subject
-    edgeStatType = edgeInfo[0].edgeTypeID;
-    edgeTypeName = edgeInfo[0].edgeTypeName;
+    edgeTypeID = params.edgeTypeID || edgeInfo[0].edgeTypeID;
+    edgeTypeName = edgeInfo.filter(function(e) {return e.edgeTypeID === edgeTypeID;})[0].edgeTypeName;
     edgeDropdown.selectAll('button')
       .text(edgeTypeName)
       .append('span')
@@ -317,13 +326,11 @@
     svgNetworkMap.style('display', 'none');
     d3.json('DATA/' + channelFile, function(isError, channelData) {
 
-      params.channel = channelData;
+      channel = channelData;
 
       // Default to first two channels if no channels are not already specified
-      if (curCh1.length === 0 || curCh2.length === 0) {
-        curCh1 = params.channel[0].channelID;
-        curCh2 = params.channel[1].channelID;
-      }
+      curCh1 = curCh1 || channel[0].channelID;
+      curCh2 = curCh2 || channel[1].channelID;
 
       loadEdges();
     });
@@ -331,9 +338,9 @@
 
   function loadEdges() {
     // Load the edge file for the current subject
-    var edgeFile = 'edges_' + curSubject + '_' + edgeStatType + '.json';
-    d3.json('DATA/' + edgeFile, function(isError, edgeData) {
-      params.edge = edgeData;
+    var edgeFile = 'edges_' + curSubject + '_' + edgeTypeID + '.json';
+    d3.json('DATA/' + edgeFile, function(isError, eD) {
+      edgeData = eD;
       loadSpectra();
     });
   }
@@ -385,7 +392,6 @@
     var networkXExtent;
     var networkYExtent;
     var edgeStat;
-    var channel;
     var powerLineFun;
     var edgeStatLineFun;
     var timeSlicePowerScale;
@@ -399,11 +405,12 @@
     var isWeightedNetwork;
     var corrScale;
     var curEdgeInfo;
+    var scaledChannel;
 
     tAx = visInfo.tax; // Time Axis
     fAx = visInfo.fax; // Frequency Axis
     // Get the edge statistic corresponding to the selected channels
-    edgeStat = params.edge.filter(function(e) {
+    edgeStat = edgeData.filter(function(e) {
       return (e.source === curCh1 && e.target === curCh2) ||
         (e.source === curCh2 && e.target === curCh1);
     })[0];
@@ -411,7 +418,7 @@
     // Get the edge statastic name and units
     curEdgeInfo = edgeInfo
       .filter(function(e) {
-        return e.edgeTypeID === edgeStatType;
+        return e.edgeTypeID === edgeTypeID;
       })[0];
 
     isFreq = curEdgeInfo.isFreq;
@@ -421,6 +428,7 @@
     setupScales();
     setupSliders();
 
+    // Initialize charts
     var powerChart = heatmap()
       .height(panelHeight)
       .width(panelWidth)
@@ -472,7 +480,7 @@
       .yLabel('Power Difference')
       .lineColor('green');
 
-    // Draw data
+    // Draw charts
     drawNetwork();
     svgNetworkMap.style('display', '');
     networkSpinner.stop();
@@ -598,7 +606,7 @@
       networkXExtent = subjectObject.brainXLim;
       networkYExtent = subjectObject.brainYLim;
 
-      edgeStatMin = d3.min(params.edge, function(d) {
+      edgeStatMin = d3.min(edgeData, function(d) {
         return d3.min(d.data, function(e) {
           return d3.min(e, function(f) {
             return f;
@@ -606,7 +614,7 @@
         });
       });
 
-      edgeStatMax = d3.max(params.edge, function(d) {
+      edgeStatMax = d3.max(edgeData, function(d) {
         return d3.max(d.data, function(e) {
           return d3.max(e, function(f) {
             return f;
@@ -705,34 +713,40 @@
       var nodeCircle;
       var nodeText;
 
-      // Replace x and y coordinates of nodes with properly scaled x,y
-      if (networkView !== 'Topological' || typeof channel === 'undefined') {
-        channel = params.channel.map(function(n) {
+      if (networkView === 'Anatomical') {
+        scaledChannel = channel.map(function(n) {
           var obj = copyObject(n);
           obj.x = networkXScale(n.x);
           obj.y = networkYScale(n.y);
-          if (networkView !== 'Topological') {
-            obj.fixed = true;
-          } else {
-            obj.fixed = false;
-          }
-
+          obj.fixed = true;
           return obj;
         });
       } else {
-        channel.forEach(function(n) {
-          n.fixed = false;
+        scaledChannel = channel.map(function(n, i) {
+          var obj = copyObject(n);
+          if (typeof scaledChannel === 'undefined') {
+            obj.x = networkXScale(n.x);
+            obj.y = networkYScale(n.y);
+          } else {
+            obj.x = scaledChannel[i].x;
+            obj.y = scaledChannel[i].y;
+            obj.px = scaledChannel[i].px;
+            obj.py = scaledChannel[i].py;
+          }
+
+          obj.fixed = false;
+          return obj;
         });
       }
 
       // Replace source name by source object
-      edge = params.edge.map(function(e) {
+      edge = edgeData.map(function(e) {
         var obj = copyObject(e);
-        obj.source = channel.filter(function(n) {
+        obj.source = scaledChannel.filter(function(n) {
           return n.channelID === e.source;
         })[0];
 
-        obj.target = channel.filter(function(n) {
+        obj.target = scaledChannel.filter(function(n) {
           return n.channelID === e.target;
         })[0];
 
@@ -743,7 +757,7 @@
       edge = edge.filter(edgeFiltering);
 
       force = d3.layout.force()
-        .nodes(channel)
+        .nodes(scaledChannel)
         .links(edge)
         .charge(-375)
         .linkDistance(networkHeight / 3)
@@ -794,7 +808,7 @@
         .on('mouseout', edgeMouseOut)
         .on('click', edgeMouseClick);
 
-      nodeG = nodesGroup.selectAll('g.gnode').data(channel, function(d) {
+      nodeG = nodesGroup.selectAll('g.gnode').data(scaledChannel, function(d) {
         return curSubject + '_' + d.channelID;
       });
 
@@ -903,9 +917,9 @@
           .style('stroke-width', 2 * EDGE_WIDTH)
           .style('stroke', function() {
             if (e.data < 0) {
-              return edgeStatScale(0);
+              return edgeStatScale(d3.min(edgeStatScale.domain()));
             } else {
-              return edgeStatScale(1);
+              return edgeStatScale(d3.max(edgeStatScale.domain()));
             }
           });
 
@@ -973,57 +987,25 @@
         }
       }
 
-      function copyObject(obj) {
-        var newObj = {};
-        for (var key in obj) {
-          // Copy all the fields
-          newObj[key] = obj[key];
-        }
-
-        return newObj;
-      }
-
       function edgeFiltering(e) {
-        var isEdge;
+        var showEdge = true;
 
         // If edge type is binary, don't display edges corresponding to no edge
-        switch (edgeStatType) {
-          case 'C2s_coh':
-          case 'C2s_corr':
-            if (e.data === 0) {
-              isEdge = false;
-            } else {
-              isEdge = true;
-            }
-
-            break;
-          default:
-            isEdge = true;
+        if (!isWeightedNetwork) {
+          showEdge = (e.data !== 0);
         }
 
         // Now filter by edge connection type (within brain area, etc)
         switch (edgeFilter) {
           case 'Within':
-            if (e.source.region !== e.target.region) {
-              isEdge = false;
-            } else {
-              isEdge = isEdge & true;
-            }
-
+            showEdge = (e.source.region === e.target.region) && showEdge;
             break;
           case 'Between':
-            if (e.source.region === e.target.region) {
-              isEdge = false;
-            } else {
-              isEdge = isEdge & true;
-            }
-
+            showEdge = (e.source.region !== e.target.region) && showEdge;
             break;
-          default:
-            isEdge = isEdge & true;
         }
 
-        return isEdge;
+        return showEdge;
       }
     };
 
@@ -1705,8 +1687,8 @@
             .append('span')
             .attr('class', 'caret');
           curSubject = this.id;
-          curCh1 = [];
-          curCh2 = [];
+          curCh1 = '';
+          curCh2 = '';
           loadChannelData();
         });
     }
@@ -1719,18 +1701,17 @@
             .text(d3.select(this).select('a').html())
             .append('span')
             .attr('class', 'caret');
-          edgeStatType = this.id;
+          edgeTypeID = this.id;
 
           isFreq = edgeInfo
             .filter(function(e) {
-              return e.edgeTypeID === edgeStatType;
+              return e.edgeTypeID === edgeTypeID;
             })[0]
             .isFreq;
           curFreqInd = isFreq ? curFreqInd : 0;
           freqSlider.property('value', fAx[curFreqInd]);
           freqSliderText.text(fAx[curFreqInd] + ' Hz');
 
-          force.stop();
           loadEdges();
         });
     }
@@ -1744,7 +1725,6 @@
             .append('span')
             .attr('class', 'caret');
           edgeFilter = this.id;
-          force.stop();
           drawNetwork();
         });
     }
@@ -1758,7 +1738,6 @@
             .property('checked', false);
           d3.select(this).property('checked', true);
           networkView = radioValue;
-          force.stop();
           drawNetwork();
         });
     }
@@ -1789,7 +1768,6 @@
       resetButton.on('click', function() {
         curTimeInd = 0;
         stopAnimation = true;
-        force.stop();
         updateTimeSlider.call({
           value: tAx[curTimeInd],
         });
@@ -1800,7 +1778,6 @@
       curTimeInd = tAx.indexOf(+this.value);
       timeSlider.property('value', tAx[curTimeInd]);
       timeSliderText.text(tAx[curTimeInd] + ' ms');
-      force.stop();
       if (!this.noUpdate) drawNetwork();
     }
 
@@ -1808,7 +1785,6 @@
       curFreqInd = isFreq ? fAx.indexOf(+this.value) : 0;
       freqSlider.property('value', fAx[curFreqInd]);
       freqSliderText.text(fAx[curFreqInd] + ' Hz');
-      force.stop();
 
       if (!this.noUpdate) drawNetwork();
 
@@ -1820,7 +1796,6 @@
       if (mouseFlag) {
         curFreqInd = isFreq ? freqInd : 0;
         curTimeInd = timeInd;
-        force.stop();
 
         updateTimeSlider.call({
           value: tAx[curTimeInd],
@@ -1841,8 +1816,10 @@
           .attr('text-anchor', 'end')
           .attr('id', 'HOLD')
           .text('HOLD');
+        force.stop();
       } else {
         svgNetworkMap.select('text#HOLD').remove();
+        force.start();
       }
     }
 
@@ -1875,5 +1852,15 @@
 
       xhr.send();
     };
+
+    function copyObject(obj) {
+      var newObj = {};
+      for (var key in obj) {
+        // Copy all the fields
+        newObj[key] = obj[key];
+      }
+
+      return newObj;
+    }
   }
 })();
