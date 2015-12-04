@@ -903,9 +903,9 @@
           .style('stroke-width', 2 * EDGE_WIDTH)
           .style('stroke', function() {
             if (e.data < 0) {
-              return edgeStatScale(0);
+              return edgeStatScale(d3.min(edgeStatScale.domain()));
             } else {
-              return edgeStatScale(1);
+              return edgeStatScale(d3.max(edgeStatScale.domain()));
             }
           });
 
