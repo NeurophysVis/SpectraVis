@@ -589,13 +589,11 @@
 
       powerScale = d3.scale.linear()
         .domain(powerExtent)
-        .range(powerColors)
-        .interpolate(d3.interpolateLab);
+        .range(powerColors);
       if (isWeightedNetwork) {
         edgeStatScale = d3.scale.linear()
           .domain(edgeStatExtent)
-          .range(edgeStatColors)
-          .interpolate(d3.interpolateLab);
+          .range(edgeStatColors);
       } else {
         edgeStatColors = [0, (NUM_COLORS - 1) / 2, NUM_COLORS - 1].map(function(n) { return edgeStatColors[n];});
 
