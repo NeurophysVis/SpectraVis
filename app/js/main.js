@@ -719,7 +719,7 @@
         .nodes(channel)
         .links(edge)
         .charge(-375)
-        .linkDistance(weights)
+        .linkDistance(networkHeight / 3)
         .size([networkWidth, networkHeight])
         .start();
 
@@ -866,13 +866,6 @@
 
       function yPos(d) {
         return Math.max(NODE_RADIUS, Math.min(networkHeight - NODE_RADIUS, d.y));
-      }
-
-      function weights(e) {
-        var minDistance = 75;
-        var distanceRange = 100;
-        var initialScaling = (2 * Math.abs(Math.abs(edgeStatScale(e.data) - 0.5) - 0.5) + .01);
-        return minDistance + (distanceRange * initialScaling);
       }
 
       function edgeMouseOver(e) {
