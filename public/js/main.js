@@ -620,7 +620,7 @@
         .domain(powerExtent)
         .range(linspace(timeSliceHeight, 0, NUM_COLORS));
       timeSliceEdgeStatScale = d3.scale.linear()
-        .domain(powerExtent)
+        .domain(edgeStatExtent)
         .range(linspace(timeSliceHeight, 0, NUM_COLORS));
 
       networkXScale = d3.scale.linear()
@@ -1363,7 +1363,7 @@
       var formatter = d3.format('.1f');
 
       var rectWidth = legendWidth / (NUM_COLORS + 1);
-      var rectHeight = rectWidth * (2 / 3);
+      var rectHeight = rectWidth * 0.5;
 
       // Power Legend
       powerG = svgSpectraLegend.selectAll('g#powerLegend').data([{}]);

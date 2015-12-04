@@ -620,7 +620,7 @@
         .domain(powerExtent)
         .range(linspace(timeSliceHeight, 0, NUM_COLORS));
       timeSliceEdgeStatScale = d3.scale.linear()
-        .domain(powerExtent)
+        .domain(edgeStatExtent)
         .range(linspace(timeSliceHeight, 0, NUM_COLORS));
 
       networkXScale = d3.scale.linear()
