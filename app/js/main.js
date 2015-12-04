@@ -6,7 +6,7 @@
   var svgNetworkMap;
   var subjectObject;
   var curSubject;
-  var edgeStatType;
+  var edgeTypeID;
   var NUM_COLORS = 11;
   var NODE_RADIUS = 10;
   var EDGE_WIDTH = 2;
@@ -15,6 +15,10 @@
   var curCh2 = '';
   var curFreqInd = 0;
   var curTimeInd = 0;
+  var curCh1;
+  var curCh2;
+  var curFreqInd;
+  var curTimeInd;
   var mouseFlag = true;
   var edgeFilter = 'All';
   var networkView = 'Anatomical';
@@ -42,6 +46,8 @@
   var visInfo;
   var margin;
   var edgeTypeName;
+  var channel;
+  var edgeData;
 
   colorbrewer.PiYG[NUM_COLORS].reverse();
   colorbrewer.RdBu[NUM_COLORS].reverse();
@@ -149,7 +155,7 @@
           .style('display', 'block');
         var linkString = window.location.origin + window.location.pathname + '?' +
           'curSubject=' + curSubject +
-          '&edgeStat=' + edgeStatType +
+          '&edgeStat=' + edgeTypeID +
           '&edgeFilter=' + edgeFilter +
           '&networkView=' + networkView +
           '&time=' + visInfo.tax[curTimeInd] +
@@ -172,7 +178,7 @@
         var networkSVG = d3.select('#NetworkPanel').select('svg').node();
         var networkSaveName = 'Network' + '_' +
           curSubject + '_' +
-          edgeStatType + '_' +
+          edgeTypeID + '_' +
           networkView + '_' +
           visInfo.tax[curTimeInd] + visInfo.tunits + '_' +
           visInfo.fax[curFreqInd] + visInfo.funits;
@@ -193,7 +199,7 @@
         var ch2SVG = d3.select('#SpectraCh2Panel').select('svg').node();
         d3_save_svg.save(ch2SVG, {filename: ch2SaveName});
 
-        var edgeSaveName = edgeStatType + '_' +
+        var edgeSaveName = edgeTypeID + '_' +
           curSubject + '_' +
           'Ch' + curCh1 + '_' +
           'Ch' + curCh2;
@@ -403,7 +409,7 @@
     tAx = visInfo.tax; // Time Axis
     fAx = visInfo.fax; // Frequency Axis
     // Get the edge statistic corresponding to the selected channels
-    edgeStat = params.edge.filter(function(e) {
+    edgeStat = edgeData.filter(function(e) {
       return (e.source === curCh1 && e.target === curCh2) ||
         (e.source === curCh2 && e.target === curCh1);
     })[0];
@@ -411,7 +417,7 @@
     // Get the edge statastic name and units
     curEdgeInfo = edgeInfo
       .filter(function(e) {
-        return e.edgeTypeID === edgeStatType;
+        return e.edgeTypeID === edgeTypeID;
       })[0];
 
     isFreq = curEdgeInfo.isFreq;
@@ -421,6 +427,7 @@
     setupScales();
     setupSliders();
 
+    // Initialize charts
     var powerChart = heatmap()
       .height(panelHeight)
       .width(panelWidth)
@@ -472,7 +479,7 @@
       .yLabel('Power Difference')
       .lineColor('green');
 
-    // Draw data
+    // Draw charts
     drawNetwork();
     svgNetworkMap.style('display', '');
     networkSpinner.stop();
@@ -598,7 +605,7 @@
       networkXExtent = subjectObject.brainXLim;
       networkYExtent = subjectObject.brainYLim;
 
-      edgeStatMin = d3.min(params.edge, function(d) {
+      edgeStatMin = d3.min(edgeData, function(d) {
         return d3.min(d.data, function(e) {
           return d3.min(e, function(f) {
             return f;
@@ -606,7 +613,7 @@
         });
       });
 
-      edgeStatMax = d3.max(params.edge, function(d) {
+      edgeStatMax = d3.max(edgeData, function(d) {
         return d3.max(d.data, function(e) {
           return d3.max(e, function(f) {
             return f;
@@ -726,7 +733,7 @@
       }
 
       // Replace source name by source object
-      edge = params.edge.map(function(e) {
+      edge = edgeData.map(function(e) {
         var obj = copyObject(e);
         obj.source = channel.filter(function(n) {
           return n.channelID === e.source;
@@ -1719,11 +1726,11 @@
             .text(d3.select(this).select('a').html())
             .append('span')
             .attr('class', 'caret');
-          edgeStatType = this.id;
+          edgeTypeID = this.id;
 
           isFreq = edgeInfo
             .filter(function(e) {
-              return e.edgeTypeID === edgeStatType;
+              return e.edgeTypeID === edgeTypeID;
             })[0]
             .isFreq;
           curFreqInd = isFreq ? curFreqInd : 0;
