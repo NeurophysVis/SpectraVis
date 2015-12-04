@@ -989,46 +989,24 @@
       }
 
       function edgeFiltering(e) {
-        var isEdge;
+        var showEdge = true;
 
         // If edge type is binary, don't display edges corresponding to no edge
-        switch (edgeStatType) {
-          case 'C2s_coh':
-          case 'C2s_corr':
-            if (e.data === 0) {
-              isEdge = false;
-            } else {
-              isEdge = true;
-            }
-
-            break;
-          default:
-            isEdge = true;
+        if (!isWeightedNetwork) {
+          showEdge = (e.data !== 0);
         }
 
         // Now filter by edge connection type (within brain area, etc)
         switch (edgeFilter) {
           case 'Within':
-            if (e.source.region !== e.target.region) {
-              isEdge = false;
-            } else {
-              isEdge = isEdge & true;
-            }
-
+            showEdge = (e.source.region === e.target.region) && showEdge;
             break;
           case 'Between':
-            if (e.source.region === e.target.region) {
-              isEdge = false;
-            } else {
-              isEdge = isEdge & true;
-            }
-
+            showEdge = (e.source.region !== e.target.region) && showEdge;
             break;
-          default:
-            isEdge = isEdge & true;
         }
 
-        return isEdge;
+        return showEdge;
       }
     };
 
