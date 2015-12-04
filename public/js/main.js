@@ -84,7 +84,7 @@
     .append('svg')
     .attr('width', legendWidth + 5 + 5)
     .append('g')
-    .attr('transform', 'translate(' + 5 + ',' + 35 + ')');
+    .attr('transform', 'translate(' + 5 + ',' + 25 + ')');
   svgAnatomicalLegend.append('text')
     .attr('transform', 'translate(-5, -10)')
     .attr('font-size', 12)
@@ -254,7 +254,7 @@
 
     // Set brain area legend height
     d3.selectAll('#legendKey').selectAll('#anatomicalLegend').selectAll('svg')
-      .attr('height', 29 + visInfo.brainAreas.length * 12);
+      .attr('height', 14 + visInfo.brainAreas.length * 15.14);
 
     params.visInfo = visInfo;
 
@@ -1398,37 +1398,18 @@
       edgeStatG.call(edgeLegend);
 
       // Anatomical legend
-      anatomicalG = svgAnatomicalLegend.selectAll('g.anatomical').data(params.visInfo.brainAreas, String);
-      anatomicalG.enter()
+      anatomicalLegendG = svgAnatomicalLegend.selectAll('g#anatomicalLegend').data([{}]);
+      anatomicalLegendG.enter()
         .append('g')
-        .attr('class', 'anatomical')
-        .attr('transform', function(d, i) {
-          return 'translate(0,' + (i * (((NODE_RADIUS / 2) * 2) + 3)) + ')';
-        });
+        .attr('id', 'anatomicalLegend');
 
-      anatomicalG.exit()
-        .remove();
-      anatomicalCircle = anatomicalG.selectAll('circle').data(function(d) {
-        return [d];
-      });
-
-      anatomicalCircle.enter()
-        .append('circle')
-        .attr('r', NODE_RADIUS / 2)
-        .attr('fill', function(d) {
-          return brainRegionColor(d);
-        });
-
-      anatomicalText = anatomicalG.selectAll('text').data(function(d) {
-        return [d];
-      });
-
-      anatomicalText.enter()
-        .append('text')
-        .attr('x', ((NODE_RADIUS / 2) * 2) + 5)
-        .attr('font-size', ((NODE_RADIUS / 2) * 2))
-        .attr('alignment-baseline', 'middle')
-        .text(String);
+      anatomicalLegend = d3.legend.color()
+        .shape('circle')
+        .shapeRadius(NODE_RADIUS / 2)
+        .labelOffset(5)
+        .orient('vertical')
+        .scale(brainRegionColor);
+      anatomicalLegendG.call(anatomicalLegend);
     }
 
     function drawTimeSlice() {
@@ -1688,7 +1669,6 @@
     }
 
     function subjectLoad() {
-
       subjectDropdown = d3.select('#SubjectDropdown');
       subjectDropdown.selectAll('li')
         .on('click', function() {
