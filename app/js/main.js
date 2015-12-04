@@ -1816,8 +1816,10 @@
           .attr('text-anchor', 'end')
           .attr('id', 'HOLD')
           .text('HOLD');
+        force.stop();
       } else {
         svgNetworkMap.select('text#HOLD').remove();
+        force.start();
       }
     }
 
