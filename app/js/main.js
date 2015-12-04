@@ -11,10 +11,6 @@
   var NODE_RADIUS = 10;
   var EDGE_WIDTH = 2;
   var stopAnimation = true;
-  var curCh1 = '';
-  var curCh2 = '';
-  var curFreqInd = 0;
-  var curTimeInd = 0;
   var curCh1;
   var curCh2;
   var curFreqInd;
@@ -225,6 +221,13 @@
     spect2Spinner = new Spinner(spinnerOpts);
     edgeSpinner = new Spinner(spinnerOpts);
 
+    curFreqInd = params.curFreqInd || 0;
+    curTimeInd = params.curTimeInd || 0;
+    edgeFilter = params.edgeFilter || 'All';
+    networkView = params.networkView || 'Anatomical';
+    curCh1 = params.curCh1;
+    curCh2 = params.curCh2;
+
     // Load subject data
     queue()
       .defer(d3.json, 'DATA/subjects.json')
@@ -256,7 +259,7 @@
       });
 
     // Default to the first subject
-    curSubject = subjectData[0].subjectID;
+    curSubject = params.curSubject || subjectData[0].subjectID;
     subjectDropdown.selectAll('button')
       .text(curSubject)
       .append('span')
@@ -281,8 +284,8 @@
       .remove();
 
     // Default to the first subject
-    edgeStatType = edgeInfo[0].edgeTypeID;
-    edgeTypeName = edgeInfo[0].edgeTypeName;
+    edgeTypeID = params.edgeTypeID || edgeInfo[0].edgeTypeID;
+    edgeTypeName = edgeInfo.filter(function(e) {return e.edgeTypeID === edgeTypeID;})[0].edgeTypeName;
     edgeDropdown.selectAll('button')
       .text(edgeTypeName)
       .append('span')
@@ -326,10 +329,8 @@
       params.channel = channelData;
 
       // Default to first two channels if no channels are not already specified
-      if (curCh1.length === 0 || curCh2.length === 0) {
-        curCh1 = params.channel[0].channelID;
-        curCh2 = params.channel[1].channelID;
-      }
+      curCh1 = curCh1 || channel[0].channelID;
+      curCh2 = curCh2 || channel[1].channelID;
 
       loadEdges();
     });
