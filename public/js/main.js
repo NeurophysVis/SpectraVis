@@ -16,8 +16,8 @@
   var curFreqInd;
   var curTimeInd;
   var mouseFlag = true;
-  var edgeFilter = 'All';
-  var networkView = 'Anatomical';
+  var edgeFilter;
+  var networkView;
   var svgCh1;
   var svgEdgeStat;
   var svgCh2;
@@ -44,6 +44,8 @@
   var edgeTypeName;
   var channel;
   var edgeData;
+  var time;
+  var freq;
 
   colorbrewer.PiYG[NUM_COLORS].reverse();
   colorbrewer.RdBu[NUM_COLORS].reverse();
@@ -65,6 +67,14 @@
     var spinnerOpts = {
       zIndex: 100,
     };
+    freq = +params.freq;
+    time = +params.time;
+    edgeFilter = params.edgeFilter || 'All';
+    networkView = params.networkView || 'Anatomical';
+    curCh1 = params.curCh1;
+    curCh2 = params.curCh2;
+    curSubject = params.curSubject;
+    edgeTypeID = params.edgeTypeID;
 
     // Heatmap Panels
     svgCh1 = d3.select('#SpectraCh1Panel')
@@ -151,7 +161,7 @@
           .style('display', 'block');
         var linkString = window.location.origin + window.location.pathname + '?' +
           'curSubject=' + curSubject +
-          '&edgeStat=' + edgeTypeID +
+          '&edgeTypeID=' + edgeTypeID +
           '&edgeFilter=' + edgeFilter +
           '&networkView=' + networkView +
           '&time=' + visInfo.tax[curTimeInd] +
@@ -221,15 +231,6 @@
     spect2Spinner = new Spinner(spinnerOpts);
     edgeSpinner = new Spinner(spinnerOpts);
 
-    curFreqInd = params.curFreqInd || 0;
-    curTimeInd = params.curTimeInd || 0;
-    edgeFilter = params.edgeFilter || 'All';
-    networkView = params.networkView || 'Anatomical';
-    curCh1 = params.curCh1;
-    curCh2 = params.curCh2;
-    curSubject = params.curSubject;
-    edgeTypeID = params.edgeTypeID;
-
     // Load subject data
     queue()
       .defer(d3.json, 'DATA/subjects.json')
@@ -242,6 +243,18 @@
   function createMenu(error, subjects, vI, eI) {
     visInfo = vI;
     edgeInfo = eI;
+
+    if (visInfo.tax.indexOf(time) !== -1) {
+      curTimeInd = visInfo.tax.indexOf(time);
+    } else {
+      curTimeInd = 0;
+    }
+
+    if (visInfo.fax.indexOf(freq) !== -1) {
+      curFreqInd = visInfo.fax.indexOf(freq);
+    } else {
+      curFreqInd = 0;
+    }
 
     // Populate dropdown menu with subjects
     subjectData = subjects;
