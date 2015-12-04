@@ -20,8 +20,6 @@
   var networkView = 'Anatomical';
   colorbrewer.PiYG[NUM_COLORS].reverse();
   colorbrewer.RdBu[NUM_COLORS].reverse();
-  var powerColors = colorbrewer.PiYG[NUM_COLORS];
-  var networkColors = colorbrewer.RdBu[NUM_COLORS];
   var margin = {
     top: 30,
     right: 30,
@@ -63,22 +61,22 @@
   var svgSpectraLegend = d3.selectAll('#legendKey').select('#spectraLegend')
     .append('svg')
     .attr('width', legendWidth + 5 + 5)
-    .attr('height', 60)
+    .attr('height', 50)
     .append('g')
-    .attr('transform', 'translate(' + 5 + ',' + 35 + ')');
+    .attr('transform', 'translate(' + 5 + ',' + 25 + ')');
   svgSpectraLegend.append('text')
-    .attr('transform', 'translate(-5, -16)')
+    .attr('transform', 'translate(-5, -5)')
     .attr('font-size', 12)
     .attr('font-weight', 700)
-    .text('Spectra');
+    .text('Difference in Power');
   var svgEdgeStatLegend = d3.selectAll('#legendKey').select('#edgeStatLegend')
     .append('svg')
     .attr('width', legendWidth + 5 + 5)
-    .attr('height', 60)
+    .attr('height', 50)
     .append('g')
-    .attr('transform', 'translate(' + 5 + ',' + 35 + ')');
-  svgEdgeStatLegend.append('text')
-    .attr('transform', 'translate(-5, -16)')
+    .attr('transform', 'translate(' + 5 + ',' + 25 + ')');
+  var edgeStatLegendTitle = svgEdgeStatLegend.append('text')
+    .attr('transform', 'translate(-5, -5)')
     .attr('font-size', 12)
     .attr('font-weight', 700)
     .text('Edge Statistic');
@@ -86,9 +84,9 @@
     .append('svg')
     .attr('width', legendWidth + 5 + 5)
     .append('g')
-    .attr('transform', 'translate(' + 5 + ',' + 35 + ')');
+    .attr('transform', 'translate(' + 5 + ',' + 25 + ')');
   svgAnatomicalLegend.append('text')
-    .attr('transform', 'translate(-5, -16)')
+    .attr('transform', 'translate(-5, -10)')
     .attr('font-size', 12)
     .attr('font-weight', 700)
     .text('Brain Areas');
@@ -256,7 +254,7 @@
 
     // Set brain area legend height
     d3.selectAll('#legendKey').selectAll('#anatomicalLegend').selectAll('svg')
-      .attr('height', 29 + visInfo.brainAreas.length * 12);
+      .attr('height', 14 + visInfo.brainAreas.length * 15.14);
 
     params.visInfo = visInfo;
 
@@ -342,7 +340,7 @@
     var powerScale;
     var tAx;
     var fAx;
-    var heatmapPowerColor;
+    var powerScale;
     var networkXScale;
     var networkYScale;
     var force;
@@ -353,7 +351,7 @@
     var subjectDropdown;
     var edgeStatScale;
     var edgeStatTypeDropdown;
-    var networkColorScale;
+    var brainRegionColor;
     var timeSliderStep;
     var timeMaxStepInd;
     var networkXExtent;
@@ -367,8 +365,8 @@
     var spect1Line;
     var spect2Line;
     var edgeStatLine;
-    var heatmapPowerColor;
-    var edgeStatColor;
+    var powerScale;
+    var edgeStatScale;
     var isFreq;
     var isWeightedNetwork;
     var corrScale;
@@ -388,7 +386,7 @@
       })[0];
 
     isFreq = edgeInfo.isFreq;
-    isWeightedNetwork = edgeInfo.isFreq;
+    isWeightedNetwork = edgeInfo.isWeightedNetwork;
 
     // Set up scales and slider values
     setupScales();
@@ -401,8 +399,7 @@
       .xScale(timeScale)
       .xLabel('Time (' + params.visInfo.tunits + ')')
       .yLabel('Frequency (' + params.visInfo.funits + ')')
-      .intensityScale(powerScale)
-      .colorScale(heatmapPowerColor)
+      .colorScale(powerScale)
       .rectMouseOver(rectMouseOver)
       .rectMouseClick(rectMouseClick);
 
@@ -413,8 +410,7 @@
       .xScale(timeScale)
       .xLabel('Time (' + params.visInfo.tunits + ')')
       .yLabel('Frequency (' + params.visInfo.funits + ')')
-      .intensityScale(edgeStatScale)
-      .colorScale(edgeStatColor)
+      .colorScale(edgeStatScale)
       .rectMouseOver(rectMouseOver)
       .rectMouseClick(rectMouseClick);
 
@@ -431,7 +427,7 @@
     var cohTimeSlice = timeseries()
       .height(timeSliceHeight)
       .width(timeSliceWidth)
-      .yScale(corrScale)
+      .yScale(timeSliceEdgeStatScale)
       .xScale(timeScale)
       .yAxisOrientation('left')
       .xLabel('Time (' + params.visInfo.tunits + ')')
@@ -524,6 +520,8 @@
     }
 
     function setupScales() {
+      var powerColors = colorbrewer.PiYG[NUM_COLORS];
+      var edgeStatColors = colorbrewer.RdBu[NUM_COLORS];
       var powerMin;
       var powerMax;
       var powerExtent;
@@ -531,13 +529,7 @@
       var edgeStatMax;
       var edgeStatExtent;
 
-      heatmapPowerColor = d3.scale.linear()
-        .domain(d3.range(0, 1, 1.0 / (NUM_COLORS - 1)))
-        .range(powerColors);
-      edgeStatColor = d3.scale.linear()
-        .domain(d3.range(0, 1, 1.0 / (NUM_COLORS - 1)))
-        .range(networkColors);
-      networkColorScale = d3.scale.ordinal()
+      brainRegionColor = d3.scale.ordinal()
         .domain(params.visInfo.brainAreas)
         .range(colorbrewer.Pastel1[7]);
 
@@ -595,6 +587,23 @@
 
       edgeStatExtent = symmetricExtent(edgeStatMin, edgeStatMax);
 
+      powerScale = d3.scale.linear()
+        .domain(powerExtent)
+        .range(powerColors)
+        .interpolate(d3.interpolateLab);
+      if (isWeightedNetwork) {
+        edgeStatScale = d3.scale.linear()
+          .domain(edgeStatExtent)
+          .range(edgeStatColors)
+          .interpolate(d3.interpolateLab);
+      } else {
+        edgeStatColors = [0, (NUM_COLORS - 1) / 2, NUM_COLORS - 1].map(function(n) { return edgeStatColors[n];});
+
+        edgeStatScale = d3.scale.ordinal()
+          .domain([-1, 0, 1])
+          .range(edgeStatColors);
+      }
+
       timeScale = d3.scale.ordinal()
         .domain(tAx)
         .rangeBands([0, panelWidth]);
@@ -607,13 +616,12 @@
         .domain(fAx)
         .rangeBands([panelHeight, 0]);
 
-      powerScale = d3.scale.linear()
-        .domain(powerExtent)
-        .range([0, 1]);
-
       timeSlicePowerScale = d3.scale.linear()
         .domain(powerExtent)
-        .range([timeSliceHeight, 0]);
+        .range(linspace(timeSliceHeight, 0, NUM_COLORS));
+      timeSliceEdgeStatScale = d3.scale.linear()
+        .domain(powerExtent)
+        .range(linspace(timeSliceHeight, 0, NUM_COLORS));
 
       networkXScale = d3.scale.linear()
         .domain(networkXExtent)
@@ -621,13 +629,10 @@
       networkYScale = d3.scale.linear()
         .domain(networkYExtent)
         .range([networkHeight, 0]);
-      edgeStatScale = d3.scale.linear()
-        .domain(edgeStatExtent)
-        .range([0, 1]);
 
       corrScale = d3.scale.linear()
         .domain(edgeStatExtent)
-        .range([0, panelHeight]);
+        .range(linspace(0, panelHeight, NUM_COLORS));
 
       function symmetricExtent(min, max) {
         if (Math.abs(min) >= Math.abs(max)) {
@@ -636,7 +641,27 @@
           min = -1 * max;
         }
 
-        return [min, max];
+        return linspace(min, max, 11);
+      }
+
+      // from https://github.com/sloisel/numeric
+      function linspace(a, b, n) {
+        if (typeof n === 'undefined') {
+          n = Math.max(Math.round(b - a) + 1, 1);
+        };
+
+        if (n < 2) {
+          return n === 1 ? [a] : [];
+        }
+
+        var i;
+        var ret = Array(n);
+        n--;
+        for (i = n; i >= 0; i--) {
+          ret[i] = (i * b + (n - i) * a) / n;
+        }
+
+        return ret;
       }
     }
 
@@ -694,7 +719,7 @@
         .nodes(channel)
         .links(edge)
         .charge(-375)
-        .linkDistance(weights)
+        .linkDistance(networkHeight / 3)
         .size([networkWidth, networkHeight])
         .start();
 
@@ -736,7 +761,7 @@
         .remove();
       edgeLine
         .style('stroke', function(d) {
-          return edgeStatColor(edgeStatScale(d.data));
+          return edgeStatScale(d.data);
         })
         .on('mouseover', edgeMouseOver)
         .on('mouseout', edgeMouseOut)
@@ -767,7 +792,7 @@
         .attr('opacity', 1);
       nodeCircle
         .attr('fill', function(d) {
-          return networkColorScale(d.region);
+          return brainRegionColor(d.region);
         })
         .style('stroke', 'white');
 
@@ -843,13 +868,6 @@
         return Math.max(NODE_RADIUS, Math.min(networkHeight - NODE_RADIUS, d.y));
       }
 
-      function weights(e) {
-        var minDistance = 75;
-        var distanceRange = 100;
-        var initialScaling = (2 * Math.abs(Math.abs(edgeStatScale(e.data) - 0.5) - 0.5) + .01);
-        return minDistance + (distanceRange * initialScaling);
-      }
-
       function edgeMouseOver(e) {
 
         var curEdge = d3.select(this);
@@ -858,9 +876,9 @@
           .style('stroke-width', 2 * EDGE_WIDTH)
           .style('stroke', function() {
             if (e.data < 0) {
-              return edgeStatColor(0);
+              return edgeStatScale(0);
             } else {
-              return edgeStatColor(1);
+              return edgeStatScale(1);
             }
           });
 
@@ -983,8 +1001,6 @@
     };
 
     function heatmap() {
-
-      var intensityScale = d3.scale.linear();
       var colorScale = d3.scale.linear();
       var xScale = d3.scale.ordinal();
       var yScale = d3.scale.ordinal();
@@ -1017,7 +1033,7 @@
           heatmapG.enter()
             .append('g')
             .attr('transform', function(d, i) {
-              return 'translate(' + xScale(xScale.domain()[i]) + ',0)';
+              return 'translate(' + xScale(xScale.domain()[i]) + ', 0)';
             })
             .attr('class', 'heatmapX');
           heatmapG.exit()
@@ -1037,10 +1053,10 @@
             .style('fill', 'white');
           heatmapRect
             .style('fill', function(d) {
-              return colorScale(intensityScale(d));
+              return colorScale(d);
             })
             .style('stroke', function(d) {
-              return colorScale(intensityScale(d));
+              return colorScale(d);
             })
             .on('mouseover', rectMouseOver)
             .on('click', rectMouseClick);
@@ -1114,12 +1130,6 @@
         });
       }
 
-      chart.intensityScale = function(scale) {
-        if (!arguments.length) return intensityScale;
-        intensityScale = scale;
-        return chart;
-      };
-
       chart.colorScale = function(scale) {
         if (!arguments.length) return colorScale;
         colorScale = scale;
@@ -1182,6 +1192,7 @@
       spectTitle(svgCh1, curCh1);
       spectTitle(svgCh2, curCh2);
       edgeTitle();
+      edgeStatLegendTitle.text(edgeInfo.edgeTypeName);
 
       function edgeTitle() {
         var titleEdge = svgEdgeStat.selectAll('g.title').data([edgeStat], function(d) {
@@ -1256,7 +1267,7 @@
 
         titleCircle
           .attr('fill', function(d) {
-            return networkColorScale(d[0][0].region);
+            return brainRegionColor(d[0][0].region);
           });
 
         var titleText = titleCircleG.selectAll('text.nodeLabel').data(function(d, i) {
@@ -1317,7 +1328,7 @@
 
         titleCircle
           .attr('fill', function(d) {
-            return networkColorScale(d.region);
+            return brainRegionColor(d.region);
           });
 
         var titleText = titleCh.selectAll('text.nodeLabel').data(function(d) {
@@ -1350,128 +1361,55 @@
       var anatomicalCircle;
       var anatomicalText;
       var formatter = d3.format('.1f');
-      var colorInd = d3.range(0, 1, 1.0 / (NUM_COLORS - 1));
-      colorInd.push(1);
 
-      legendScale = d3.scale.ordinal()
-        .domain(colorInd)
-        .rangeBands([0, legendWidth]);
+      var rectWidth = legendWidth / (NUM_COLORS + 1);
+      var rectHeight = rectWidth * (2 / 3);
 
       // Power Legend
       powerG = svgSpectraLegend.selectAll('g#powerLegend').data([{}]);
       powerG.enter()
         .append('g')
         .attr('id', 'powerLegend');
-      powerLegendRect = powerG.selectAll('rect.power').data(colorInd);
-      powerLegendRect.enter()
-        .append('rect')
-        .attr('class', 'power')
-        .attr('x', function(d) {
-          return legendScale(d);
-        })
-        .attr('height', 10)
-        .attr('width', legendScale.rangeBand());
-      powerLegendRect
-        .style('fill', function(d) {
-          return heatmapPowerColor(d);
-        });
 
-      powerAxis = d3.svg.axis()
-        .scale(legendScale)
-        .orient('bottom')
-        .tickValues([colorInd[0], colorInd[((colorInd.length - 1) / 2)], colorInd[colorInd.length - 1]])
-        .tickFormat(function(d) {
-          return formatter(powerScale.invert(+d));
-        })
-        .tickSize(0, 0, 0);
-      powerAxisG = powerG.selectAll('g.axis.hideAxisLines#power').data([{}]);
-      powerAxisG.enter()
-        .append('g')
-        .attr('transform', 'translate(0,9)')
-        .attr('class', 'axis hideAxisLines')
-        .attr('id', 'power')
-        .append('text')
-        .attr('x', legendScale.rangeBand() * NUM_COLORS / 2)
-        .attr('y', -10)
-        .attr('text-anchor', 'middle')
-        .text('Difference in Power');
-      powerAxisG.call(powerAxis);
+      powerLegend = d3.legend.color()
+        .shape('rect')
+        .shapeWidth(rectWidth)
+        .shapeHeight(rectHeight)
+        .labelOffset(5)
+        .cells(NUM_COLORS)
+        .orient('horizontal')
+        .scale(powerScale);
+      powerG.call(powerLegend);
 
       // Edge Statistic Legend
       edgeStatG = svgEdgeStatLegend.selectAll('g#edgeStatLegend').data([{}]);
       edgeStatG.enter()
         .append('g')
         .attr('id', 'edgeStatLegend');
-      edgeStatLegendRect = edgeStatG.selectAll('rect.edgeStat').data(colorInd);
-      edgeStatLegendRect.enter()
-        .append('rect')
-        .attr('class', 'edgeStat')
-        .attr('x', function(d) {
-          return legendScale(d);
-        })
-        .attr('height', 10)
-        .attr('width', legendScale.rangeBand());
-      edgeStatLegendRect
-        .style('fill', function(d) {
-          return edgeStatColor(d);
-        });
 
-      edgeStatAxis = d3.svg.axis()
-        .scale(legendScale)
-        .orient('bottom')
-        .tickValues([colorInd[0], colorInd[((colorInd.length - 1) / 2)], colorInd[colorInd.length - 1]])
-        .tickFormat(function(d) {
-          return formatter(edgeStatScale.invert(+d));
-        })
-        .tickSize(0, 0, 0);
-      edgeStatAxisG = edgeStatG.selectAll('g.axis.hideAxisLines#edgeStat').data([edgeInfo.edgeTypeName], String);
-
-      edgeStatAxisG.enter()
-        .append('g')
-        .attr('transform', 'translate(0,9)')
-        .attr('class', 'axis hideAxisLines')
-        .attr('id', 'edgeStat')
-        .append('text')
-        .attr('x', legendScale.rangeBand() * NUM_COLORS / 2)
-        .attr('y', -10)
-        .attr('text-anchor', 'middle')
-        .text(edgeInfo.edgeTypeName);
-      edgeStatAxisG.exit()
-        .remove();
-      edgeStatAxisG.call(edgeStatAxis);
+      edgeLegend = d3.legend.color()
+        .shape('rect')
+        .shapeWidth(rectWidth)
+        .shapeHeight(rectHeight)
+        .labelOffset(5)
+        .cells(NUM_COLORS)
+        .orient('horizontal')
+        .scale(edgeStatScale);
+      edgeStatG.call(edgeLegend);
 
       // Anatomical legend
-      anatomicalG = svgAnatomicalLegend.selectAll('g.anatomical').data(params.visInfo.brainAreas, String);
-      anatomicalG.enter()
+      anatomicalLegendG = svgAnatomicalLegend.selectAll('g#anatomicalLegend').data([{}]);
+      anatomicalLegendG.enter()
         .append('g')
-        .attr('class', 'anatomical')
-        .attr('transform', function(d, i) {
-          return 'translate(0,' + (i * (((NODE_RADIUS / 2) * 2) + 3)) + ')';
-        });
+        .attr('id', 'anatomicalLegend');
 
-      anatomicalG.exit()
-        .remove();
-      anatomicalCircle = anatomicalG.selectAll('circle').data(function(d) {
-        return [d];
-      });
-
-      anatomicalCircle.enter()
-        .append('circle')
-        .attr('r', NODE_RADIUS / 2)
-        .attr('fill', function(d) {
-          return networkColorScale(d);
-        });
-
-      anatomicalText = anatomicalG.selectAll('text').data(function(d) {
-        return [d];
-      });
-
-      anatomicalText.enter()
-        .append('text')
-        .attr('x', ((NODE_RADIUS / 2) * 2) + 5)
-        .attr('font-size', ((NODE_RADIUS / 2) * 2))
-        .attr('alignment-baseline', 'middle')
-        .text(String);
+      anatomicalLegend = d3.legend.color()
+        .shape('circle')
+        .shapeRadius(NODE_RADIUS / 2)
+        .labelOffset(5)
+        .orient('vertical')
+        .scale(brainRegionColor);
+      anatomicalLegendG.call(anatomicalLegend);
     }
 
     function drawTimeSlice() {
@@ -1547,7 +1485,6 @@
           var curPlot = d3.select(this);
 
           xScale.rangeBands([0, width]);
-          yScale.range([height, 0]);
 
           var orient = (yAxisOrientation === 'right') ? 1 : -1;
 
@@ -1732,7 +1669,6 @@
     }
 
     function subjectLoad() {
-
       subjectDropdown = d3.select('#SubjectDropdown');
       subjectDropdown.selectAll('li')
         .on('click', function() {
