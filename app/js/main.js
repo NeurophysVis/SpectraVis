@@ -326,7 +326,7 @@
     svgNetworkMap.style('display', 'none');
     d3.json('DATA/' + channelFile, function(isError, channelData) {
 
-      params.channel = channelData;
+      channel = channelData;
 
       // Default to first two channels if no channels are not already specified
       curCh1 = curCh1 || channel[0].channelID;
@@ -338,9 +338,9 @@
 
   function loadEdges() {
     // Load the edge file for the current subject
-    var edgeFile = 'edges_' + curSubject + '_' + edgeStatType + '.json';
-    d3.json('DATA/' + edgeFile, function(isError, edgeData) {
-      params.edge = edgeData;
+    var edgeFile = 'edges_' + curSubject + '_' + edgeTypeID + '.json';
+    d3.json('DATA/' + edgeFile, function(isError, eD) {
+      edgeData = eD;
       loadSpectra();
     });
   }
@@ -392,7 +392,6 @@
     var networkXExtent;
     var networkYExtent;
     var edgeStat;
-    var channel;
     var powerLineFun;
     var edgeStatLineFun;
     var timeSlicePowerScale;
