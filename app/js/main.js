@@ -1687,8 +1687,8 @@
             .append('span')
             .attr('class', 'caret');
           curSubject = this.id;
-          curCh1 = [];
-          curCh2 = [];
+          curCh1 = '';
+          curCh2 = '';
           loadChannelData();
         });
     }
