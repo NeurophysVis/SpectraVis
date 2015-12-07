@@ -8,3 +8,5 @@ app/DATA/brainImages/*
 public/DATA/*
 public/DATA/brainImages/*
 *.log
+
+*.zip
