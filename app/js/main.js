@@ -308,7 +308,7 @@
 
     // Set brain area legend height
     d3.selectAll('#legendKey').selectAll('#anatomicalLegend').selectAll('svg')
-      .attr('height', 14 + visInfo.brainAreas.length * 15.14);
+      .attr('height', 14 + visInfo.brainRegions.length * 15.14);
 
     // Load channel data
     loadChannelData();
@@ -582,7 +582,7 @@
       var edgeStatExtent;
 
       brainRegionColor = d3.scale.ordinal()
-        .domain(visInfo.brainAreas)
+        .domain(visInfo.brainRegions)
         .range(colorbrewer.Pastel1[7]);
 
       powerMin = d3.min(
