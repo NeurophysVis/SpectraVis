@@ -38,7 +38,7 @@ Fork, then clone the repo:
 ````
 git clone git@github.com/your-username/SpectraVis.git
 ````
-Use `npm install` to get the development dependencies.
+Use `npm install` to get the development dependencies. Place your Data in `app/DATA/`.
 
 Push to your fork and submit a pull request to the `develop` branch.
 
