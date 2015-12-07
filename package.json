@@ -1,6 +1,6 @@
 {
   "name": "spectravis",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "An interactive web-based neuroscience app for analyzing task-related functional networks over time and frequency.",
   "main": "index.js",
   "scripts": {
@@ -16,7 +16,8 @@
     "spectra",
     "coherence",
     "correlation",
-    "networks"
+    "networks",
+    "functional connectivity"
   ],
   "author": {
     "name": "Eric Denovellis",
