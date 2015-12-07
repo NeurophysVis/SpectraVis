@@ -9,6 +9,8 @@ var concat = require('gulp-concat');
 var plumber = require('gulp-plumber');
 var uglify = require('gulp-uglify');
 var jsonminify = require('gulp-jsonminify');
+var connect = require('gulp-connect');
+var watch = require('gulp-watch');
 
 /*
  |--------------------------------------------------------------------------
@@ -27,13 +29,15 @@ gulp.task('createVendorJS', function() {
     'node_modules/d3-save-svg/build/d3-save-svg.js',
   ]).pipe(concat('vendor.js'))
     .pipe(uglify())
-    .pipe(gulp.dest('public/js'));
+    .pipe(gulp.dest('public/js'))
+    .pipe(connect.reload());
 });
 
 gulp.task('createMainJS', function() {
   return gulp.src('app/js/*.js')
     .pipe(concat('main.js'))
-    .pipe(gulp.dest('public/js'));
+    .pipe(gulp.dest('public/js'))
+    .pipe(connect.reload());
 });
 
 gulp.task('createMainJS-build', function() {
@@ -49,7 +53,8 @@ gulp.task('minifyCSS', function() {
     'app/css/*.css',
   ]).pipe(cssmin())
     .pipe(concat('main.css'))
-    .pipe(gulp.dest('public/css'));
+    .pipe(gulp.dest('public/css'))
+    .pipe(connect.reload());
 });
 
 gulp.task('compressImages', function() {
@@ -68,5 +73,19 @@ gulp.task('minifyJSON', function() {
     .pipe(gulp.dest('public/DATA'));
 });
 
-gulp.task('default', ['createMainJS', 'createVendorJS', 'minifyCSS']);
+gulp.task('webserver', function() {
+  connect.server({
+    port: 8000,
+    livereload: true,
+    root: ['public', 'app'],
+  });
+});
+
+gulp.task('watch', function() {
+  gulp.watch('app/css/spectra.css', ['minifyCSS']);
+  gulp.watch('app/js/main.js', ['createMainJS']);
+  gulp.watch('app/js/vendor.js', ['createVendorJS']);
+});
+
+gulp.task('default', ['createMainJS', 'createVendorJS', 'minifyCSS', 'webserver', 'watch']);
 gulp.task('build', ['createMainJS-build', 'createVendorJS', 'minifyCSS', 'compressImages', 'minifyJSON']);
