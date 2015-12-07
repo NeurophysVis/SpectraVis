@@ -1727,13 +1727,6 @@
           freqSlider.property('value', fAx[curFreqInd]);
           freqSliderText.text(fAx[curFreqInd] + ' Hz');
 
-<<<<<<< HEAD
-          mouseFlag = true;
-          svgNetworkMap.select('text#HOLD').remove();
-
-          force.stop();
-=======
->>>>>>> develop
           loadEdges();
         });
     }
