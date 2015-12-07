@@ -11,6 +11,8 @@ var uglify = require('gulp-uglify');
 var jsonminify = require('gulp-jsonminify');
 var connect = require('gulp-connect');
 var watch = require('gulp-watch');
+var rename = require('gulp-rename');
+var zip = require('gulp-zip');
 
 /*
  |--------------------------------------------------------------------------
@@ -18,6 +20,21 @@ var watch = require('gulp-watch');
  |--------------------------------------------------------------------------
  */
 gulp.task('createVendorJS', function() {
+   return gulp.src([
+     'app/components/jquery/dist/jquery.js',
+     'app/components/bootstrap/js/dropdown.js',
+     'app/components/d3/d3.js',
+     'app/components/queue-async/queue.js',
+     'app/components/colorbrewer/colorbrewer.js',
+     'app/components/spin.js/spin.js',
+     'app/components/d3-legend/d3-legend.js',
+     'node_modules/d3-save-svg/build/d3-save-svg.js',
+   ]).pipe(concat('vendor.js'))
+     .pipe(gulp.dest('public/js'))
+     .pipe(connect.reload());
+ });
+
+gulp.task('createVendorJS-build', function() {
   return gulp.src([
     'app/components/jquery/dist/jquery.js',
     'app/components/bootstrap/js/dropdown.js',
@@ -29,6 +46,9 @@ gulp.task('createVendorJS', function() {
     'node_modules/d3-save-svg/build/d3-save-svg.js',
   ]).pipe(concat('vendor.js'))
     .pipe(uglify())
+    .pipe(rename({
+      suffix: '.min',
+    }))
     .pipe(gulp.dest('public/js'))
     .pipe(connect.reload());
 });
@@ -44,7 +64,20 @@ gulp.task('createMainJS-build', function() {
   return gulp.src('app/js/*.js')
     .pipe(concat('main.js'))
     .pipe(uglify())
+    .pipe(rename({
+      suffix: '.min',
+    }))
     .pipe(gulp.dest('public/js'));
+});
+
+gulp.task('copyCSS', function() {
+  return gulp.src([
+    'app/components/bootstrap/dist/css/bootstrap.css',
+    'app/css/*.css',
+  ]).pipe(cssmin())
+    .pipe(concat('main.css'))
+    .pipe(gulp.dest('public/css'))
+    .pipe(connect.reload());
 });
 
 gulp.task('minifyCSS', function() {
@@ -53,6 +86,9 @@ gulp.task('minifyCSS', function() {
     'app/css/*.css',
   ]).pipe(cssmin())
     .pipe(concat('main.css'))
+    .pipe(rename({
+      suffix: '.min',
+    }))
     .pipe(gulp.dest('public/css'))
     .pipe(connect.reload());
 });
@@ -82,10 +118,23 @@ gulp.task('webserver', function() {
 });
 
 gulp.task('watch', function() {
-  gulp.watch('app/css/spectra.css', ['minifyCSS']);
+  gulp.watch('app/css/spectra.css', ['copyCSS']);
   gulp.watch('app/js/main.js', ['createMainJS']);
   gulp.watch('app/js/vendor.js', ['createVendorJS']);
 });
 
-gulp.task('default', ['createMainJS', 'createVendorJS', 'minifyCSS', 'webserver', 'watch']);
-gulp.task('build', ['createMainJS-build', 'createVendorJS', 'minifyCSS', 'compressImages', 'minifyJSON']);
+gulp.task('copyDATA', function() {
+  return gulp
+    .src('app/DATA/*.json')
+    .pipe(gulp.dest('public/DATA'));
+});
+
+gulp.task('zip', function() {
+  return gulp
+    .src(['public/*', 'public/js/*.js', 'public/css/*.css', 'public/fonts/*', '!public/DATA/*.json', './LICENSE.md', './README.md', './spectraVis.png'], {base: '.'})
+    .pipe(zip('spectraVis.zip'))
+    .pipe(gulp.dest('./'));
+});
+
+gulp.task('default', ['copyDATA', 'createMainJS', 'createVendorJS', 'copyCSS', 'webserver', 'watch']);
+gulp.task('build', ['createMainJS', 'createMainJS', 'createVendorJS', 'copyCSS', 'createMainJS-build', 'createVendorJS-build', 'minifyCSS', 'compressImages', 'minifyJSON']);
