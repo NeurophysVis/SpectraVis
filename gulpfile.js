@@ -131,7 +131,7 @@ gulp.task('copyDATA', function() {
 
 gulp.task('zip', function() {
   return gulp
-    .src(['public/*', 'public/js/*.js', 'public/css/*.css', 'public/fonts/*', '!public/DATA/*.json', './LICENSE.md', './README.md', './spectraVis.png'], {base: '.'})
+    .src(['public/*', 'public/js/*.js', 'public/css/*.css', 'public/fonts/*', '!public/DATA/*.json', './LICENSE.md', './README.md', './SpectraVis-Demo.gif'], {base: '.'})
     .pipe(zip('spectraVis.zip'))
     .pipe(gulp.dest('./'));
 });
