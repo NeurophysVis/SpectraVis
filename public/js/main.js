@@ -6,7 +6,7 @@
   var svgNetworkMap;
   var subjectObject;
   var curSubject;
-  var edgeTypeID;
+  var edgeStatID;
   var NUM_COLORS = 11;
   var NODE_RADIUS = 10;
   var EDGE_WIDTH = 2;
@@ -41,7 +41,7 @@
   var subjectData;
   var visInfo;
   var margin;
-  var edgeTypeName;
+  var edgeStatName;
   var channel;
   var edgeData;
   var time;
@@ -74,7 +74,7 @@
     curCh1 = params.curCh1;
     curCh2 = params.curCh2;
     curSubject = params.curSubject;
-    edgeTypeID = params.edgeTypeID;
+    edgeStatID = params.edgeStatID;
 
     // Heatmap Panels
     svgCh1 = d3.select('#SpectraCh1Panel')
@@ -161,7 +161,7 @@
           .style('display', 'block');
         var linkString = window.location.origin + window.location.pathname + '?' +
           'curSubject=' + curSubject +
-          '&edgeTypeID=' + edgeTypeID +
+          '&edgeStatID=' + edgeStatID +
           '&edgeFilter=' + edgeFilter +
           '&networkView=' + networkView +
           '&time=' + visInfo.tax[curTimeInd] +
@@ -184,7 +184,7 @@
         var networkSVG = d3.select('#NetworkPanel').select('svg').node();
         var networkSaveName = 'Network' + '_' +
           curSubject + '_' +
-          edgeTypeID + '_' +
+          edgeStatID + '_' +
           networkView + '_' +
           visInfo.tax[curTimeInd] + visInfo.tunits + '_' +
           visInfo.fax[curFreqInd] + visInfo.funits;
@@ -205,7 +205,7 @@
         var ch2SVG = d3.select('#SpectraCh2Panel').select('svg').node();
         d3_save_svg.save(ch2SVG, {filename: ch2SaveName});
 
-        var edgeSaveName = edgeTypeID + '_' +
+        var edgeSaveName = edgeStatID + '_' +
           curSubject + '_' +
           'Ch' + curCh1 + '_' +
           'Ch' + curCh2;
@@ -286,29 +286,29 @@
     edgeOptions.enter()
       .append('li')
       .attr('id', function(d) {
-        return d.edgeTypeID;
+        return d.edgeStatID;
       })
       .append('a')
       .attr('role', 'menuitem')
       .attr('tabindex', -1)
       .text(function(d) {
-        return d.edgeTypeName;
+        return d.edgeStatName;
       });
 
     edgeOptions.exit()
       .remove();
 
     // Default to the first subject
-    edgeTypeID = edgeTypeID || edgeInfo[0].edgeTypeID;
-    edgeTypeName = edgeInfo.filter(function(e) {return e.edgeTypeID === edgeTypeID;})[0].edgeTypeName;
+    edgeStatID = edgeStatID || edgeInfo[0].edgeStatID;
+    edgeStatName = edgeInfo.filter(function(e) {return e.edgeStatID === edgeStatID;})[0].edgeStatName;
     edgeDropdown.selectAll('button')
-      .text(edgeTypeName)
+      .text(edgeStatName)
       .append('span')
       .attr('class', 'caret');
 
     // Set brain area legend height
     d3.selectAll('#legendKey').selectAll('#anatomicalLegend').selectAll('svg')
-      .attr('height', 14 + visInfo.brainAreas.length * 15.14);
+      .attr('height', 14 + visInfo.brainRegions.length * 15.14);
 
     // Load channel data
     loadChannelData();
@@ -353,7 +353,7 @@
 
   function loadEdges() {
     // Load the edge file for the current subject
-    var edgeFile = 'edges_' + curSubject + '_' + edgeTypeID + '.json';
+    var edgeFile = 'edges_' + curSubject + '_' + edgeStatID + '.json';
     d3.json('DATA/' + edgeFile, function(isError, eD) {
       edgeData = eD;
       loadSpectra();
@@ -433,7 +433,7 @@
     // Get the edge statastic name and units
     curEdgeInfo = edgeInfo
       .filter(function(e) {
-        return e.edgeTypeID === edgeTypeID;
+        return e.edgeStatID === edgeStatID;
       })[0];
 
     isFreq = curEdgeInfo.isFreq;
@@ -472,7 +472,7 @@
       .yScale(corrScale)
       .xScale(timeScale)
       .xLabel('Time (' + visInfo.tunits + ')')
-      .yLabel(edgeTypeName)
+      .yLabel(edgeStatName)
       .rectMouseOver(rectMouseOver)
       .rectMouseClick(rectMouseClick);
 
@@ -483,7 +483,7 @@
       .xScale(timeScale)
       .yAxisOrientation('left')
       .xLabel('Time (' + visInfo.tunits + ')')
-      .yLabel(edgeTypeName);
+      .yLabel(edgeStatName);
 
     var powerTimeSlice = timeseries()
       .height(timeSliceHeight)
@@ -582,7 +582,7 @@
       var edgeStatExtent;
 
       brainRegionColor = d3.scale.ordinal()
-        .domain(visInfo.brainAreas)
+        .domain(visInfo.brainRegions)
         .range(colorbrewer.Pastel1[7]);
 
       powerMin = d3.min(
@@ -1216,11 +1216,11 @@
       spectTitle(svgCh1, curCh1);
       spectTitle(svgCh2, curCh2);
       edgeTitle();
-      edgeStatLegendTitle.text(edgeTypeName);
+      edgeStatLegendTitle.text(edgeStatName);
 
       function edgeTitle() {
         var titleEdge = svgEdgeStat.selectAll('g.title').data([edgeStat], function(d) {
-          return edgeTypeName + '-' + d.source + '-' + d.target;
+          return edgeStatName + '-' + d.source + '-' + d.target;
         });
 
         titleEdge.exit()
@@ -1239,7 +1239,7 @@
           .attr('class', 'infoLabel')
           .attr('text-anchor', 'middle');
         titleLabel
-          .text(edgeTypeName + ':');
+          .text(edgeStatName + ':');
 
         var boundBox = titleLabel.node().getBBox();
 
@@ -1716,11 +1716,11 @@
             .text(d3.select(this).select('a').html())
             .append('span')
             .attr('class', 'caret');
-          edgeTypeID = this.id;
+          edgeStatID = this.id;
 
           isFreq = edgeInfo
             .filter(function(e) {
-              return e.edgeTypeID === edgeTypeID;
+              return e.edgeStatID === edgeStatID;
             })[0]
             .isFreq;
           curFreqInd = isFreq ? curFreqInd : 0;
