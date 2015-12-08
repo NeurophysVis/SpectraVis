@@ -67,9 +67,10 @@ gulp.task('bundle', function() {
       format: 'umd',
       moduleName: 'spectraVis',
       moduleId: 'spectraVis',
-      dest: 'spectraVis.js',
     }))
-    .pipe(gulp.dest('./public/js/'));
+    .pipe(rename('main.js'))
+    .pipe(gulp.dest('public/js/'))
+    .pipe(connect.reload());
 });
 
 gulp.task('createMainJS-build', function() {
@@ -148,5 +149,5 @@ gulp.task('zip', function() {
     .pipe(gulp.dest('./'));
 });
 
-gulp.task('default', ['copyDATA', 'createMainJS', 'createVendorJS', 'copyCSS', 'webserver', 'watch']);
+gulp.task('default', ['copyDATA', 'bundle', 'createVendorJS', 'copyCSS', 'webserver', 'watch']);
 gulp.task('build', ['createMainJS', 'createMainJS', 'createVendorJS', 'copyCSS', 'createMainJS-build', 'createVendorJS-build', 'minifyCSS', 'compressImages', 'minifyJSON']);
