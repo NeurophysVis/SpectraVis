@@ -2,7 +2,7 @@
   "name": "spectravis",
   "version": "1.1.0",
   "description": "An interactive web-based neuroscience app for analyzing task-related functional networks over time and frequency.",
-  "main": "index.js",
+  "main": "public/main.js",
   "scripts": {
     "postinstall": "bower cache clean && bower install && gulp",
     "prepublish": "gulp build && gulp zip"
@@ -43,6 +43,7 @@
     "gulp-jsonminify": "^1.0.0",
     "gulp-plumber": "^1.0.1",
     "gulp-rename": "^1.2.2",
+    "gulp-rollup": "^1.4.0",
     "gulp-streamify": "0.0.5",
     "gulp-uglify": "^1.2.0",
     "gulp-util": "^3.0.6",
@@ -51,6 +52,7 @@
     "imagemin-pngquant": "^4.1.2"
   },
   "license": "GPL-2.0",
+  "jsnext:main": "index",
   "bugs": {
     "url": "https://github.com/edeno/SpectraVis/issues"
   },

@@ -13,6 +13,7 @@ var connect = require('gulp-connect');
 var watch = require('gulp-watch');
 var rename = require('gulp-rename');
 var zip = require('gulp-zip');
+var rollup = require('gulp-rollup');
 
 /*
  |--------------------------------------------------------------------------
@@ -58,6 +59,17 @@ gulp.task('createMainJS', function() {
     .pipe(concat('main.js'))
     .pipe(gulp.dest('public/js'))
     .pipe(connect.reload());
+});
+
+gulp.task('bundle', function() {
+  gulp.src('./index.js', {read: false})
+    .pipe(rollup({
+      format: 'umd',
+      moduleName: 'spectraVis',
+      moduleId: 'spectraVis',
+      dest: 'spectraVis.js',
+    }))
+    .pipe(gulp.dest('./public/js/'));
 });
 
 gulp.task('createMainJS-build', function() {
