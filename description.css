@@ -1,0 +1,9 @@
+.description {
+    display: block;
+    text-align: justify;
+    line-height: 150%;
+}
+#about {
+  text-transform: uppercase;
+  opacity: .7;
+}
