@@ -1,49 +1,58 @@
-export var networkWidth;
-export var networkHeight;
-export var svgNetworkMap;
-export var subjectObject;
-export var curSubject;
-export var edgeStatID;
-export var NUM_COLORS = 11;
-export var NODE_RADIUS = 10;
-export var EDGE_WIDTH = 2;
-export var stopAnimation = true;
-export var curCh1;
-export var curCh2;
-export var curFreqInd;
-export var curTimeInd;
-export var mouseFlag = true;
-export var edgeFilter;
-export var networkView;
-export var svgCh1;
-export var svgEdgeStat;
-export var svgCh2;
-export var svgSpectraLegend;
-export var svgEdgeStatLegend;
-export var edgeStatLegendTitle;
-export var svgAnatomicalLegend;
-export var svgTimeSlice;
-export var panelWidth;
-export var edgeFilterDropdown;
-export var networkSpinner;
-export var spect1Spinner;
-export var spect2Spinner;
-export var edgeSpinner;
-export var panelWidth;
-export var panelHeight;
-export var legendWidth;
-export var timeSliceWidth;
-export var timeSliceHeight;
-export var edgeInfo;
-export var subjectData;
-export var visInfo;
-export var margin;
-export var edgeStatName;
-export var channel;
-export var edgeData;
-export var time;
-export var freq;
+import networkChart from './Network-View/networkChart';
+import processNetworkData from './Network-View/processNetworkData';
 
 export function init(params) {
+  params.curSubject = 'D';
+  params.edgeStatID = 'rawDiff_coh';
+  loadData(params);
+}
 
+export function loadData(params) {
+  var edgeFile = 'edges_' + params.curSubject + '_' + params.edgeStatID + '.json';
+  var channelFile = 'channels_' + params.curSubject + '.json';
+
+  // Load subject data
+  queue()
+    .defer(d3.json, 'DATA/subjects.json')
+    .defer(d3.json, 'DATA/visInfo.json')
+    .defer(d3.json, 'DATA/edgeTypes.json')
+    .defer(d3.json, 'DATA/' + edgeFile)
+    .defer(d3.json, 'DATA/' + channelFile)
+    .await(function(error, subjects, visInfo, edgeTypes, edgeData, channel) {
+      // Preprocess
+      channel = channel.map(function(n) {
+        n.fixedX = n.x;
+        n.fixedY = n.y;
+        n.x = undefined;
+        n.y = undefined;
+        n.fixed = false;
+        return n;
+      });
+
+      // Replace source name by source object
+      edgeData = edgeData.map(function(e) {
+        e.source = channel.filter(function(n) {
+          return n.channelID === e.source;
+        })[0];
+
+        e.target = channel.filter(function(n) {
+          return n.channelID === e.target;
+        })[0];
+
+        return e;
+      });
+
+      renderApp(subjects, visInfo, edgeTypes, edgeData, channel, params);
+    });
+}
+
+export function renderApp(subjects, visInfo, edgeTypes, edgeData, channel, params) {
+
+  var networkData = processNetworkData(edgeData, channel, 0, 0);
+  var network = networkChart()
+  .xScaleDomain(subjects.filter(function(s) {return s.subjectID === params.curSubject;})[0].brainXLim)
+  .yScaleDomain(subjects.filter(function(s) {return s.subjectID === params.curSubject;})[0].brainYLim);
+
+  d3.select('#NetworkPanel').datum(networkData)
+      .call(network);
 }
