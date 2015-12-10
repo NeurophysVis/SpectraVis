@@ -1,4 +1,5 @@
 import drawNodes from './drawNodes';
+import insertImage from './insertImage';
 
 export default function () {
   // Defaults
@@ -12,10 +13,10 @@ export default function () {
   var edgeStatScale = function() {return 'black';};
 
   var nodeColor;
-  var backgroundImage;
   var edgeWidth = 2;
-  var nodeRadius = 10;;
+  var nodeRadius = 10;
   var isFixed = true;
+  var imageLink = '';
 
   var chartDispatcher = d3.dispatch('nodeMouseClick', 'edgeMouseClick', 'edgeMouseOver', 'edgeMouseOut');
 
@@ -34,8 +35,8 @@ export default function () {
           .append('g');
       enterG
         .append('g')
-          .attr('class', 'networkBackgroundImage')
           .append('image')
+            .attr('class', 'networkBackgroundImage')
             .attr('width', innerWidth)
             .attr('height', innerHeight);
       enterG
@@ -58,6 +59,9 @@ export default function () {
       yScale
         .domain(yScaleDomain)
         .range([innerHeight, 0]);
+
+      // Append background image link
+      insertImage(imageLink, svg.selectAll('.networkBackgroundImage'));
 
       // Initialize edges
       var edgeLine = svg.select('g.networkEdges').selectAll('line.edge').data(data.edges);
@@ -226,6 +230,12 @@ export default function () {
   chart.isFixed = function(value) {
     if (!arguments.length) return isFixed;
     isFixed = value;
+    return chart;
+  };
+
+  chart.imageLink = function(value) {
+    if (!arguments.length) return imageLink;
+    imageLink = value;
     return chart;
   };
 

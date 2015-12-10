@@ -52,6 +52,43 @@
     return chart;
   }
 
+  function insertImage(imageLink, imageSelection) {
+    getImageBase64(imageLink, function(error, d) {
+      imageSelection
+        .attr('xlink:href', 'data:image/png;base64,' + d);
+    });
+  }
+
+  function converterEngine(input) { // fn BLOB => Binary => Base64 ?
+    var uInt8Array = new Uint8Array(input);
+    var i = uInt8Array.length;
+    var biStr = []; //new Array(i);
+    while (i--) {
+      biStr[i] = String.fromCharCode(uInt8Array[i]);
+    }
+
+    var base64 = window.btoa(biStr.join(''));
+    return base64;
+  };
+
+  function getImageBase64(url, callback) {
+    var xhr = new XMLHttpRequest(url);
+    var img64;
+    xhr.open('GET', url, true); // url is the url of a PNG/JPG image.
+    xhr.responseType = 'arraybuffer';
+    xhr.callback = callback;
+    xhr.onload = function() {
+      img64 = converterEngine(this.response); // convert BLOB to base64
+      this.callback(null, img64); // callback : err, data
+    };
+
+    xhr.onerror = function() {
+      callback('B64 ERROR', null);
+    };
+
+    xhr.send();
+  };
+
   function networkChart () {
     // Defaults
     var margin = {top: 0, right: 0, bottom: 0, left: 0};
@@ -64,10 +101,10 @@
     var edgeStatScale = function() {return 'black';};
 
     var nodeColor;
-    var backgroundImage;
     var edgeWidth = 2;
-    var nodeRadius = 10;;
+    var nodeRadius = 10;
     var isFixed = true;
+    var imageLink = '';
 
     var chartDispatcher = d3.dispatch('nodeMouseClick', 'edgeMouseClick', 'edgeMouseOver', 'edgeMouseOut');
 
@@ -86,8 +123,8 @@
             .append('g');
         enterG
           .append('g')
-            .attr('class', 'networkBackgroundImage')
             .append('image')
+              .attr('class', 'networkBackgroundImage')
               .attr('width', innerWidth)
               .attr('height', innerHeight);
         enterG
@@ -110,6 +147,9 @@
         yScale
           .domain(yScaleDomain)
           .range([innerHeight, 0]);
+
+        // Append background image link
+        insertImage(imageLink, svg.selectAll('.networkBackgroundImage'));
 
         // Initialize edges
         var edgeLine = svg.select('g.networkEdges').selectAll('line.edge').data(data.edges);
@@ -281,6 +321,12 @@
       return chart;
     };
 
+    chart.imageLink = function(value) {
+      if (!arguments.length) return imageLink;
+      imageLink = value;
+      return chart;
+    };
+
     d3.rebind(chart, chartDispatcher, 'on');
 
     return chart;
@@ -376,6 +422,10 @@
   function init(params) {
     params.curSubject = 'D';
     params.edgeStatID = 'rawDiff_coh';
+    params.curTime = 0;
+    params.curFreq = 0;
+    params.curCh1 = '';
+    params.curCh2 = '';
     loadData(params);
   }
 
@@ -418,12 +468,19 @@
 
   function renderApp(subjects, visInfo, edgeTypes, edgeData, channel, params) {
 
+    var curSubjectInfo = subjects.filter(function(s) {return s.subjectID === params.curSubject;})[0];
+
+    var aspectRatio = curSubjectInfo.brainXpixels / curSubjectInfo.brainYpixels;
+    var networkWidth = document.getElementById('NetworkPanel').offsetWidth;
+    var networkHeight = networkWidth / aspectRatio;
+
     var networkData = processNetworkData(edgeData, channel, 0, 0);
     var network = networkChart()
-      .width(document.getElementById('NetworkPanel').offsetWidth)
-      .height(document.getElementById('NetworkPanel').offsetWidth * 0.8)
-      .xScaleDomain(subjects.filter(function(s) {return s.subjectID === params.curSubject;})[0].brainXLim)
-      .yScaleDomain(subjects.filter(function(s) {return s.subjectID === params.curSubject;})[0].brainYLim);
+      .width(networkWidth)
+      .height(networkHeight)
+      .xScaleDomain(curSubjectInfo.brainXLim)
+      .yScaleDomain(curSubjectInfo.brainYLim)
+      .imageLink('DATA/brainImages/brainImage_' + params.curSubject + '.png');
 
     network.on('edgeMouseOver', edgeMouseOver);
     network.on('edgeMouseOut', edgeMouseOut);

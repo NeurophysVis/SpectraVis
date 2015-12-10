@@ -8,6 +8,10 @@ import nodeMouseClick from './Network-View/nodeMouseClick';
 export function init(params) {
   params.curSubject = 'D';
   params.edgeStatID = 'rawDiff_coh';
+  params.curTime = 0;
+  params.curFreq = 0;
+  params.curCh1 = '';
+  params.curCh2 = '';
   loadData(params);
 }
 
@@ -50,12 +54,19 @@ export function loadData(params) {
 
 export function renderApp(subjects, visInfo, edgeTypes, edgeData, channel, params) {
 
+  var curSubjectInfo = subjects.filter(function(s) {return s.subjectID === params.curSubject;})[0];
+
+  var aspectRatio = curSubjectInfo.brainXpixels / curSubjectInfo.brainYpixels;
+  var networkWidth = document.getElementById('NetworkPanel').offsetWidth;
+  var networkHeight = networkWidth / aspectRatio;
+
   var networkData = processNetworkData(edgeData, channel, 0, 0);
   var network = networkChart()
-    .width(document.getElementById('NetworkPanel').offsetWidth)
-    .height(document.getElementById('NetworkPanel').offsetWidth * 0.8)
-    .xScaleDomain(subjects.filter(function(s) {return s.subjectID === params.curSubject;})[0].brainXLim)
-    .yScaleDomain(subjects.filter(function(s) {return s.subjectID === params.curSubject;})[0].brainYLim);
+    .width(networkWidth)
+    .height(networkHeight)
+    .xScaleDomain(curSubjectInfo.brainXLim)
+    .yScaleDomain(curSubjectInfo.brainYLim)
+    .imageLink('DATA/brainImages/brainImage_' + params.curSubject + '.png');
 
   network.on('edgeMouseOver', edgeMouseOver);
   network.on('edgeMouseOut', edgeMouseOut);
