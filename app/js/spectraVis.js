@@ -1,5 +1,9 @@
 import networkChart from './Network-View/networkChart';
 import processNetworkData from './Network-View/processNetworkData';
+import edgeMouseOver from './Network-View/edgeMouseOver';
+import edgeMouseOut from './Network-View/edgeMouseOut';
+import edgeMouseClick from './Network-View/edgeMouseClick';
+import nodeMouseClick from './Network-View/nodeMouseClick';
 
 export function init(params) {
   params.curSubject = 'D';
@@ -23,8 +27,6 @@ export function loadData(params) {
       channel = channel.map(function(n) {
         n.fixedX = n.x;
         n.fixedY = n.y;
-        n.x = undefined;
-        n.y = undefined;
         n.fixed = false;
         return n;
       });
@@ -50,9 +52,18 @@ export function renderApp(subjects, visInfo, edgeTypes, edgeData, channel, param
 
   var networkData = processNetworkData(edgeData, channel, 0, 0);
   var network = networkChart()
-  .xScaleDomain(subjects.filter(function(s) {return s.subjectID === params.curSubject;})[0].brainXLim)
-  .yScaleDomain(subjects.filter(function(s) {return s.subjectID === params.curSubject;})[0].brainYLim);
+    .width(document.getElementById('NetworkPanel').offsetWidth)
+    .height(document.getElementById('NetworkPanel').offsetWidth * 0.8)
+    .xScaleDomain(subjects.filter(function(s) {return s.subjectID === params.curSubject;})[0].brainXLim)
+    .yScaleDomain(subjects.filter(function(s) {return s.subjectID === params.curSubject;})[0].brainYLim);
+
+  network.on('edgeMouseOver', edgeMouseOver);
+  network.on('edgeMouseOut', edgeMouseOut);
+  network.on('nodeMouseClick', nodeMouseClick);
+  network.on('edgeMouseClick', edgeMouseClick);
 
   d3.select('#NetworkPanel').datum(networkData)
       .call(network);
 }
+
+export var params = {};

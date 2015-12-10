@@ -1,6 +1,6 @@
 export default function () {
 
-  var nodeColor = function() {return 'blue';};
+  var nodeColor = function() {return 'grey';};
 
   var nodeRadius = 10;
 

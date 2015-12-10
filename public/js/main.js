@@ -6,7 +6,7 @@
 
   function drawNodes () {
 
-    var nodeColor = function() {return 'blue';};
+    var nodeColor = function() {return 'grey';};
 
     var nodeRadius = 10;
 
@@ -61,13 +61,13 @@
     var yScale = d3.scale.linear();
     var xScaleDomain;
     var yScaleDomain;
-    var edgeStatScale = function() {};
+    var edgeStatScale = function() {return 'black';};
 
     var nodeColor;
     var backgroundImage;
     var edgeWidth = 2;
     var nodeRadius = 10;;
-    var isFixed;
+    var isFixed = true;
 
     var chartDispatcher = d3.dispatch('nodeMouseClick', 'edgeMouseClick', 'edgeMouseOver', 'edgeMouseOut');
 
@@ -148,9 +148,6 @@
           .append('g')
           .attr('class', 'gnode')
           .attr('transform', function(d) {
-            // Initialze node position to fixed position
-            // d.x = xScale(d.fixedX);
-            // d.y = yScale(d.fixedY);
             return 'translate(' + [xPos(d), yPos(d)] + ')';
           })
           .on('click', chartDispatcher.nodeMouseClick);
@@ -314,6 +311,68 @@
     return networkData;
   }
 
+  function edgeMouseOver(e) {
+
+    var curEdge = d3.select(this);
+    var strokeStyle = curEdge.style('stroke');
+    var strokeWidth = +/\d+/.exec(curEdge.style('stroke-width'));
+    var strokeWidthUnits = /[a-z]+/.exec(curEdge.style('stroke-width'));
+    curEdge
+      .style('stroke-width', (2 * strokeWidth) + strokeWidthUnits);
+
+    var curNodes = d3.selectAll('circle.node')
+      .filter(function(n) {
+        return (n.channelID === e.source.channelID) || (n.channelID === e.target.channelID);
+      })
+      .attr('transform', 'scale(1.2)');
+  }
+
+  function edgeMouseOut(e) {
+
+    var curEdge = d3.select(this);
+    var strokeWidth = +/\d+/.exec(curEdge.style('stroke-width'));
+    var strokeWidthUnits = /[a-z]+/.exec(curEdge.style('stroke-width'));
+    curEdge
+      .style('stroke-width', (0.5 * strokeWidth) + strokeWidthUnits);
+
+    var curNodes = d3.selectAll('circle.node')
+      .filter(function(n) {
+        return (n.channelID === e.source.channelID) || (n.channelID === e.target.channelID);
+      })
+      .attr('transform', 'scale(1)');
+  }
+
+  function edgeMouseClick(e) {
+    var re = /\d+/;
+    var curCh1 = re.exec(e.source.channelID)[0];
+    var curCh2 = re.exec(e.target.channelID)[0];
+    console.log('load spectra: Ch' + curCh1 + ', Ch' + curCh2);
+
+    // mouseFlag = true;
+    // svgNetworkMap.select('text#HOLD').remove();
+    // loadSpectra();
+    edgeMouseOut.call(this, e);
+  }
+
+  function nodeMouseClick(n) {
+    var curNode = d3.select(this);
+    curNode.classed('node-clicked', !curNode.classed('node-clicked'));
+    d3.selectAll('.gnode').selectAll('circle').attr('transform', 'scale(1)');
+    d3.selectAll('.node-clicked').selectAll('circle').attr('transform', 'scale(1.2)');
+
+    var numClicked = d3.selectAll('.node-clicked')[0].length;
+    if (numClicked >= 2) {
+      var channelIDs = d3.selectAll('.node-clicked').data().map(function(d) {return d.channelID;});
+
+      var curCh1 = channelIDs[0];
+      var curCh2 = channelIDs[1];
+      console.log('load spectra: Ch' + curCh1 + ', Ch' + curCh2);
+
+      d3.selectAll('.node-clicked').classed('node-clicked', false);
+      d3.selectAll('.gnode').selectAll('circle').attr('transform', 'scale(1)');
+    }
+  }
+
   function init(params) {
     params.curSubject = 'D';
     params.edgeStatID = 'rawDiff_coh';
@@ -336,8 +395,6 @@
         channel = channel.map(function(n) {
           n.fixedX = n.x;
           n.fixedY = n.y;
-          n.x = undefined;
-          n.y = undefined;
           n.fixed = false;
           return n;
         });
@@ -363,15 +420,25 @@
 
     var networkData = processNetworkData(edgeData, channel, 0, 0);
     var network = networkChart()
-    .xScaleDomain(subjects.filter(function(s) {return s.subjectID === params.curSubject;})[0].brainXLim)
-    .yScaleDomain(subjects.filter(function(s) {return s.subjectID === params.curSubject;})[0].brainYLim);
+      .width(document.getElementById('NetworkPanel').offsetWidth)
+      .height(document.getElementById('NetworkPanel').offsetWidth * 0.8)
+      .xScaleDomain(subjects.filter(function(s) {return s.subjectID === params.curSubject;})[0].brainXLim)
+      .yScaleDomain(subjects.filter(function(s) {return s.subjectID === params.curSubject;})[0].brainYLim);
+
+    network.on('edgeMouseOver', edgeMouseOver);
+    network.on('edgeMouseOut', edgeMouseOut);
+    network.on('nodeMouseClick', nodeMouseClick);
+    network.on('edgeMouseClick', edgeMouseClick);
 
     d3.select('#NetworkPanel').datum(networkData)
         .call(network);
   }
 
+  var params = {};
+
   exports.init = init;
   exports.loadData = loadData;
   exports.renderApp = renderApp;
+  exports.params = params;
 
 }));

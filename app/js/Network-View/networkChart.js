@@ -1,5 +1,4 @@
 import drawNodes from './drawNodes';
-import drawEdges from './drawEdges';
 
 export default function () {
   // Defaults
@@ -10,13 +9,13 @@ export default function () {
   var yScale = d3.scale.linear();
   var xScaleDomain;
   var yScaleDomain;
-  var edgeStatScale = function() {};
+  var edgeStatScale = function() {return 'black';};
 
   var nodeColor;
   var backgroundImage;
   var edgeWidth = 2;
   var nodeRadius = 10;;
-  var isFixed;
+  var isFixed = true;
 
   var chartDispatcher = d3.dispatch('nodeMouseClick', 'edgeMouseClick', 'edgeMouseOver', 'edgeMouseOut');
 
