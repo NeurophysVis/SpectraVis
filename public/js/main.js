@@ -4,6 +4,62 @@
   factory((global.spectraVis = {}));
 }(this, function (exports) { 'use strict';
 
+  function copyObject(obj) {
+    var newObj = {};
+    for (var key in obj) {
+      // Copy all the fields
+      newObj[key] = obj[key];
+    }
+
+    return newObj;
+  }
+
+  function edgeFilterWithin(e) {
+    var showEdge = (e.source.region === e.target.region);
+    return showEdge;
+  }
+
+  function edgeFilterBetween(e) {
+    var showEdge = (e.source.region !== e.target.region);
+    return showEdge;
+  }
+
+  function binaryNetworkFilter(e) {
+    return e.data !== 0;
+  }
+
+  function processNetworkData(edgeData, channel, curTimeInd, curFreqInd, isWeighted, edgeFilterType) {
+
+    // Get the network for the current time and frequency
+    var edges = edgeData.map(function(e) {
+      var obj = copyObject(e);
+      obj.data = obj.data[curTimeInd][curFreqInd];
+      return obj;
+    });
+
+    // Filter by connections within or between brain regions
+    var edgeFilterByConnection = {
+      Within: edgeFilterWithin,
+      Between: edgeFilterBetween,
+      All: function() {return true;},
+
+      undefined: function() {return true;},
+    };
+
+    edges = edges.filter(edgeFilterByConnection[edgeFilterType]);
+
+    // For binary networks, don't display edges equal to zero
+    var networkTypeFilter = isWeighted ? function() {return true;} : binaryNetworkFilter;
+
+    edges = edges.filter(networkTypeFilter);
+
+    var networkData = {
+      nodes: channel,
+      edges: edges,
+    };
+    return networkData;
+  }
+
   function drawNodes () {
 
     var nodeColor = function() {return 'grey';};
@@ -53,6 +109,7 @@
   }
 
   function insertImage(imageLink, imageSelection) {
+    if (imageLink === '') return;
     getImageBase64(imageLink, function(error, d) {
       imageSelection
         .attr('xlink:href', 'data:image/png;base64,' + d);
@@ -332,31 +389,6 @@
     return chart;
   }
 
-  function copyObject(obj) {
-    var newObj = {};
-    for (var key in obj) {
-      // Copy all the fields
-      newObj[key] = obj[key];
-    }
-
-    return newObj;
-  }
-
-  function processNetworkData(edgeData, channel, curTimeInd, curFreqInd) {
-
-    var edges = edgeData.map(function(e) {
-      var obj = copyObject(e);
-      obj.data = obj.data[curTimeInd][curFreqInd];
-      return obj;
-    });
-
-    var networkData = {
-      nodes: channel,
-      edges: edges,
-    };
-    return networkData;
-  }
-
   function edgeMouseOver(e) {
 
     var curEdge = d3.select(this);
@@ -419,28 +451,48 @@
     }
   }
 
-  function init(params) {
-    params.curSubject = 'D';
-    params.edgeStatID = 'rawDiff_coh';
-    params.curTime = 0;
-    params.curFreq = 0;
-    params.curCh1 = '';
-    params.curCh2 = '';
-    loadData(params);
+  function drawNetwork(subjects, visInfo, edgeTypes, edgeData, channel, params) {
+
+    var curSubjectInfo = subjects.filter(function(s) {return s.subjectID === params.curSubject;})[0];
+
+    var isWeighted = edgeTypes.filter(function(e) {return e.edgeStatID === params.edgeStatID;})[0].isWeightedNetwork;
+    var aspectRatio = curSubjectInfo.brainXpixels / curSubjectInfo.brainYpixels;
+    var networkWidth = document.getElementById('NetworkPanel').offsetWidth;
+    var networkHeight = networkWidth / aspectRatio;
+    var isFixed = (params.networkView === 'Anatomical');
+    var imageLink = isFixed ? 'DATA/brainImages/brainImage_' + params.curSubject + '.png' : '';
+    var curTimeInd = visInfo.tax.indexOf(params.curTime) || 0;
+    var curFreqInd = visInfo.fax.indexOf(params.curFreq) || 0;
+
+    var networkData = processNetworkData(edgeData, channel, curTimeInd, curFreqInd, isWeighted, params.edgeFilter);
+    var network = networkChart()
+      .width(networkWidth)
+      .height(networkHeight)
+      .xScaleDomain(curSubjectInfo.brainXLim)
+      .yScaleDomain(curSubjectInfo.brainYLim)
+      .imageLink(imageLink)
+      .isFixed(isFixed);
+
+    network.on('edgeMouseOver', edgeMouseOver);
+    network.on('edgeMouseOut', edgeMouseOut);
+    network.on('nodeMouseClick', nodeMouseClick);
+    network.on('edgeMouseClick', edgeMouseClick);
+
+    d3.select('#NetworkPanel').datum(networkData)
+        .call(network);
   }
 
-  function loadData(params) {
+  function loadNetworkData(subjects, visInfo, edgeTypes, params, appDispatcher) {
+    params.curSubject = params.curSubject || subjects[0].subjectID;
+    params.edgeStatID = params.edgeStatID || edgeTypes[0].edgeStatID;
     var edgeFile = 'edges_' + params.curSubject + '_' + params.edgeStatID + '.json';
     var channelFile = 'channels_' + params.curSubject + '.json';
 
     // Load subject data
     queue()
-      .defer(d3.json, 'DATA/subjects.json')
-      .defer(d3.json, 'DATA/visInfo.json')
-      .defer(d3.json, 'DATA/edgeTypes.json')
       .defer(d3.json, 'DATA/' + edgeFile)
       .defer(d3.json, 'DATA/' + channelFile)
-      .await(function(error, subjects, visInfo, edgeTypes, edgeData, channel) {
+      .await(function(error, edgeData, channel) {
         // Preprocess
         channel = channel.map(function(n) {
           n.fixedX = n.x;
@@ -462,40 +514,31 @@
           return e;
         });
 
-        renderApp(subjects, visInfo, edgeTypes, edgeData, channel, params);
+        appDispatcher.loadNetwork(subjects, visInfo, edgeTypes, edgeData, channel, params);
       });
   }
 
-  function renderApp(subjects, visInfo, edgeTypes, edgeData, channel, params) {
+  var appDispatcher = d3.dispatch('loadNetwork', 'loadElectrodePair', 'networkChange', 'electrodePairChange');
+  function init(params) {
+    params.curTime = +params.curTime || 0;
+    params.curFreq = +params.curFreq || 0;
+    params.curCh1 = params.curCh1 || '';
+    params.curCh2 = params.curCh2 || '';
+    params.networkView = params.networkView || 'Anatomical';
+    params.edgeFilter = params.edgeFilter || 'All';
+    params.edgeStatID = params.edgeStatID;
+    queue()
+      .defer(d3.json, 'DATA/subjects.json')
+      .defer(d3.json, 'DATA/visInfo.json')
+      .defer(d3.json, 'DATA/edgeTypes.json')
+      .await(function(error, subjects, visInfo, edgeTypes) {
+        loadNetworkData(subjects, visInfo, edgeTypes, params, appDispatcher);
+      });
 
-    var curSubjectInfo = subjects.filter(function(s) {return s.subjectID === params.curSubject;})[0];
-
-    var aspectRatio = curSubjectInfo.brainXpixels / curSubjectInfo.brainYpixels;
-    var networkWidth = document.getElementById('NetworkPanel').offsetWidth;
-    var networkHeight = networkWidth / aspectRatio;
-
-    var networkData = processNetworkData(edgeData, channel, 0, 0);
-    var network = networkChart()
-      .width(networkWidth)
-      .height(networkHeight)
-      .xScaleDomain(curSubjectInfo.brainXLim)
-      .yScaleDomain(curSubjectInfo.brainYLim)
-      .imageLink('DATA/brainImages/brainImage_' + params.curSubject + '.png');
-
-    network.on('edgeMouseOver', edgeMouseOver);
-    network.on('edgeMouseOut', edgeMouseOut);
-    network.on('nodeMouseClick', nodeMouseClick);
-    network.on('edgeMouseClick', edgeMouseClick);
-
-    d3.select('#NetworkPanel').datum(networkData)
-        .call(network);
   }
 
-  var params = {};
+  appDispatcher.on('loadNetwork', drawNetwork);
 
   exports.init = init;
-  exports.loadData = loadData;
-  exports.renderApp = renderApp;
-  exports.params = params;
 
 }));
