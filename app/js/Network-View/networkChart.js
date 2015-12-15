@@ -18,6 +18,7 @@ export default function () {
   var nodeRadius = 10;
   var isFixed = true;
   var imageLink = '';
+  var force = d3.layout.force();
 
   var chartDispatcher = d3.dispatch('nodeMouseClick', 'edgeMouseClick', 'edgeMouseOver', 'edgeMouseOut');
 
@@ -28,7 +29,7 @@ export default function () {
     selection.each(function(data) {
       var svg = d3.select(this).selectAll('svg').data([data]);
 
-      // isFixed ? fixNodes() : unfixNodes();
+      force.stop();
 
       // Initialize the chart
       var enterG = svg.enter()
@@ -112,7 +113,7 @@ export default function () {
 
       nodeG.call(nodes);
 
-      var force = d3.layout.force()
+      force = d3.layout.force()
           .nodes(data.nodes)
           .links(data.edges)
           .charge(-375)
@@ -122,6 +123,8 @@ export default function () {
 
       // For every iteration of force simulation 'tick'
       force.on('tick', function() {
+
+        if (nodeG.data()[0].fixed) force.stop();
 
         // Translate the groups
         nodeG.attr('transform', function(d) {
@@ -143,7 +146,7 @@ export default function () {
       });
 
       function xPos(d) {
-        if (typeof d.x === 'undefined') {
+        if (typeof d.x === 'undefined' || d.fixed) {
           d.x = xScale(d.fixedX);
           return d.x;
         } else {
@@ -153,7 +156,7 @@ export default function () {
       }
 
       function yPos(d) {
-        if (typeof d.y === 'undefined') {
+        if (typeof d.y === 'undefined' || d.fixed) {
           d.y = yScale(d.fixedY);
           return d.y;
         } else {

@@ -4,9 +4,12 @@ import edgeMouseOver from './Network-View/edgeMouseOver';
 import edgeMouseOut from './Network-View/edgeMouseOut';
 import edgeMouseClick from './Network-View/edgeMouseClick';
 import nodeMouseClick from './Network-View/nodeMouseClick';
+import createSlider from './UI/createSlider';
 
 var networkData = networkDataManager();
 var networkView = networkChart();
+var timeSlider = createSlider();
+var freqSlider = createSlider();
 
 export function init(passedParams) {
   passedParams.curTime = +passedParams.curTime;
@@ -41,6 +44,14 @@ export function init(passedParams) {
         .brainYLim(curSubjectInfo.brainYLim)
         .edgeFilterType(passedParams.edgeFilter);
 
+      timeSlider
+        .domain(visInfo.tax)
+        .units(visInfo.tunits);
+
+      freqSlider
+        .domain(visInfo.fax)
+        .units(visInfo.funits);
+
       networkData.loadNetworkData();
     });
 
@@ -50,6 +61,15 @@ networkView.on('edgeMouseOver', edgeMouseOver);
 networkView.on('edgeMouseOut', edgeMouseOut);
 networkView.on('nodeMouseClick', nodeMouseClick);
 networkView.on('edgeMouseClick', edgeMouseClick);
+timeSlider.on('sliderChange', function(curTime) {
+  networkData.curTime(curTime);
+  networkData.filterNetworkData();
+});
+
+freqSlider.on('sliderChange', function(curFreq) {
+  networkData.curFreq(curFreq);
+  networkData.filterNetworkData();
+});
 
 networkData.on('dataReady', function() {
   console.log('dataReady');
@@ -71,4 +91,7 @@ networkData.on('networkChange', function() {
 
   d3.select('#NetworkPanel').datum(networkData.networkData())
       .call(networkView);
+
+  d3.select('#TimeSliderPanel').datum(networkData.curTime()).call(timeSlider);
+  d3.select('#FreqSliderPanel').datum(networkData.curFreq()).call(freqSlider);
 });

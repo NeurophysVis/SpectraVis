@@ -90,8 +90,10 @@ export default function() {
     imageLink = isFixed ? 'DATA/brainImages/brainImage_' + subjectID + '.png' : '';
     curTimeInd = times.indexOf(curTime);
     curTimeInd = (curTimeInd === -1) ? 0 : curTimeInd;
+    curTime = times[curTimeInd];
     curFreqInd = frequencies.indexOf(curFreq);
     curFreqInd = (curFreqInd === -1) ? 0 : curFreqInd;
+    curFreq = frequencies[curFreqInd];
 
     edgeStatScale = createEdgeScale(edgeData, isWeighted);
 

@@ -189,8 +189,10 @@
       imageLink = isFixed ? 'DATA/brainImages/brainImage_' + subjectID + '.png' : '';
       curTimeInd = times.indexOf(curTime);
       curTimeInd = (curTimeInd === -1) ? 0 : curTimeInd;
+      curTime = times[curTimeInd];
       curFreqInd = frequencies.indexOf(curFreq);
       curFreqInd = (curFreqInd === -1) ? 0 : curFreqInd;
+      curFreq = frequencies[curFreqInd];
 
       edgeStatScale = createEdgeScale(edgeData, isWeighted);
 
@@ -494,6 +496,7 @@
     var nodeRadius = 10;
     var isFixed = true;
     var imageLink = '';
+    var force = d3.layout.force();
 
     var chartDispatcher = d3.dispatch('nodeMouseClick', 'edgeMouseClick', 'edgeMouseOver', 'edgeMouseOut');
 
@@ -504,7 +507,7 @@
       selection.each(function(data) {
         var svg = d3.select(this).selectAll('svg').data([data]);
 
-        // isFixed ? fixNodes() : unfixNodes();
+        force.stop();
 
         // Initialize the chart
         var enterG = svg.enter()
@@ -588,7 +591,7 @@
 
         nodeG.call(nodes);
 
-        var force = d3.layout.force()
+        force = d3.layout.force()
             .nodes(data.nodes)
             .links(data.edges)
             .charge(-375)
@@ -598,6 +601,8 @@
 
         // For every iteration of force simulation 'tick'
         force.on('tick', function() {
+
+          if (nodeG.data()[0].fixed) force.stop();
 
           // Translate the groups
           nodeG.attr('transform', function(d) {
@@ -619,7 +624,7 @@
         });
 
         function xPos(d) {
-          if (typeof d.x === 'undefined') {
+          if (typeof d.x === 'undefined' || d.fixed) {
             d.x = xScale(d.fixedX);
             return d.x;
           } else {
@@ -629,7 +634,7 @@
         }
 
         function yPos(d) {
-          if (typeof d.y === 'undefined') {
+          if (typeof d.y === 'undefined' || d.fixed) {
             d.y = yScale(d.fixedY);
             return d.y;
           } else {
@@ -712,6 +717,71 @@
     return chart;
   }
 
+  function createSlider() {
+
+    var step;
+    var domain;
+    var maxStepInd;
+    var units;
+    var curValue;
+    var dispatch = d3.dispatch('sliderChange');
+
+    function slider(selection) {
+      selection.each(function(value) {
+        var input = d3.select(this).selectAll('input');
+        var output = d3.select(this).selectAll('output');
+        step = d3.round(domain[1] - domain[0], 4);
+        maxStepInd = domain.length - 1;
+        curValue = value;
+
+        input.property('min', d3.min(domain));
+        input.property('max', d3.max(domain));
+        input.property('step', step);
+        input.property('value', value);
+        input.on('input', function() {
+          dispatch.sliderChange(+this.value);
+        });
+
+        output.text(value + ' ' + units);
+      });
+    };
+
+    slider.step = function(value) {
+      if (!arguments.length) return step;
+      step = value;
+      return slider;
+    };
+
+    slider.domain = function(value) {
+      if (!arguments.length) return domain;
+      domain = value;
+      return slider;
+    };
+
+    slider.units = function(value) {
+      if (!arguments.length) return units;
+      units = value;
+      return slider;
+    };
+
+    slider.maxStepInd = function(value) {
+      if (!arguments.length) return maxStepInd;
+      maxStepInd = value;
+      return slider;
+    };
+
+    slider.curValue = function(value) {
+      if (!arguments.length) return curValue;
+      curValue = value;
+      return slider;
+    };
+
+    d3.rebind(slider, dispatch, 'on');
+
+    return slider;
+
+  }
+
   function edgeMouseOver(e) {
 
     var curEdge = d3.select(this);
@@ -776,6 +846,8 @@
 
   var networkData = networkDataManager();
   var networkView = networkChart();
+  var timeSlider = createSlider();
+  var freqSlider = createSlider();
 
   function init(passedParams) {
     passedParams.curTime = +passedParams.curTime;
@@ -810,6 +882,14 @@
           .brainYLim(curSubjectInfo.brainYLim)
           .edgeFilterType(passedParams.edgeFilter);
 
+        timeSlider
+          .domain(visInfo.tax)
+          .units(visInfo.tunits);
+
+        freqSlider
+          .domain(visInfo.fax)
+          .units(visInfo.funits);
+
         networkData.loadNetworkData();
       });
 
@@ -819,6 +899,15 @@
   networkView.on('edgeMouseOut', edgeMouseOut);
   networkView.on('nodeMouseClick', nodeMouseClick);
   networkView.on('edgeMouseClick', edgeMouseClick);
+  timeSlider.on('sliderChange', function(curTime) {
+    networkData.curTime(curTime);
+    networkData.filterNetworkData();
+  });
+
+  freqSlider.on('sliderChange', function(curFreq) {
+    networkData.curFreq(curFreq);
+    networkData.filterNetworkData();
+  });
 
   networkData.on('dataReady', function() {
     console.log('dataReady');
@@ -840,6 +929,9 @@
 
     d3.select('#NetworkPanel').datum(networkData.networkData())
         .call(networkView);
+
+    d3.select('#TimeSliderPanel').datum(networkData.curTime()).call(timeSlider);
+    d3.select('#FreqSliderPanel').datum(networkData.curFreq()).call(freqSlider);
   });
 
   exports.init = init;
