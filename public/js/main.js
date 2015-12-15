@@ -112,6 +112,7 @@
     var isWeighted;
     var aspectRatio;
     var isFixed;
+    var isFreq;
     var imageLink;
     var curTimeInd;
     var curFreqInd;
@@ -191,7 +192,7 @@
       curTimeInd = (curTimeInd === -1) ? 0 : curTimeInd;
       curTime = times[curTimeInd];
       curFreqInd = frequencies.indexOf(curFreq);
-      curFreqInd = (curFreqInd === -1) ? 0 : curFreqInd;
+      curFreqInd = (curFreqInd === -1 || !isFreq) ? 0 : curFreqInd;
       curFreq = frequencies[curFreqInd];
 
       // Get the network for the current time and frequency
@@ -385,6 +386,12 @@
       return dataManager;
     };
 
+    dataManager.isFreq = function(value) {
+      if (!arguments.length) return isFreq;
+      isFreq = value;
+      return dataManager;
+    };
+
     d3.rebind(dataManager, dispatch, 'on');
 
     return dataManager;
@@ -513,10 +520,7 @@
             .append('g');
         enterG
           .append('g')
-            .append('image')
-              .attr('class', 'networkBackgroundImage')
-              .attr('width', innerWidth)
-              .attr('height', innerHeight);
+            .attr('class', 'networkBackgroundImage');
         enterG
           .append('g')
           .attr('class', 'networkEdges');
@@ -539,7 +543,15 @@
           .range([innerHeight, 0]);
 
         // Append background image link
-        insertImage(imageLink, svg.selectAll('.networkBackgroundImage'));
+        var imageSelection = svg.select('.networkBackgroundImage').selectAll('image').data([imageLink], function(d) {return d;});
+
+        var imageEnter = imageSelection.enter()
+          .append('image')
+          .attr('width', innerWidth)
+          .attr('height', innerHeight);
+
+        imageSelection.exit().remove();
+        insertImage(imageLink, imageEnter);
 
         // Initialize edges
         var edgeLine = svg.select('g.networkEdges').selectAll('line.edge').data(data.edges);
@@ -846,6 +858,8 @@
   var networkView = networkChart();
   var timeSlider = createSlider();
   var freqSlider = createSlider();
+  var subjectInfo;
+  var edgeTypesInfo;
 
   function init(passedParams) {
     passedParams.curTime = +passedParams.curTime;
@@ -859,9 +873,11 @@
       .defer(d3.json, 'DATA/visInfo.json')
       .defer(d3.json, 'DATA/edgeTypes.json')
       .await(function(error, subjects, visInfo, edgeTypes) {
-        var curSubject = passedParams.curSubject || subjects[0].subjectID;
-        var curEdgeStatID = passedParams.edgeStatID || edgeTypes[0].edgeStatID;
-        var curSubjectInfo = subjects.filter(function(s) {return s.subjectID === curSubject;})[0];
+        subjectInfo = subjects;
+        edgeTypesInfo = edgeTypes;
+        var curSubject = passedParams.curSubject || subjectInfo[0].subjectID;
+        var curEdgeStatID = passedParams.edgeStatID || edgeTypesInfo[0].edgeStatID;
+        var curSubjectInfo = subjectInfo.filter(function(s) {return s.subjectID === curSubject;})[0];
 
         var curEdgeInfo = edgeTypes.filter(function(s) {return s.edgeStatID === curEdgeStatID;})[0];
 
@@ -874,6 +890,7 @@
           .brainRegions(visInfo.brainRegions)
           .curTime(passedParams.curTime)
           .curFreq(passedParams.curFreq)
+          .isFreq(curEdgeInfo.isFreq)
           .isWeighted(curEdgeInfo.isWeightedNetwork)
           .aspectRatio(curSubjectInfo.brainXpixels / curSubjectInfo.brainYpixels)
           .brainXLim(curSubjectInfo.brainXLim)

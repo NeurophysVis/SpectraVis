@@ -10,6 +10,8 @@ var networkData = networkDataManager();
 var networkView = networkChart();
 var timeSlider = createSlider();
 var freqSlider = createSlider();
+var subjectInfo;
+var edgeTypesInfo;
 
 export function init(passedParams) {
   passedParams.curTime = +passedParams.curTime;
@@ -23,9 +25,11 @@ export function init(passedParams) {
     .defer(d3.json, 'DATA/visInfo.json')
     .defer(d3.json, 'DATA/edgeTypes.json')
     .await(function(error, subjects, visInfo, edgeTypes) {
-      var curSubject = passedParams.curSubject || subjects[0].subjectID;
-      var curEdgeStatID = passedParams.edgeStatID || edgeTypes[0].edgeStatID;
-      var curSubjectInfo = subjects.filter(function(s) {return s.subjectID === curSubject;})[0];
+      subjectInfo = subjects;
+      edgeTypesInfo = edgeTypes;
+      var curSubject = passedParams.curSubject || subjectInfo[0].subjectID;
+      var curEdgeStatID = passedParams.edgeStatID || edgeTypesInfo[0].edgeStatID;
+      var curSubjectInfo = subjectInfo.filter(function(s) {return s.subjectID === curSubject;})[0];
 
       var curEdgeInfo = edgeTypes.filter(function(s) {return s.edgeStatID === curEdgeStatID;})[0];
 
@@ -38,6 +42,7 @@ export function init(passedParams) {
         .brainRegions(visInfo.brainRegions)
         .curTime(passedParams.curTime)
         .curFreq(passedParams.curFreq)
+        .isFreq(curEdgeInfo.isFreq)
         .isWeighted(curEdgeInfo.isWeightedNetwork)
         .aspectRatio(curSubjectInfo.brainXpixels / curSubjectInfo.brainYpixels)
         .brainXLim(curSubjectInfo.brainXLim)

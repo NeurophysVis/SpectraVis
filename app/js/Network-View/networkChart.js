@@ -37,10 +37,7 @@ export default function () {
           .append('g');
       enterG
         .append('g')
-          .append('image')
-            .attr('class', 'networkBackgroundImage')
-            .attr('width', innerWidth)
-            .attr('height', innerHeight);
+          .attr('class', 'networkBackgroundImage');
       enterG
         .append('g')
         .attr('class', 'networkEdges');
@@ -63,7 +60,15 @@ export default function () {
         .range([innerHeight, 0]);
 
       // Append background image link
-      insertImage(imageLink, svg.selectAll('.networkBackgroundImage'));
+      var imageSelection = svg.select('.networkBackgroundImage').selectAll('image').data([imageLink], function(d) {return d;});
+
+      var imageEnter = imageSelection.enter()
+        .append('image')
+        .attr('width', innerWidth)
+        .attr('height', innerHeight);
+
+      imageSelection.exit().remove();
+      insertImage(imageLink, imageEnter);
 
       // Initialize edges
       var edgeLine = svg.select('g.networkEdges').selectAll('line.edge').data(data.edges);

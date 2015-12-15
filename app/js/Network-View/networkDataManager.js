@@ -13,6 +13,7 @@ export default function() {
   var isWeighted;
   var aspectRatio;
   var isFixed;
+  var isFreq;
   var imageLink;
   var curTimeInd;
   var curFreqInd;
@@ -92,7 +93,7 @@ export default function() {
     curTimeInd = (curTimeInd === -1) ? 0 : curTimeInd;
     curTime = times[curTimeInd];
     curFreqInd = frequencies.indexOf(curFreq);
-    curFreqInd = (curFreqInd === -1) ? 0 : curFreqInd;
+    curFreqInd = (curFreqInd === -1 || !isFreq) ? 0 : curFreqInd;
     curFreq = frequencies[curFreqInd];
 
     // Get the network for the current time and frequency
@@ -283,6 +284,12 @@ export default function() {
   dataManager.brainRegions = function(value) {
     if (!arguments.length) return brainRegions;
     brainRegions = value;
+    return dataManager;
+  };
+
+  dataManager.isFreq = function(value) {
+    if (!arguments.length) return isFreq;
+    isFreq = value;
     return dataManager;
   };
 
