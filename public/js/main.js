@@ -28,6 +28,82 @@
     return e.data !== 0;
   }
 
+  var NUM_EDGE_COLORS = 11;
+
+  // Reverse the colors
+  var edgeStatColors = [];
+  colorbrewer.RdBu[NUM_EDGE_COLORS].forEach(function(color) {
+    edgeStatColors.unshift(color);
+  });
+
+  var brainRegionColors = colorbrewer.Pastel1[7];
+
+  function getSymmetricDomain(min, max, numBins) {
+    if (Math.abs(min) >= Math.abs(max)) {
+      max = Math.abs(min);
+    } else {
+      min = -1 * max;
+    }
+
+    return linspace(min, max, numBins);
+  }
+
+  // from https://github.com/sloisel/numeric
+  function linspace(a, b, n) {
+    if (typeof n === 'undefined') {
+      n = Math.max(Math.round(b - a) + 1, 1);
+    };
+
+    if (n < 2) {
+      return n === 1 ? [a] : [];
+    }
+
+    var i;
+    var ret = Array(n);
+    n--;
+    for (i = n; i >= 0; i--) {
+      ret[i] = (i * b + (n - i) * a) / n;
+    }
+
+    return ret;
+  }
+
+  function getEdgeDomain(edgeData, numBins) {
+    var edgeStatMin = d3.min(edgeData, function(d) {
+      return d3.min(d.data, function(e) {
+        return d3.min(e, function(f) {
+          return f;
+        });
+      });
+    });
+
+    var edgeStatMax = d3.max(edgeData, function(d) {
+      return d3.max(d.data, function(e) {
+        return d3.max(e, function(f) {
+          return f;
+        });
+      });
+    });
+
+    return getSymmetricDomain(edgeStatMin, edgeStatMax, numBins);
+  }
+
+  function createEdgeScale(edgeData, isWeighted) {
+    if (isWeighted) {
+      var edgeStatScale = d3.scale.linear()
+        .domain(getEdgeDomain(edgeData, NUM_EDGE_COLORS))
+        .range(edgeStatColors);
+    } else {
+      var edgeStatBinaryColors = [0, (NUM_EDGE_COLORS - 1) / 2, NUM_EDGE_COLORS - 1].map(function(n) { return edgeStatColors[n];});
+
+      edgeStatScale = d3.scale.ordinal()
+        .domain([-1, 0, 1])
+        .range(edgeStatBinaryColors);
+    }
+
+    return edgeStatScale;
+  }
+
   function networkDataManager() {
 
     var edgeData;
@@ -46,12 +122,14 @@
     var frequencies;
     var curTime;
     var curFreq;
-    var edgeStatDomain;
+    var edgeStatScale;
     var edgeFilterType;
     var edges;
     var nodes;
     var brainXLim;
     var brainYLim;
+    var brainRegionScale;
+    var brainRegions;
     var dispatch = d3.dispatch('dataReady', 'networkChange');
     var dataManager = {};
 
@@ -92,6 +170,11 @@
             return e;
           });
 
+          edgeStatScale = createEdgeScale(edgeData, isWeighted);
+          brainRegionScale = d3.scale.ordinal()
+            .domain(brainRegions)
+            .range(brainRegionColors);
+
           dataManager.filterNetworkData();
         });
 
@@ -108,6 +191,8 @@
       curTimeInd = (curTimeInd === -1) ? 0 : curTimeInd;
       curFreqInd = frequencies.indexOf(curFreq);
       curFreqInd = (curFreqInd === -1) ? 0 : curFreqInd;
+
+      edgeStatScale = createEdgeScale(edgeData, isWeighted);
 
       // Get the network for the current time and frequency
       edges = edgeData.map(function(e) {
@@ -264,9 +349,9 @@
       return dataManager;
     };
 
-    dataManager.edgeStatDomain = function(value) {
-      if (!arguments.length) return edgeStatDomain;
-      edgeStatDomain = value;
+    dataManager.edgeStatScale = function(value) {
+      if (!arguments.length) return edgeStatScale;
+      edgeStatScale = value;
       return dataManager;
     };
 
@@ -288,6 +373,18 @@
       return dataManager;
     };
 
+    dataManager.brainRegionScale = function(value) {
+      if (!arguments.length) return brainRegionScale;
+      brainRegionScale = value;
+      return dataManager;
+    };
+
+    dataManager.brainRegions = function(value) {
+      if (!arguments.length) return brainRegions;
+      brainRegions = value;
+      return dataManager;
+    };
+
     d3.rebind(dataManager, dispatch, 'on');
 
     return dataManager;
@@ -296,7 +393,7 @@
 
   function drawNodes () {
 
-    var nodeColor = function() {return 'grey';};
+    var nodeColor = function() {return '#888888';};
 
     var nodeRadius = 10;
 
@@ -391,7 +488,8 @@
     var yScaleDomain;
     var edgeStatScale = function() {return '#cccccc';};
 
-    var nodeColor = '#888888';
+    var nodeColorScale = function() {return '#888888';};
+
     var edgeWidth = 2;
     var nodeRadius = 10;
     var isFixed = true;
@@ -485,7 +583,8 @@
 
         nodeG.exit().remove();
 
-        var nodes = drawNodes();
+        var nodes = drawNodes()
+          .nodeColor(nodeColorScale);
 
         nodeG.call(nodes);
 
@@ -539,22 +638,6 @@
 
         }
 
-        function fixNodes() {
-          data.nodes.forEach(function(n) {
-            n.fixed = true;
-            n.x = undefined;
-            n.y = undefined;
-            n.px = undefined;
-            n.py = undefined;
-          });
-        }
-
-        function unfixNodes() {
-          data.nodes.forEach(function(n) {
-            n.fixed = false;
-          });
-        }
-
       });
     }
 
@@ -588,6 +671,12 @@
       return chart;
     };
 
+    chart.yScaleDomain = function(value) {
+      if (!arguments.length) return yScaleDomain;
+      yScaleDomain = value;
+      return chart;
+    };
+
     chart.nodeRadius = function(value) {
       if (!arguments.length) return nodeRadius;
       nodeRadius = value;
@@ -606,9 +695,9 @@
       return chart;
     };
 
-    chart.isFixed = function(value) {
-      if (!arguments.length) return isFixed;
-      isFixed = value;
+    chart.nodeColorScale = function(value) {
+      if (!arguments.length) return nodeColorScale;
+      nodeColorScale = value;
       return chart;
     };
 
@@ -704,14 +793,18 @@
         var curEdgeStatID = passedParams.edgeStatID || edgeTypes[0].edgeStatID;
         var curSubjectInfo = subjects.filter(function(s) {return s.subjectID === curSubject;})[0];
 
+        var curEdgeInfo = edgeTypes.filter(function(s) {return s.edgeStatID === curEdgeStatID;})[0];
+
         networkData
           .times(visInfo.tax)
           .frequencies(visInfo.fax)
           .networkView(passedParams.networkView)
           .edgeStatID(curEdgeStatID)
           .subjectID(curSubject)
+          .brainRegions(visInfo.brainRegions)
           .curTime(passedParams.curTime)
           .curFreq(passedParams.curFreq)
+          .isWeighted(curEdgeInfo.isWeightedNetwork)
           .aspectRatio(curSubjectInfo.brainXpixels / curSubjectInfo.brainYpixels)
           .brainXLim(curSubjectInfo.brainXLim)
           .brainYLim(curSubjectInfo.brainYLim)
@@ -741,7 +834,9 @@
       .height(networkHeight)
       .xScaleDomain(networkData.brainXLim())
       .yScaleDomain(networkData.brainYLim())
-      .imageLink(networkData.imageLink());
+      .edgeStatScale(networkData.edgeStatScale())
+      .imageLink(networkData.imageLink())
+      .nodeColorScale(networkData.brainRegionScale());
 
     d3.select('#NetworkPanel').datum(networkData.networkData())
         .call(networkView);

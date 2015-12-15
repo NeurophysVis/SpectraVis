@@ -2,6 +2,8 @@ import copyObject from './copyObject';
 import edgeFilterWithin from './edgeFilterWithin';
 import edgeFilterBetween from './edgeFilterBetween';
 import binaryNetworkFilter from './binaryNetworkFilter';
+import createEdgeScale from './createEdgeScale';
+import {brainRegionColors} from '../Common/scaleColors';
 
 export default function() {
 
@@ -21,12 +23,14 @@ export default function() {
   var frequencies;
   var curTime;
   var curFreq;
-  var edgeStatDomain;
+  var edgeStatScale;
   var edgeFilterType;
   var edges;
   var nodes;
   var brainXLim;
   var brainYLim;
+  var brainRegionScale;
+  var brainRegions;
   var dispatch = d3.dispatch('dataReady', 'networkChange');
   var dataManager = {};
 
@@ -67,6 +71,11 @@ export default function() {
           return e;
         });
 
+        edgeStatScale = createEdgeScale(edgeData, isWeighted);
+        brainRegionScale = d3.scale.ordinal()
+          .domain(brainRegions)
+          .range(brainRegionColors);
+
         dataManager.filterNetworkData();
       });
 
@@ -83,6 +92,8 @@ export default function() {
     curTimeInd = (curTimeInd === -1) ? 0 : curTimeInd;
     curFreqInd = frequencies.indexOf(curFreq);
     curFreqInd = (curFreqInd === -1) ? 0 : curFreqInd;
+
+    edgeStatScale = createEdgeScale(edgeData, isWeighted);
 
     // Get the network for the current time and frequency
     edges = edgeData.map(function(e) {
@@ -239,9 +250,9 @@ export default function() {
     return dataManager;
   };
 
-  dataManager.edgeStatDomain = function(value) {
-    if (!arguments.length) return edgeStatDomain;
-    edgeStatDomain = value;
+  dataManager.edgeStatScale = function(value) {
+    if (!arguments.length) return edgeStatScale;
+    edgeStatScale = value;
     return dataManager;
   };
 
@@ -260,6 +271,18 @@ export default function() {
   dataManager.networkData = function(value) {
     if (!arguments.length) return networkData;
     networkData = value;
+    return dataManager;
+  };
+
+  dataManager.brainRegionScale = function(value) {
+    if (!arguments.length) return brainRegionScale;
+    brainRegionScale = value;
+    return dataManager;
+  };
+
+  dataManager.brainRegions = function(value) {
+    if (!arguments.length) return brainRegions;
+    brainRegions = value;
     return dataManager;
   };
 

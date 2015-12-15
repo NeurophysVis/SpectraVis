@@ -1,4 +1,3 @@
-import drawNetwork from './Network-View/drawNetwork';
 import networkDataManager from './Network-View/networkDataManager';
 import networkChart from './Network-View/networkChart';
 import edgeMouseOver from './Network-View/edgeMouseOver';
@@ -25,14 +24,18 @@ export function init(passedParams) {
       var curEdgeStatID = passedParams.edgeStatID || edgeTypes[0].edgeStatID;
       var curSubjectInfo = subjects.filter(function(s) {return s.subjectID === curSubject;})[0];
 
+      var curEdgeInfo = edgeTypes.filter(function(s) {return s.edgeStatID === curEdgeStatID;})[0];
+
       networkData
         .times(visInfo.tax)
         .frequencies(visInfo.fax)
         .networkView(passedParams.networkView)
         .edgeStatID(curEdgeStatID)
         .subjectID(curSubject)
+        .brainRegions(visInfo.brainRegions)
         .curTime(passedParams.curTime)
         .curFreq(passedParams.curFreq)
+        .isWeighted(curEdgeInfo.isWeightedNetwork)
         .aspectRatio(curSubjectInfo.brainXpixels / curSubjectInfo.brainYpixels)
         .brainXLim(curSubjectInfo.brainXLim)
         .brainYLim(curSubjectInfo.brainYLim)
@@ -62,7 +65,9 @@ networkData.on('networkChange', function() {
     .height(networkHeight)
     .xScaleDomain(networkData.brainXLim())
     .yScaleDomain(networkData.brainYLim())
-    .imageLink(networkData.imageLink());
+    .edgeStatScale(networkData.edgeStatScale())
+    .imageLink(networkData.imageLink())
+    .nodeColorScale(networkData.brainRegionScale());
 
   d3.select('#NetworkPanel').datum(networkData.networkData())
       .call(networkView);

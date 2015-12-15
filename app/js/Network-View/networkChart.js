@@ -12,7 +12,8 @@ export default function () {
   var yScaleDomain;
   var edgeStatScale = function() {return '#cccccc';};
 
-  var nodeColor = '#888888';
+  var nodeColorScale = function() {return '#888888';};
+
   var edgeWidth = 2;
   var nodeRadius = 10;
   var isFixed = true;
@@ -106,7 +107,8 @@ export default function () {
 
       nodeG.exit().remove();
 
-      var nodes = drawNodes();
+      var nodes = drawNodes()
+        .nodeColor(nodeColorScale);
 
       nodeG.call(nodes);
 
@@ -193,6 +195,12 @@ export default function () {
     return chart;
   };
 
+  chart.yScaleDomain = function(value) {
+    if (!arguments.length) return yScaleDomain;
+    yScaleDomain = value;
+    return chart;
+  };
+
   chart.nodeRadius = function(value) {
     if (!arguments.length) return nodeRadius;
     nodeRadius = value;
@@ -208,6 +216,12 @@ export default function () {
   chart.edgeStatScale = function(value) {
     if (!arguments.length) return edgeStatScale;
     edgeStatScale = value;
+    return chart;
+  };
+
+  chart.nodeColorScale = function(value) {
+    if (!arguments.length) return nodeColorScale;
+    nodeColorScale = value;
     return chart;
   };
 
