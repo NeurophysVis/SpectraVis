@@ -10,9 +10,9 @@ export default function () {
   var yScale = d3.scale.linear();
   var xScaleDomain;
   var yScaleDomain;
-  var edgeStatScale = function() {return 'black';};
+  var edgeStatScale = function() {return '#cccccc';};
 
-  var nodeColor;
+  var nodeColor = '#888888';
   var edgeWidth = 2;
   var nodeRadius = 10;
   var isFixed = true;
@@ -27,7 +27,7 @@ export default function () {
     selection.each(function(data) {
       var svg = d3.select(this).selectAll('svg').data([data]);
 
-      isFixed ? fixNodes() : unfixNodes();
+      // isFixed ? fixNodes() : unfixNodes();
 
       // Initialize the chart
       var enterG = svg.enter()
@@ -160,22 +160,6 @@ export default function () {
 
       }
 
-      function fixNodes() {
-        data.nodes.forEach(function(n) {
-          n.fixed = true;
-          n.x = undefined;
-          n.y = undefined;
-          n.px = undefined;
-          n.py = undefined;
-        });
-      }
-
-      function unfixNodes() {
-        data.nodes.forEach(function(n) {
-          n.fixed = false;
-        });
-      }
-
     });
   }
 
@@ -224,12 +208,6 @@ export default function () {
   chart.edgeStatScale = function(value) {
     if (!arguments.length) return edgeStatScale;
     edgeStatScale = value;
-    return chart;
-  };
-
-  chart.isFixed = function(value) {
-    if (!arguments.length) return isFixed;
-    isFixed = value;
     return chart;
   };
 
