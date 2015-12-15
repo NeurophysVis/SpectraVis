@@ -5,13 +5,14 @@ import edgeMouseOut from './Network-View/edgeMouseOut';
 import edgeMouseClick from './Network-View/edgeMouseClick';
 import nodeMouseClick from './Network-View/nodeMouseClick';
 import createSlider from './UI/createSlider';
+import createButton from './UI/createButton';
 
 var networkData = networkDataManager();
 var networkView = networkChart();
 var timeSlider = createSlider();
 var freqSlider = createSlider();
-var subjectInfo;
-var edgeTypesInfo;
+var subjectButton = createButton().key('subjectID');
+var edgeStatIDButton = createButton().key('edgeStatID').displayName('edgeStatName');
 
 export function init(passedParams) {
   passedParams.curTime = +passedParams.curTime;
@@ -25,11 +26,11 @@ export function init(passedParams) {
     .defer(d3.json, 'DATA/visInfo.json')
     .defer(d3.json, 'DATA/edgeTypes.json')
     .await(function(error, subjects, visInfo, edgeTypes) {
-      subjectInfo = subjects;
-      edgeTypesInfo = edgeTypes;
-      var curSubject = passedParams.curSubject || subjectInfo[0].subjectID;
-      var curEdgeStatID = passedParams.edgeStatID || edgeTypesInfo[0].edgeStatID;
-      var curSubjectInfo = subjectInfo.filter(function(s) {return s.subjectID === curSubject;})[0];
+      subjectButton.options(subjects);
+      edgeStatIDButton.options(edgeTypes);
+      var curSubject = passedParams.curSubject || subjects[0].subjectID;
+      var curEdgeStatID = passedParams.edgeStatID || edgeTypes[0].edgeStatID;
+      var curSubjectInfo = subjects.filter(function(s) {return s.subjectID === curSubject;})[0];
 
       var curEdgeInfo = edgeTypes.filter(function(s) {return s.edgeStatID === curEdgeStatID;})[0];
 
@@ -80,6 +81,25 @@ networkData.on('dataReady', function() {
   console.log('dataReady');
 });
 
+subjectButton.on('click', function() {
+  var curSubjectInfo = d3.select(this).data()[0];
+  networkData
+    .subjectID(curSubjectInfo.subjectID)
+    .aspectRatio(curSubjectInfo.brainXpixels / curSubjectInfo.brainYpixels)
+    .brainXLim(curSubjectInfo.brainXLim)
+    .brainYLim(curSubjectInfo.brainYLim);
+  networkData.loadNetworkData();
+});
+
+edgeStatIDButton.on('click', function() {
+  var curEdgeInfo = d3.select(this).data()[0];
+  networkData
+    .edgeStatID(curEdgeInfo.edgeStatID)
+    .isFreq(curEdgeInfo.isFreq)
+    .isWeighted(curEdgeInfo.isWeightedNetwork);
+  networkData.loadNetworkData();
+});
+
 networkData.on('networkChange', function() {
 
   var networkWidth = document.getElementById('NetworkPanel').offsetWidth;
@@ -99,4 +119,6 @@ networkData.on('networkChange', function() {
 
   d3.select('#TimeSliderPanel').datum(networkData.curTime()).call(timeSlider);
   d3.select('#FreqSliderPanel').datum(networkData.curFreq()).call(freqSlider);
+  d3.select('#SubjectPanel').datum(networkData.subjectID()).call(subjectButton);
+  d3.select('#EdgeStatTypePanel').datum(networkData.edgeStatID()).call(edgeStatIDButton);
 });

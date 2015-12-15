@@ -792,6 +792,72 @@
 
   }
 
+  function createButton() {
+    var key;
+    var displayName;
+    var options;
+    var dispatch = d3.dispatch('click');
+
+    function button(selection) {
+      selection.each(function(data) {
+        var menu = d3.select(this).selectAll('ul').selectAll('li').data(options, function(d) {
+          return d[key];
+        });
+
+        displayName = (typeof displayName === 'undefined') ? key : displayName;
+
+        menu.enter()
+          .append('li')
+            .attr('id', function(d) {
+              return d[key];
+            })
+            .attr('role', 'presentation')
+            .append('a')
+              .attr('role', 'menuitem')
+              .attr('tabindex', -1)
+              .text(function(d) {
+                return d[displayName];
+              });
+
+        menu.on('click', dispatch.click);
+
+        menu.exit().remove();
+
+        var curText = options.filter(function(d) {return d[key] === data;})
+          .map(function(d) {return d[displayName];})[0];
+
+        d3.select(this).selectAll('button')
+          .text(curText)
+          .append('span')
+          .attr('class', 'caret');
+      });
+
+    }
+
+    button.key = function(value) {
+      if (!arguments.length) return key;
+      key = value;
+      return button;
+    };
+
+    button.options = function(value) {
+      if (!arguments.length) return options;
+      options = value;
+      return button;
+    };
+
+    button.displayName = function(value) {
+      if (!arguments.length) return displayName;
+      displayName = value;
+      return button;
+    };
+
+    d3.rebind(button, dispatch, 'on');
+
+    return button;
+
+  }
+
   function edgeMouseOver(e) {
 
     var curEdge = d3.select(this);
@@ -858,8 +924,8 @@
   var networkView = networkChart();
   var timeSlider = createSlider();
   var freqSlider = createSlider();
-  var subjectInfo;
-  var edgeTypesInfo;
+  var subjectButton = createButton().key('subjectID');
+  var edgeStatIDButton = createButton().key('edgeStatID').displayName('edgeStatName');
 
   function init(passedParams) {
     passedParams.curTime = +passedParams.curTime;
@@ -873,11 +939,11 @@
       .defer(d3.json, 'DATA/visInfo.json')
       .defer(d3.json, 'DATA/edgeTypes.json')
       .await(function(error, subjects, visInfo, edgeTypes) {
-        subjectInfo = subjects;
-        edgeTypesInfo = edgeTypes;
-        var curSubject = passedParams.curSubject || subjectInfo[0].subjectID;
-        var curEdgeStatID = passedParams.edgeStatID || edgeTypesInfo[0].edgeStatID;
-        var curSubjectInfo = subjectInfo.filter(function(s) {return s.subjectID === curSubject;})[0];
+        subjectButton.options(subjects);
+        edgeStatIDButton.options(edgeTypes);
+        var curSubject = passedParams.curSubject || subjects[0].subjectID;
+        var curEdgeStatID = passedParams.edgeStatID || edgeTypes[0].edgeStatID;
+        var curSubjectInfo = subjects.filter(function(s) {return s.subjectID === curSubject;})[0];
 
         var curEdgeInfo = edgeTypes.filter(function(s) {return s.edgeStatID === curEdgeStatID;})[0];
 
@@ -928,6 +994,25 @@
     console.log('dataReady');
   });
 
+  subjectButton.on('click', function() {
+    var curSubjectInfo = d3.select(this).data()[0];
+    networkData
+      .subjectID(curSubjectInfo.subjectID)
+      .aspectRatio(curSubjectInfo.brainXpixels / curSubjectInfo.brainYpixels)
+      .brainXLim(curSubjectInfo.brainXLim)
+      .brainYLim(curSubjectInfo.brainYLim);
+    networkData.loadNetworkData();
+  });
+
+  edgeStatIDButton.on('click', function() {
+    var curEdgeInfo = d3.select(this).data()[0];
+    networkData
+      .edgeStatID(curEdgeInfo.edgeStatID)
+      .isFreq(curEdgeInfo.isFreq)
+      .isWeighted(curEdgeInfo.isWeightedNetwork);
+    networkData.loadNetworkData();
+  });
+
   networkData.on('networkChange', function() {
 
     var networkWidth = document.getElementById('NetworkPanel').offsetWidth;
@@ -947,6 +1032,8 @@
 
     d3.select('#TimeSliderPanel').datum(networkData.curTime()).call(timeSlider);
     d3.select('#FreqSliderPanel').datum(networkData.curFreq()).call(freqSlider);
+    d3.select('#SubjectPanel').datum(networkData.subjectID()).call(subjectButton);
+    d3.select('#EdgeStatTypePanel').datum(networkData.edgeStatID()).call(edgeStatIDButton);
   });
 
   exports.init = init;
