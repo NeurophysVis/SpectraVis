@@ -194,8 +194,6 @@
       curFreqInd = (curFreqInd === -1) ? 0 : curFreqInd;
       curFreq = frequencies[curFreqInd];
 
-      edgeStatScale = createEdgeScale(edgeData, isWeighted);
-
       // Get the network for the current time and frequency
       edges = edgeData.map(function(e) {
         var obj = copyObject(e);
