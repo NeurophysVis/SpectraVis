@@ -5,30 +5,16 @@ import edgeMouseOut from './Network-View/edgeMouseOut';
 import edgeMouseClick from './Network-View/edgeMouseClick';
 import nodeMouseClick from './Network-View/nodeMouseClick';
 import createSlider from './UI/createSlider';
-import createButton from './UI/createButton';
+import createDropdown from './UI/createDropdown';
 import filterTypes from './UI/filterTypes';
 
 var networkData = networkDataManager();
 var networkView = networkChart();
 var timeSlider = createSlider();
 var freqSlider = createSlider();
-var subjectButton = createButton().key('subjectID');
-var edgeStatIDButton = createButton().key('edgeStatID').displayName('edgeStatName');
-var filterTypes = [
-	{
-    filterName: 'All Edges',
-    filterType: 'All',
-  },
-  {
-    filterName: 'Within Area Edges',
-    filterType: 'Within',
-  },
-  {
-    filterName: 'Between Area Edges',
-    filterType: 'Between',
-  },
-];
-var edgeFilterButton = createButton().key('filterType').displayName('filterName').options(filterTypes);
+var subjectDropdown = createDropdown().key('subjectID');
+var edgeStatIDDropdown = createDropdown().key('edgeStatID').displayName('edgeStatName');
+var edgeFilterDropdown = createDropdown().key('filterType').displayName('filterName').options(filterTypes);
 
 export function init(passedParams) {
   passedParams.curTime = +passedParams.curTime;
@@ -42,8 +28,8 @@ export function init(passedParams) {
     .defer(d3.json, 'DATA/visInfo.json')
     .defer(d3.json, 'DATA/edgeTypes.json')
     .await(function(error, subjects, visInfo, edgeTypes) {
-      subjectButton.options(subjects);
-      edgeStatIDButton.options(edgeTypes);
+      subjectDropdown.options(subjects);
+      edgeStatIDDropdown.options(edgeTypes);
       var curSubject = passedParams.curSubject || subjects[0].subjectID;
       var curEdgeStatID = passedParams.edgeStatID || edgeTypes[0].edgeStatID;
       var curSubjectInfo = subjects.filter(function(s) {return s.subjectID === curSubject;})[0];
@@ -97,7 +83,7 @@ networkData.on('dataReady', function() {
   console.log('dataReady');
 });
 
-subjectButton.on('click', function() {
+subjectDropdown.on('click', function() {
   var curSubjectInfo = d3.select(this).data()[0];
   networkData
     .subjectID(curSubjectInfo.subjectID)
@@ -107,7 +93,7 @@ subjectButton.on('click', function() {
   networkData.loadNetworkData();
 });
 
-edgeStatIDButton.on('click', function() {
+edgeStatIDDropdown.on('click', function() {
   var curEdgeInfo = d3.select(this).data()[0];
   networkData
     .edgeStatID(curEdgeInfo.edgeStatID)
@@ -116,7 +102,7 @@ edgeStatIDButton.on('click', function() {
   networkData.loadNetworkData();
 });
 
-edgeFilterButton.on('click', function() {
+edgeFilterDropdown.on('click', function() {
   var edgeFilter = d3.select(this).data()[0];
   networkData
     .edgeFilterType(edgeFilter.filterType);
@@ -142,7 +128,7 @@ networkData.on('networkChange', function() {
 
   d3.select('#TimeSliderPanel').datum(networkData.curTime()).call(timeSlider);
   d3.select('#FreqSliderPanel').datum(networkData.curFreq()).call(freqSlider);
-  d3.select('#SubjectPanel').datum(networkData.subjectID()).call(subjectButton);
-  d3.select('#EdgeStatTypePanel').datum(networkData.edgeStatID()).call(edgeStatIDButton);
-  d3.select('#EdgeFilterPanel').datum(networkData.edgeFilterType()).call(edgeFilterButton);
+  d3.select('#SubjectPanel').datum(networkData.subjectID()).call(subjectDropdown);
+  d3.select('#EdgeStatTypePanel').datum(networkData.edgeStatID()).call(edgeStatIDDropdown);
+  d3.select('#EdgeFilterPanel').datum(networkData.edgeFilterType()).call(edgeFilterDropdown);
 });
