@@ -6,6 +6,7 @@ import edgeMouseClick from './Network-View/edgeMouseClick';
 import nodeMouseClick from './Network-View/nodeMouseClick';
 import createSlider from './UI/createSlider';
 import createButton from './UI/createButton';
+import filterTypes from './UI/filterTypes';
 
 var networkData = networkDataManager();
 var networkView = networkChart();
@@ -13,6 +14,21 @@ var timeSlider = createSlider();
 var freqSlider = createSlider();
 var subjectButton = createButton().key('subjectID');
 var edgeStatIDButton = createButton().key('edgeStatID').displayName('edgeStatName');
+var filterTypes = [
+	{
+    filterName: 'All Edges',
+    filterType: 'All',
+  },
+  {
+    filterName: 'Within Area Edges',
+    filterType: 'Within',
+  },
+  {
+    filterName: 'Between Area Edges',
+    filterType: 'Between',
+  },
+];
+var edgeFilterButton = createButton().key('filterType').displayName('filterName').options(filterTypes);
 
 export function init(passedParams) {
   passedParams.curTime = +passedParams.curTime;
@@ -100,6 +116,13 @@ edgeStatIDButton.on('click', function() {
   networkData.loadNetworkData();
 });
 
+edgeFilterButton.on('click', function() {
+  var edgeFilter = d3.select(this).data()[0];
+  networkData
+    .edgeFilterType(edgeFilter.filterType);
+  networkData.loadNetworkData();
+});
+
 networkData.on('networkChange', function() {
 
   var networkWidth = document.getElementById('NetworkPanel').offsetWidth;
@@ -121,4 +144,5 @@ networkData.on('networkChange', function() {
   d3.select('#FreqSliderPanel').datum(networkData.curFreq()).call(freqSlider);
   d3.select('#SubjectPanel').datum(networkData.subjectID()).call(subjectButton);
   d3.select('#EdgeStatTypePanel').datum(networkData.edgeStatID()).call(edgeStatIDButton);
+  d3.select('#EdgeFilterPanel').datum(networkData.edgeFilterType()).call(edgeFilterButton);
 });
