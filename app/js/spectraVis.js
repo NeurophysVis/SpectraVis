@@ -75,8 +75,9 @@ timeSlider.on('sliderChange', function(curTime) {
 });
 
 freqSlider.on('sliderChange', function(curFreq) {
-  networkData.curFreq(curFreq);
-  networkData.filterNetworkData();
+  networkData
+    .curFreq(curFreq)
+    .filterNetworkData();
 });
 
 networkData.on('dataReady', function() {
@@ -89,8 +90,8 @@ subjectDropdown.on('click', function() {
     .subjectID(curSubjectInfo.subjectID)
     .aspectRatio(curSubjectInfo.brainXpixels / curSubjectInfo.brainYpixels)
     .brainXLim(curSubjectInfo.brainXLim)
-    .brainYLim(curSubjectInfo.brainYLim);
-  networkData.loadNetworkData();
+    .brainYLim(curSubjectInfo.brainYLim)
+    .loadNetworkData();
 });
 
 edgeStatIDDropdown.on('click', function() {
@@ -98,15 +99,15 @@ edgeStatIDDropdown.on('click', function() {
   networkData
     .edgeStatID(curEdgeInfo.edgeStatID)
     .isFreq(curEdgeInfo.isFreq)
-    .isWeighted(curEdgeInfo.isWeightedNetwork);
-  networkData.loadNetworkData();
+    .isWeighted(curEdgeInfo.isWeightedNetwork)
+    .loadNetworkData();
 });
 
 edgeFilterDropdown.on('click', function() {
   var edgeFilter = d3.select(this).data()[0];
   networkData
-    .edgeFilterType(edgeFilter.filterType);
-  networkData.loadNetworkData();
+    .edgeFilterType(edgeFilter.filterType)
+    .loadNetworkData();
 });
 
 networkData.on('networkChange', function() {
@@ -131,4 +132,28 @@ networkData.on('networkChange', function() {
   d3.select('#SubjectPanel').datum(networkData.subjectID()).call(subjectDropdown);
   d3.select('#EdgeStatTypePanel').datum(networkData.edgeStatID()).call(edgeStatIDDropdown);
   d3.select('#EdgeFilterPanel').datum(networkData.edgeFilterType()).call(edgeFilterDropdown);
+});
+
+var stopAnimation = true;
+d3.select('#playButton').on('click', function() {
+  var playButton = d3.select('#playButton');
+  var slider = d3.select('#TimeSliderPanel').selectAll('input');
+  playButton.text('Stop');
+  stopAnimation = !stopAnimation;
+  var stepSize = +slider.property('step');
+  var maxValue = +slider.property('max');
+  var curValue = +slider.property('value');
+  d3.timer(function() {
+    if (curValue < maxValue && !stopAnimation) {
+      curValue += stepSize;
+      networkData
+        .curTime(curValue)
+        .filterNetworkData();
+    } else {
+      playButton.text('Start');
+      stopAnimation = true;
+      return true;
+    }
+  }, 500);
+
 });
