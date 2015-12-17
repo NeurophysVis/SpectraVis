@@ -74,6 +74,14 @@ timeSlider.on('sliderChange', function(curTime) {
   networkData.filterNetworkData();
 });
 
+timeSlider.on('stop', function() {
+  d3.select('#playButton').text('Play');
+});
+
+timeSlider.on('start', function() {
+  d3.select('#playButton').text('Stop');
+});
+
 freqSlider.on('sliderChange', function(curFreq) {
   networkData
     .curFreq(curFreq)
@@ -134,26 +142,10 @@ networkData.on('networkChange', function() {
   d3.select('#EdgeFilterPanel').datum(networkData.edgeFilterType()).call(edgeFilterDropdown);
 });
 
-var stopAnimation = true;
 d3.select('#playButton').on('click', function() {
-  var playButton = d3.select('#playButton');
-  var slider = d3.select('#TimeSliderPanel').selectAll('input');
-  playButton.text('Stop');
-  stopAnimation = !stopAnimation;
-  var stepSize = +slider.property('step');
-  var maxValue = +slider.property('max');
-  var curValue = +slider.property('value');
-  d3.timer(function() {
-    if (curValue < maxValue && !stopAnimation) {
-      curValue += stepSize;
-      networkData
-        .curTime(curValue)
-        .filterNetworkData();
-    } else {
-      playButton.text('Start');
-      stopAnimation = true;
-      return true;
-    }
-  }, 500);
+  timeSlider.running() ? timeSlider.stop() : timeSlider.play();
+});
 
+d3.select('#resetButton').on('click', function() {
+  timeSlider.reset();
 });

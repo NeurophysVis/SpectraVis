@@ -729,24 +729,30 @@
 
   function createSlider() {
 
-    var step;
+    var stepSize;
     var domain;
     var maxStepInd;
     var units;
     var curValue;
-    var dispatch = d3.dispatch('sliderChange');
+    var minValue;
+    var maxValue;
+    var running = false;
+    var delay = 200;
+    var dispatch = d3.dispatch('sliderChange', 'start', 'stop');
 
     function slider(selection) {
       selection.each(function(value) {
         var input = d3.select(this).selectAll('input');
         var output = d3.select(this).selectAll('output');
-        step = d3.round(domain[1] - domain[0], 4);
+        stepSize = d3.round(domain[1] - domain[0], 4);
         maxStepInd = domain.length - 1;
         curValue = value;
+        minValue = d3.min(domain);
+        maxValue = d3.max(domain);
 
-        input.property('min', d3.min(domain));
-        input.property('max', d3.max(domain));
-        input.property('step', step);
+        input.property('min', minValue);
+        input.property('max', maxValue);
+        input.property('step', stepSize);
         input.property('value', value);
         input.on('input', function() {
           dispatch.sliderChange(+this.value);
@@ -756,9 +762,21 @@
       });
     };
 
-    slider.step = function(value) {
-      if (!arguments.length) return step;
-      step = value;
+    slider.stepSize = function(value) {
+      if (!arguments.length) return stepSize;
+      stepSize = value;
+      return slider;
+    };
+
+    slider.running = function(value) {
+      if (!arguments.length) return running;
+      running = value;
+      return slider;
+    };
+
+    slider.delay = function(value) {
+      if (!arguments.length) return delay;
+      delay = value;
       return slider;
     };
 
@@ -784,6 +802,35 @@
       if (!arguments.length) return curValue;
       curValue = value;
       return slider;
+    };
+
+    slider.play = function() {
+      running = true;
+      dispatch.start();
+
+      var t = setInterval(step, delay);
+
+      function step() {
+        if (curValue < maxValue && running) {
+          curValue += stepSize;
+          dispatch.sliderChange(curValue);
+        } else {
+          dispatch.stop();
+          running = false;
+          clearInterval(t);
+        }
+      }
+    };
+
+    slider.stop = function() {
+      running = false;
+      dispatch.stop();
+    };
+
+    slider.reset = function() {
+      running = false;
+      dispatch.sliderChange(minValue);
+      dispatch.stop();
     };
 
     d3.rebind(slider, dispatch, 'on');
@@ -1001,6 +1048,14 @@
     networkData.filterNetworkData();
   });
 
+  timeSlider.on('stop', function() {
+    d3.select('#playButton').text('Play');
+  });
+
+  timeSlider.on('start', function() {
+    d3.select('#playButton').text('Stop');
+  });
+
   freqSlider.on('sliderChange', function(curFreq) {
     networkData
       .curFreq(curFreq)
@@ -1061,28 +1116,12 @@
     d3.select('#EdgeFilterPanel').datum(networkData.edgeFilterType()).call(edgeFilterDropdown);
   });
 
-  var stopAnimation = true;
   d3.select('#playButton').on('click', function() {
-    var playButton = d3.select('#playButton');
-    var slider = d3.select('#TimeSliderPanel').selectAll('input');
-    playButton.text('Stop');
-    stopAnimation = !stopAnimation;
-    var stepSize = +slider.property('step');
-    var maxValue = +slider.property('max');
-    var curValue = +slider.property('value');
-    d3.timer(function() {
-      if (curValue < maxValue && !stopAnimation) {
-        curValue += stepSize;
-        networkData
-          .curTime(curValue)
-          .filterNetworkData();
-      } else {
-        playButton.text('Start');
-        stopAnimation = true;
-        return true;
-      }
-    }, 300);
+    timeSlider.running() ? timeSlider.stop() : timeSlider.play();
+  });
 
+  d3.select('#resetButton').on('click', function() {
+    timeSlider.reset();
   });
 
   exports.init = init;

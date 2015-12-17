@@ -1,23 +1,29 @@
 export default function() {
 
-  var step;
+  var stepSize;
   var domain;
   var maxStepInd;
   var units;
   var curValue;
-  var dispatch = d3.dispatch('sliderChange');
+  var minValue;
+  var maxValue;
+  var running = false;
+  var delay = 200;
+  var dispatch = d3.dispatch('sliderChange', 'start', 'stop');
 
   function slider(selection) {
     selection.each(function(value) {
       var input = d3.select(this).selectAll('input');
       var output = d3.select(this).selectAll('output');
-      step = d3.round(domain[1] - domain[0], 4);
+      stepSize = d3.round(domain[1] - domain[0], 4);
       maxStepInd = domain.length - 1;
       curValue = value;
+      minValue = d3.min(domain);
+      maxValue = d3.max(domain);
 
-      input.property('min', d3.min(domain));
-      input.property('max', d3.max(domain));
-      input.property('step', step);
+      input.property('min', minValue);
+      input.property('max', maxValue);
+      input.property('step', stepSize);
       input.property('value', value);
       input.on('input', function() {
         dispatch.sliderChange(+this.value);
@@ -27,9 +33,21 @@ export default function() {
     });
   };
 
-  slider.step = function(value) {
-    if (!arguments.length) return step;
-    step = value;
+  slider.stepSize = function(value) {
+    if (!arguments.length) return stepSize;
+    stepSize = value;
+    return slider;
+  };
+
+  slider.running = function(value) {
+    if (!arguments.length) return running;
+    running = value;
+    return slider;
+  };
+
+  slider.delay = function(value) {
+    if (!arguments.length) return delay;
+    delay = value;
     return slider;
   };
 
@@ -55,6 +73,35 @@ export default function() {
     if (!arguments.length) return curValue;
     curValue = value;
     return slider;
+  };
+
+  slider.play = function() {
+    running = true;
+    dispatch.start();
+
+    var t = setInterval(step, delay);
+
+    function step() {
+      if (curValue < maxValue && running) {
+        curValue += stepSize;
+        dispatch.sliderChange(curValue);
+      } else {
+        dispatch.stop();
+        running = false;
+        clearInterval(t);
+      }
+    }
+  };
+
+  slider.stop = function() {
+    running = false;
+    dispatch.stop();
+  };
+
+  slider.reset = function() {
+    running = false;
+    dispatch.sliderChange(minValue);
+    dispatch.stop();
   };
 
   d3.rebind(slider, dispatch, 'on');
