@@ -1,5 +1,5 @@
 export default function(imageLink, imageSelection) {
-  if (imageLink === '') return;
+  if (imageLink === '' || imageSelection[0][0] === null) return;
   getImageBase64(imageLink, function(error, d) {
     imageSelection
       .attr('xlink:href', 'data:image/png;base64,' + d);
