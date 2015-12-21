@@ -16,9 +16,9 @@ export default function () {
 
   var edgeWidth = 2;
   var nodeRadius = 10;
-  var isFixed = true;
   var imageLink = '';
   var force = d3.layout.force();
+  var networkLayout = '';
 
   var chartDispatcher = d3.dispatch('nodeMouseClick', 'edgeMouseClick', 'edgeMouseOver', 'edgeMouseOut');
 
@@ -30,6 +30,9 @@ export default function () {
       var svg = d3.select(this).selectAll('svg').data([data]);
 
       force.stop();
+
+      (networkLayout.toUpperCase() === 'ANATOMICAL') ? fixNodes() : unfixNodes();
+      var imageLinkFiltered = (networkLayout.toUpperCase() === 'ANATOMICAL') ? imageLink : '';
 
       // Initialize the chart
       var enterG = svg.enter()
@@ -60,7 +63,7 @@ export default function () {
         .range([innerHeight, 0]);
 
       // Append background image link
-      var imageSelection = svg.select('.networkBackgroundImage').selectAll('image').data([imageLink], function(d) {return d;});
+      var imageSelection = svg.select('.networkBackgroundImage').selectAll('image').data([imageLinkFiltered], function(d) {return d;});
 
       var imageEnter = imageSelection.enter()
         .append('image')
@@ -68,7 +71,7 @@ export default function () {
         .attr('height', innerHeight);
 
       imageSelection.exit().remove();
-      insertImage(imageLink, imageEnter);
+      insertImage(imageLinkFiltered, imageEnter);
 
       // Initialize edges
       var edgeLine = svg.select('g.networkEdges').selectAll('line.edge').data(data.edges);
@@ -170,6 +173,22 @@ export default function () {
 
       }
 
+      function fixNodes() {
+        data.nodes.forEach(function(n) {
+          n.fixed = true;
+          n.x = undefined;
+          n.y = undefined;
+          n.px = undefined;
+          n.py = undefined;
+        });
+      }
+
+      function unfixNodes() {
+        data.nodes.forEach(function(n) {
+          n.fixed = false;
+        });
+      }
+
     });
   }
 
@@ -236,6 +255,12 @@ export default function () {
   chart.imageLink = function(value) {
     if (!arguments.length) return imageLink;
     imageLink = value;
+    return chart;
+  };
+
+  chart.networkLayout = function(value) {
+    if (!arguments.length) return networkLayout;
+    networkLayout = value;
     return chart;
   };
 

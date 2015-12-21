@@ -1,6 +1,5 @@
 import copyObject from './copyObject';
-import edgeFilterWithin from './edgeFilterWithin';
-import edgeFilterBetween from './edgeFilterBetween';
+import edgeFilterByConnection from './edgeFilterByConnection';
 import binaryNetworkFilter from './binaryNetworkFilter';
 import createEdgeScale from './createEdgeScale';
 import {brainRegionColors} from '../Common/scaleColors';
@@ -9,7 +8,11 @@ export default function() {
 
   var edgeData;
   var channelData;
-  var networkData;
+  var edgeInd;
+  var networkData = {
+        nodes: [],
+        edges: [],
+      };
   var isWeighted;
   var aspectRatio;
   var isFixed;
@@ -26,13 +29,16 @@ export default function() {
   var curFreq;
   var edgeStatScale;
   var edgeFilterType;
-  var edges;
-  var nodes;
   var brainXLim;
   var brainYLim;
   var brainRegionScale;
   var brainRegions;
   var dispatch = d3.dispatch('dataReady', 'networkChange');
+  var isLoaded = false;
+  var allNodesMap = d3.map();
+  var filteredNodesMap = d3.map();
+  var allEdgesMap = d3.map();
+  var filteredEdgesMap = d3.map();
   var dataManager = {};
 
   dataManager.loadNetworkData = function() {
@@ -54,28 +60,34 @@ export default function() {
           return n;
         });
 
-        nodes = channelData.map(function(n) {
+        networkData.nodes = channelData.map(function(n) {
           var obj = copyObject(n);
+          allNodesMap.set(obj.channelID, obj);
           return obj;
         });
 
         // Replace source name by source object
         edgeData = edge.map(function(e) {
-          e.source = nodes.filter(function(n) {
-            return n.channelID === e.source;
-          })[0];
-
-          e.target = nodes.filter(function(n) {
-            return n.channelID === e.target;
-          })[0];
-
+          allEdgesMap.set(e.source + '_' + e.target, e);
+          e.source = allNodesMap.get(e.source);
+          e.target = allNodesMap.get(e.target);
+          networkData.edges.push(copyObject(e));
           return e;
+        });
+
+        filteredEdgesMap = d3.map();
+        networkData.edges.forEach(function(e) {
+          filteredEdgesMap.set(e.source.channelID + '_' + e.target.channelID, e);
         });
 
         edgeStatScale = createEdgeScale(edgeData, isWeighted);
         brainRegionScale = d3.scale.ordinal()
           .domain(brainRegions)
           .range(brainRegionColors);
+
+        imageLink = 'DATA/brainImages/brainImage_' + subjectID + '.png';
+
+        isLoaded = true;
 
         dataManager.filterNetworkData();
       });
@@ -85,10 +97,7 @@ export default function() {
     return dataManager;
   };
 
-  dataManager.filterNetworkData = function() {
-
-    isFixed = (networkView.toUpperCase() === 'ANATOMICAL');
-    imageLink = isFixed ? 'DATA/brainImages/brainImage_' + subjectID + '.png' : '';
+  dataManager.changeTimeFreq = function() {
     curTimeInd = times.indexOf(curTime);
     curTimeInd = (curTimeInd === -1) ? 0 : curTimeInd;
     curTime = times[curTimeInd];
@@ -97,64 +106,40 @@ export default function() {
     curFreq = frequencies[curFreqInd];
 
     // Get the network for the current time and frequency
-    edges = edgeData.map(function(e) {
-      var obj = copyObject(e);
-      obj.data = e.data[curTimeInd][curFreqInd];
-      return obj;
+    networkData.edges.forEach(function(e) {
+      var edgeKey = e.source.channelID + '_' + e.target.channelID;
+      e.data = allEdgesMap.get(edgeKey).data[curTimeInd][curFreqInd];
     });
 
-    // Filter by connections within or between brain regions
-    var edgeFilterByConnection = {
-      Within: edgeFilterWithin,
-      Between: edgeFilterBetween,
-      All: function() {return true;},
-
-      undefined: function() {return true;},
-    };
-
-    // For binary networks, don't display edges equal to zero
     var networkTypeFilter = isWeighted ? function() {return true;} : binaryNetworkFilter;
 
-    edges = edges.filter(networkTypeFilter);
+    networkData.edges = networkData.edges.filter(networkTypeFilter);
+  };
 
-    // Add in any missing edges
-    edges = edges.filter(edgeFilterByConnection[edgeFilterType]);
+  dataManager.filterNetworkData = function() {
 
-    if (isFixed) {
-      nodes.forEach(function(n) {
-        n.x = undefined;
-        n.y = undefined;
-        n.px = undefined;
-        n.py = undefined;
-        n.fixed = true;
-      });
-    } else {
-      var nodesData = d3.selectAll('.gnode').data();
-      nodes.forEach(function(n) {
-        var correspondingNode = nodesData.filter(function(m) {
-          return m.channelID === n.channelID;
-        })[0];
+    var networkTypeFilter = isWeighted ? function() {return true;} : binaryNetworkFilter;
 
-        if (typeof correspondingNode === 'undefined') {
-          n.x = undefined;
-          n.y = undefined;
-          n.px = undefined;
-          n.py = undefined;
+    networkData.edges = edgeData
+      .filter(edgeFilterByConnection[edgeFilterType]) // Filter by connections within or between brain regions
+      .map(function(e) {
+        var edgeKey = e.source.channelID + '_' + e.target.channelID;
+        if (filteredEdgesMap.has(edgeKey)) {
+          return filteredEdgesMap.get(edgeKey);
         } else {
-          n.x = correspondingNode.x;
-          n.y = correspondingNode.y;
-          n.px = correspondingNode.px;
-          n.py = correspondingNode.py;
-        }
+          var obj = copyObject(e);
+          obj.data = obj.data[curTimeInd][curFreqInd];
+          return obj;
+        };
 
-        n.fixed = false;
       });
-    };
 
-    networkData = {
-      nodes: nodes,
-      edges: edges,
-    };
+    dataManager.changeTimeFreq();
+
+    filteredEdgesMap = d3.map();
+    networkData.edges.forEach(function(e) {
+      filteredEdgesMap.set(e.source.channelID + '_' + e.target.channelID, e);
+    });
 
     dispatch.networkChange();
 

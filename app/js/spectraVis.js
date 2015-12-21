@@ -21,7 +21,7 @@ export function init(passedParams) {
   passedParams.curFreq = +passedParams.curFreq;
   passedParams.curCh1 = passedParams.curCh1 || '';
   passedParams.curCh2 = passedParams.curCh2 || '';
-  passedParams.networkView = passedParams.networkView || 'Anatomical';
+  passedParams.networkLayout = passedParams.networkLayout || 'Anatomical';
   passedParams.edgeFilter = passedParams.edgeFilter || 'All';
   queue()
     .defer(d3.json, 'DATA/subjects.json')
@@ -39,7 +39,6 @@ export function init(passedParams) {
       networkData
         .times(visInfo.tax)
         .frequencies(visInfo.fax)
-        .networkView(passedParams.networkView)
         .edgeStatID(curEdgeStatID)
         .subjectID(curSubject)
         .brainRegions(visInfo.brainRegions)
@@ -51,6 +50,8 @@ export function init(passedParams) {
         .brainXLim(curSubjectInfo.brainXLim)
         .brainYLim(curSubjectInfo.brainYLim)
         .edgeFilterType(passedParams.edgeFilter);
+
+      networkView.networkLayout(passedParams.networkLayout);
 
       timeSlider
         .domain(visInfo.tax)
@@ -115,7 +116,7 @@ edgeFilterDropdown.on('click', function() {
   var edgeFilter = d3.select(this).data()[0];
   networkData
     .edgeFilterType(edgeFilter.filterType)
-    .loadNetworkData();
+    .filterNetworkData();
 });
 
 networkData.on('networkChange', function() {
@@ -149,3 +150,14 @@ d3.select('#playButton').on('click', function() {
 d3.select('#resetButton').on('click', function() {
   timeSlider.reset();
 });
+
+var networkViewRadio = d3.select('#NetworkLayoutPanel');
+networkViewRadio.selectAll('input')
+  .on('click', function() {
+    networkViewRadio.selectAll('input')
+      .property('checked', false);
+    d3.select(this).property('checked', true);
+    networkView.networkLayout(this.value);
+    d3.select('#NetworkPanel').datum(networkData.networkData())
+        .call(networkView);
+  });

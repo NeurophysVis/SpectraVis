@@ -69,8 +69,8 @@
             </ul>
           </div>
         </div>
-        <div id="NetworkViewPanel" class="row bottom-buffer">
-          <label for="networkRadio" class="col-md-6">Network View</label>
+        <div id="NetworkLayoutPanel" class="row bottom-buffer">
+          <label for="networkRadio" class="col-md-6">Network Layout</label>
           <form class="col-md-6 text-center">
             <input type="radio" id="anatomicalRadio" value="Anatomical" checked>
             <label for="networkRadio">Anatomical</label>
@@ -147,7 +147,7 @@
   <script src="js/main.js"></script>
   <script>
     // Extract parameters from the browser
-    var extractedParams = [];
+    var extractedParams = {};
     var query = window.location.search.substring(1);
     if (query !== "") {
       var vars = query.split("&");
