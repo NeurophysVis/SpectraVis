@@ -97,7 +97,7 @@ export default function() {
     return dataManager;
   };
 
-  dataManager.changeTimeFreq = function() {
+  function changeTimeFreq() {
     curTimeInd = times.indexOf(curTime);
     curTimeInd = (curTimeInd === -1) ? 0 : curTimeInd;
     curTime = times[curTimeInd];
@@ -111,10 +111,20 @@ export default function() {
       e.data = allEdgesMap.get(edgeKey).data[curTimeInd][curFreqInd];
     });
 
+  };
+
+  function setFilteredMaps() {
+    filteredEdgesMap = d3.map();
+    networkData.edges.forEach(function(e) {
+      filteredEdgesMap.set(e.source.channelID + '_' + e.target.channelID, e);
+    });
+  }
+
+  function filterWeightedNetworks() {
     var networkTypeFilter = isWeighted ? function() {return true;} : binaryNetworkFilter;
 
     networkData.edges = networkData.edges.filter(networkTypeFilter);
-  };
+  }
 
   dataManager.filterNetworkData = function() {
 
@@ -134,12 +144,9 @@ export default function() {
 
       });
 
-    dataManager.changeTimeFreq();
-
-    filteredEdgesMap = d3.map();
-    networkData.edges.forEach(function(e) {
-      filteredEdgesMap.set(e.source.channelID + '_' + e.target.channelID, e);
-    });
+    changeTimeFreq();
+    filterWeightedNetworks();
+    setFilteredMaps();
 
     dispatch.networkChange();
 

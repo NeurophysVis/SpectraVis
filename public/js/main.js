@@ -203,7 +203,7 @@
       return dataManager;
     };
 
-    dataManager.changeTimeFreq = function() {
+    function changeTimeFreq() {
       curTimeInd = times.indexOf(curTime);
       curTimeInd = (curTimeInd === -1) ? 0 : curTimeInd;
       curTime = times[curTimeInd];
@@ -217,10 +217,20 @@
         e.data = allEdgesMap.get(edgeKey).data[curTimeInd][curFreqInd];
       });
 
+    };
+
+    function setFilteredMaps() {
+      filteredEdgesMap = d3.map();
+      networkData.edges.forEach(function(e) {
+        filteredEdgesMap.set(e.source.channelID + '_' + e.target.channelID, e);
+      });
+    }
+
+    function filterWeightedNetworks() {
       var networkTypeFilter = isWeighted ? function() {return true;} : binaryNetworkFilter;
 
       networkData.edges = networkData.edges.filter(networkTypeFilter);
-    };
+    }
 
     dataManager.filterNetworkData = function() {
 
@@ -240,12 +250,9 @@
 
         });
 
-      dataManager.changeTimeFreq();
-
-      filteredEdgesMap = d3.map();
-      networkData.edges.forEach(function(e) {
-        filteredEdgesMap.set(e.source.channelID + '_' + e.target.channelID, e);
-      });
+      changeTimeFreq();
+      filterWeightedNetworks();
+      setFilteredMaps();
 
       dispatch.networkChange();
 
@@ -631,6 +638,7 @@
         function xPos(d) {
           if (typeof d.x === 'undefined' || d.fixed) {
             d.x = xScale(d.fixedX);
+            d.px = xScale(d.fixedX);
             return d.x;
           } else {
             return Math.max(nodeRadius, Math.min(innerWidth - nodeRadius, d.x));
@@ -641,6 +649,7 @@
         function yPos(d) {
           if (typeof d.y === 'undefined' || d.fixed) {
             d.y = yScale(d.fixedY);
+            d.py = yScale(d.fixedY);
             return d.y;
           } else {
             return Math.max(nodeRadius, Math.min(innerHeight - nodeRadius, d.y));
