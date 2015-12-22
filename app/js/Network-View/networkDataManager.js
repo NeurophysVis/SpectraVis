@@ -97,6 +97,7 @@ export default function() {
     return dataManager;
   };
 
+  // Get the network for the current time and frequency
   function changeTimeFreq() {
     curTimeInd = times.indexOf(curTime);
     curTimeInd = (curTimeInd === -1) ? 0 : curTimeInd;
@@ -105,7 +106,6 @@ export default function() {
     curFreqInd = (curFreqInd === -1 || !isFreq) ? 0 : curFreqInd;
     curFreq = frequencies[curFreqInd];
 
-    // Get the network for the current time and frequency
     networkData.edges.forEach(function(e) {
       var edgeKey = e.source.channelID + '_' + e.target.channelID;
       e.data = allEdgesMap.get(edgeKey).data[curTimeInd][curFreqInd];
@@ -113,6 +113,7 @@ export default function() {
 
   };
 
+  // Map the filtered edges to the edge name
   function setFilteredMaps() {
     filteredEdgesMap = d3.map();
     networkData.edges.forEach(function(e) {
@@ -120,6 +121,7 @@ export default function() {
     });
   }
 
+  // If it is a binary network, only return non-zero edges
   function filterWeightedNetworks() {
     var networkTypeFilter = isWeighted ? function() {return true;} : binaryNetworkFilter;
 
@@ -127,18 +129,17 @@ export default function() {
   }
 
   dataManager.filterNetworkData = function() {
-
-    var networkTypeFilter = isWeighted ? function() {return true;} : binaryNetworkFilter;
-
+    // Filter by connections within or between brain regions
     networkData.edges = edgeData
-      .filter(edgeFilterByConnection[edgeFilterType]) // Filter by connections within or between brain regions
+      .filter(edgeFilterByConnection[edgeFilterType])
       .map(function(e) {
         var edgeKey = e.source.channelID + '_' + e.target.channelID;
         if (filteredEdgesMap.has(edgeKey)) {
+          // If object already exists in filtered edges, just return the object
           return filteredEdgesMap.get(edgeKey);
         } else {
+          // Else push a shallow copy of the object to the edge array
           var obj = copyObject(e);
-          obj.data = obj.data[curTimeInd][curFreqInd];
           return obj;
         };
 
