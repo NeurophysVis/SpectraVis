@@ -1001,7 +1001,7 @@
     // mouseFlag = true;
     // svgNetworkMap.select('text#HOLD').remove();
     // loadSpectra();
-    edgeMouseOut.call(this, e);
+    // edgeMouseOut.call(this, e);
   }
 
   var networkData = networkDataManager();

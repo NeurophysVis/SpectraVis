@@ -9,5 +9,4 @@ export default function(e) {
   // mouseFlag = true;
   // svgNetworkMap.select('text#HOLD').remove();
   // loadSpectra();
-  edgeMouseOut.call(this, e);
 }
