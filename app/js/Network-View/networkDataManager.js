@@ -75,11 +75,6 @@ export default function() {
           return e;
         });
 
-        filteredEdgesMap = d3.map();
-        networkData.edges.forEach(function(e) {
-          filteredEdgesMap.set(e.source.channelID + '_' + e.target.channelID, e);
-        });
-
         edgeStatScale = createEdgeScale(edgeData, isWeighted);
         brainRegionScale = d3.scale.ordinal()
           .domain(brainRegions)

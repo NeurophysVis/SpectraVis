@@ -181,11 +181,6 @@
             return e;
           });
 
-          filteredEdgesMap = d3.map();
-          networkData.edges.forEach(function(e) {
-            filteredEdgesMap.set(e.source.channelID + '_' + e.target.channelID, e);
-          });
-
           edgeStatScale = createEdgeScale(edgeData, isWeighted);
           brainRegionScale = d3.scale.ordinal()
             .domain(brainRegions)
@@ -244,7 +239,7 @@
             // If object already exists in filtered edges, just return the object
             return filteredEdgesMap.get(edgeKey);
           } else {
-            // Else push the object to the edge array
+            // Else push a shallow copy of the object to the edge array
             var obj = copyObject(e);
             return obj;
           };
