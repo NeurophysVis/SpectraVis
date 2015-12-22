@@ -156,6 +156,7 @@ export default function () {
       function xPos(d) {
         if (typeof d.x === 'undefined' || d.fixed) {
           d.x = xScale(d.fixedX);
+          d.px = xScale(d.fixedX);
           return d.x;
         } else {
           return Math.max(nodeRadius, Math.min(innerWidth - nodeRadius, d.x));
@@ -166,6 +167,7 @@ export default function () {
       function yPos(d) {
         if (typeof d.y === 'undefined' || d.fixed) {
           d.y = yScale(d.fixedY);
+          d.py = yScale(d.fixedY);
           return d.y;
         } else {
           return Math.max(nodeRadius, Math.min(innerHeight - nodeRadius, d.y));
