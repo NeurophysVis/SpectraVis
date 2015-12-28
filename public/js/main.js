@@ -749,6 +749,74 @@
     return chart;
   }
 
+  function edgeMouseOver(e) {
+
+    var curEdge = d3.select(this);
+    var strokeStyle = curEdge.style('stroke');
+    var strokeWidth = +/\d+/.exec(curEdge.style('stroke-width'));
+    var strokeWidthUnits = /[a-z]+/.exec(curEdge.style('stroke-width'));
+    curEdge
+      .style('stroke-width', (2 * strokeWidth) + strokeWidthUnits);
+
+    var curNodes = d3.selectAll('circle.node')
+      .filter(function(n) {
+        return (n.channelID === e.source.channelID) || (n.channelID === e.target.channelID);
+      })
+      .attr('transform', 'scale(1.2)');
+  }
+
+  function edgeMouseOut(e) {
+
+    var curEdge = d3.select(this);
+    var strokeWidth = +/\d+/.exec(curEdge.style('stroke-width'));
+    var strokeWidthUnits = /[a-z]+/.exec(curEdge.style('stroke-width'));
+    curEdge
+      .style('stroke-width', (0.5 * strokeWidth) + strokeWidthUnits);
+
+    var curNodes = d3.selectAll('circle.node')
+      .filter(function(n) {
+        return (n.channelID === e.source.channelID) || (n.channelID === e.target.channelID);
+      })
+      .attr('transform', 'scale(1)');
+  }
+
+  function nodeMouseClick(n) {
+    var curNode = d3.select(this);
+    curNode.classed('node-clicked', !curNode.classed('node-clicked'));
+    d3.selectAll('.gnode').selectAll('circle').attr('transform', 'scale(1)');
+    d3.selectAll('.node-clicked').selectAll('circle').attr('transform', 'scale(1.2)');
+
+    var numClicked = d3.selectAll('.node-clicked')[0].length;
+    if (numClicked >= 2) {
+      var channelIDs = d3.selectAll('.node-clicked').data().map(function(d) {return d.channelID;});
+
+      var curCh1 = channelIDs[0];
+      var curCh2 = channelIDs[1];
+      console.log('load spectra: Ch' + curCh1 + ', Ch' + curCh2);
+
+      d3.selectAll('.node-clicked').classed('node-clicked', false);
+      d3.selectAll('.gnode').selectAll('circle').attr('transform', 'scale(1)');
+    }
+  }
+
+  function edgeMouseClick(e) {
+    var re = /\d+/;
+    var curCh1 = re.exec(e.source.channelID)[0];
+    var curCh2 = re.exec(e.target.channelID)[0];
+    console.log('load spectra: Ch' + curCh1 + ', Ch' + curCh2);
+
+    // mouseFlag = true;
+    // svgNetworkMap.select('text#HOLD').remove();
+    // loadSpectra();
+  }
+
+  var networkView = networkChart();
+
+  networkView.on('edgeMouseOver', edgeMouseOver);
+  networkView.on('edgeMouseOut', edgeMouseOut);
+  networkView.on('nodeMouseClick', nodeMouseClick);
+  networkView.on('edgeMouseClick', edgeMouseClick);
+
   function createSlider() {
 
     var stepSize;
@@ -861,6 +929,27 @@
 
   }
 
+  var freqSlider = createSlider();
+  freqSlider.on('sliderChange', function(curFreq) {
+    networkData
+      .curFreq(curFreq)
+      .filterNetworkData();
+  });
+
+  var timeSlider = createSlider();
+  timeSlider.on('sliderChange', function(curTime) {
+    networkData.curTime(curTime);
+    networkData.filterNetworkData();
+  });
+
+  timeSlider.on('stop', function() {
+    d3.select('#playButton').text('Play');
+  });
+
+  timeSlider.on('start', function() {
+    d3.select('#playButton').text('Stop');
+  });
+
   function createDropdown() {
     var key;
     var displayName;
@@ -927,6 +1016,27 @@
 
   }
 
+  var subjectDropdown = createDropdown().key('subjectID');
+  subjectDropdown.on('click', function() {
+    var curSubjectInfo = d3.select(this).data()[0];
+    networkData
+      .subjectID(curSubjectInfo.subjectID)
+      .aspectRatio(curSubjectInfo.brainXpixels / curSubjectInfo.brainYpixels)
+      .brainXLim(curSubjectInfo.brainXLim)
+      .brainYLim(curSubjectInfo.brainYLim)
+      .loadNetworkData();
+  });
+
+  var edgeStatIDDropdown = createDropdown().key('edgeStatID').displayName('edgeStatName');
+  edgeStatIDDropdown.on('click', function() {
+    var curEdgeInfo = d3.select(this).data()[0];
+    networkData
+      .edgeStatID(curEdgeInfo.edgeStatID)
+      .isFreq(curEdgeInfo.isFreq)
+      .isWeighted(curEdgeInfo.isWeightedNetwork)
+      .loadNetworkData();
+  });
+
   var filterTypes = [
   	{
       filterName: 'All Edges',
@@ -942,74 +1052,68 @@
     },
   ];
 
-  function edgeMouseOver(e) {
+  var edgeFilterDropdown = createDropdown()
+    .key('filterType')
+    .displayName('filterName')
+    .options(filterTypes);
 
-    var curEdge = d3.select(this);
-    var strokeStyle = curEdge.style('stroke');
-    var strokeWidth = +/\d+/.exec(curEdge.style('stroke-width'));
-    var strokeWidthUnits = /[a-z]+/.exec(curEdge.style('stroke-width'));
-    curEdge
-      .style('stroke-width', (2 * strokeWidth) + strokeWidthUnits);
-
-    var curNodes = d3.selectAll('circle.node')
-      .filter(function(n) {
-        return (n.channelID === e.source.channelID) || (n.channelID === e.target.channelID);
-      })
-      .attr('transform', 'scale(1.2)');
-  }
-
-  function edgeMouseOut(e) {
-
-    var curEdge = d3.select(this);
-    var strokeWidth = +/\d+/.exec(curEdge.style('stroke-width'));
-    var strokeWidthUnits = /[a-z]+/.exec(curEdge.style('stroke-width'));
-    curEdge
-      .style('stroke-width', (0.5 * strokeWidth) + strokeWidthUnits);
-
-    var curNodes = d3.selectAll('circle.node')
-      .filter(function(n) {
-        return (n.channelID === e.source.channelID) || (n.channelID === e.target.channelID);
-      })
-      .attr('transform', 'scale(1)');
-  }
-
-  function nodeMouseClick(n) {
-    var curNode = d3.select(this);
-    curNode.classed('node-clicked', !curNode.classed('node-clicked'));
-    d3.selectAll('.gnode').selectAll('circle').attr('transform', 'scale(1)');
-    d3.selectAll('.node-clicked').selectAll('circle').attr('transform', 'scale(1.2)');
-
-    var numClicked = d3.selectAll('.node-clicked')[0].length;
-    if (numClicked >= 2) {
-      var channelIDs = d3.selectAll('.node-clicked').data().map(function(d) {return d.channelID;});
-
-      var curCh1 = channelIDs[0];
-      var curCh2 = channelIDs[1];
-      console.log('load spectra: Ch' + curCh1 + ', Ch' + curCh2);
-
-      d3.selectAll('.node-clicked').classed('node-clicked', false);
-      d3.selectAll('.gnode').selectAll('circle').attr('transform', 'scale(1)');
-    }
-  }
-
-  function edgeMouseClick(e) {
-    var re = /\d+/;
-    var curCh1 = re.exec(e.source.channelID)[0];
-    var curCh2 = re.exec(e.target.channelID)[0];
-    console.log('load spectra: Ch' + curCh1 + ', Ch' + curCh2);
-
-    // mouseFlag = true;
-    // svgNetworkMap.select('text#HOLD').remove();
-    // loadSpectra();
-  }
+  edgeFilterDropdown.on('click', function() {
+    var edgeFilter = d3.select(this).data()[0];
+    networkData
+      .edgeFilterType(edgeFilter.filterType)
+      .filterNetworkData();
+  });
 
   var networkData = networkDataManager();
-  var networkView = networkChart();
-  var timeSlider = createSlider();
-  var freqSlider = createSlider();
-  var subjectDropdown = createDropdown().key('subjectID');
-  var edgeStatIDDropdown = createDropdown().key('edgeStatID').displayName('edgeStatName');
-  var edgeFilterDropdown = createDropdown().key('filterType').displayName('filterName').options(filterTypes);
+
+  networkData.on('networkChange', function() {
+    var networkWidth = document.getElementById('NetworkPanel').offsetWidth;
+    var networkHeight = networkWidth / networkData.aspectRatio();
+
+    networkView
+      .width(networkWidth)
+      .height(networkHeight)
+      .xScaleDomain(networkData.brainXLim())
+      .yScaleDomain(networkData.brainYLim())
+      .edgeStatScale(networkData.edgeStatScale())
+      .imageLink(networkData.imageLink())
+      .nodeColorScale(networkData.brainRegionScale());
+
+    d3.select('#NetworkPanel').datum(networkData.networkData())
+        .call(networkView);
+
+    d3.select('#TimeSliderPanel').datum(networkData.curTime()).call(timeSlider);
+    d3.select('#FreqSliderPanel').datum(networkData.curFreq()).call(freqSlider);
+    d3.select('#SubjectPanel').datum(networkData.subjectID()).call(subjectDropdown);
+    d3.select('#EdgeStatTypePanel').datum(networkData.edgeStatID()).call(edgeStatIDDropdown);
+    d3.select('#EdgeFilterPanel').datum(networkData.edgeFilterType()).call(edgeFilterDropdown);
+  });
+
+  networkData.on('dataReady', function() {
+    console.log('dataReady');
+  });
+
+  var playButton = d3.select('#playButton');
+  playButton.on('click', function() {
+    timeSlider.running() ? timeSlider.stop() : timeSlider.play();
+  });
+
+  var resetButton = d3.select('#resetButton');
+
+  resetButton.on('click', function() {
+    timeSlider.reset();
+  });
+
+  var networkViewRadio = d3.select('#NetworkLayoutPanel');
+  networkViewRadio.selectAll('input')
+    .on('click', function() {
+      networkViewRadio.selectAll('input')
+        .property('checked', false);
+      d3.select(this).property('checked', true);
+      networkView.networkLayout(this.value);
+      d3.selectAll('#NetworkPanel')
+          .call(networkView);
+    });
 
   function init(passedParams) {
     passedParams.curTime = +passedParams.curTime;
@@ -1060,102 +1164,6 @@
       });
 
   }
-
-  networkView.on('edgeMouseOver', edgeMouseOver);
-  networkView.on('edgeMouseOut', edgeMouseOut);
-  networkView.on('nodeMouseClick', nodeMouseClick);
-  networkView.on('edgeMouseClick', edgeMouseClick);
-  timeSlider.on('sliderChange', function(curTime) {
-    networkData.curTime(curTime);
-    networkData.filterNetworkData();
-  });
-
-  timeSlider.on('stop', function() {
-    d3.select('#playButton').text('Play');
-  });
-
-  timeSlider.on('start', function() {
-    d3.select('#playButton').text('Stop');
-  });
-
-  freqSlider.on('sliderChange', function(curFreq) {
-    networkData
-      .curFreq(curFreq)
-      .filterNetworkData();
-  });
-
-  networkData.on('dataReady', function() {
-    console.log('dataReady');
-  });
-
-  subjectDropdown.on('click', function() {
-    var curSubjectInfo = d3.select(this).data()[0];
-    networkData
-      .subjectID(curSubjectInfo.subjectID)
-      .aspectRatio(curSubjectInfo.brainXpixels / curSubjectInfo.brainYpixels)
-      .brainXLim(curSubjectInfo.brainXLim)
-      .brainYLim(curSubjectInfo.brainYLim)
-      .loadNetworkData();
-  });
-
-  edgeStatIDDropdown.on('click', function() {
-    var curEdgeInfo = d3.select(this).data()[0];
-    networkData
-      .edgeStatID(curEdgeInfo.edgeStatID)
-      .isFreq(curEdgeInfo.isFreq)
-      .isWeighted(curEdgeInfo.isWeightedNetwork)
-      .loadNetworkData();
-  });
-
-  edgeFilterDropdown.on('click', function() {
-    var edgeFilter = d3.select(this).data()[0];
-    networkData
-      .edgeFilterType(edgeFilter.filterType)
-      .filterNetworkData();
-  });
-
-  networkData.on('networkChange', function() {
-
-    var networkWidth = document.getElementById('NetworkPanel').offsetWidth;
-    var networkHeight = networkWidth / networkData.aspectRatio();
-
-    networkView
-      .width(networkWidth)
-      .height(networkHeight)
-      .xScaleDomain(networkData.brainXLim())
-      .yScaleDomain(networkData.brainYLim())
-      .edgeStatScale(networkData.edgeStatScale())
-      .imageLink(networkData.imageLink())
-      .nodeColorScale(networkData.brainRegionScale());
-
-    d3.select('#NetworkPanel').datum(networkData.networkData())
-        .call(networkView);
-
-    d3.select('#TimeSliderPanel').datum(networkData.curTime()).call(timeSlider);
-    d3.select('#FreqSliderPanel').datum(networkData.curFreq()).call(freqSlider);
-    d3.select('#SubjectPanel').datum(networkData.subjectID()).call(subjectDropdown);
-    d3.select('#EdgeStatTypePanel').datum(networkData.edgeStatID()).call(edgeStatIDDropdown);
-    d3.select('#EdgeFilterPanel').datum(networkData.edgeFilterType()).call(edgeFilterDropdown);
-  });
-
-  d3.select('#playButton').on('click', function() {
-    timeSlider.running() ? timeSlider.stop() : timeSlider.play();
-  });
-
-  d3.select('#resetButton').on('click', function() {
-    timeSlider.reset();
-  });
-
-  var networkViewRadio = d3.select('#NetworkLayoutPanel');
-  networkViewRadio.selectAll('input')
-    .on('click', function() {
-      networkViewRadio.selectAll('input')
-        .property('checked', false);
-      d3.select(this).property('checked', true);
-      networkView.networkLayout(this.value);
-      d3.select('#NetworkPanel').datum(networkData.networkData())
-          .call(networkView);
-    });
 
   exports.init = init;
 

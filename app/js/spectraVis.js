@@ -1,20 +1,13 @@
-import networkDataManager from './Network-View/networkDataManager';
-import networkChart from './Network-View/networkChart';
-import edgeMouseOver from './Network-View/edgeMouseOver';
-import edgeMouseOut from './Network-View/edgeMouseOut';
-import edgeMouseClick from './Network-View/edgeMouseClick';
-import nodeMouseClick from './Network-View/nodeMouseClick';
-import createSlider from './UI/createSlider';
-import createDropdown from './UI/createDropdown';
-import filterTypes from './UI/filterTypes';
-
-var networkData = networkDataManager();
-var networkView = networkChart();
-var timeSlider = createSlider();
-var freqSlider = createSlider();
-var subjectDropdown = createDropdown().key('subjectID');
-var edgeStatIDDropdown = createDropdown().key('edgeStatID').displayName('edgeStatName');
-var edgeFilterDropdown = createDropdown().key('filterType').displayName('filterName').options(filterTypes);
+import networkData from './Network-View/networkData';
+import networkView from './Network-View/networkView';
+import freqSlider from './UI/freqSlider';
+import timeSlider from './UI/timeSlider';
+import subjectDropdown from './UI/subjectDropdown';
+import edgeStatIDDropdown from './UI/edgeStatIDDropdown';
+import edgeFilterDropdown from './UI/edgeFilterDropdown';
+import playButton from './UI/playButton';
+import resetButton from './UI/resetButton';
+import networkViewRadio from './UI/networkViewRadio';
 
 export function init(passedParams) {
   passedParams.curTime = +passedParams.curTime;
@@ -65,99 +58,3 @@ export function init(passedParams) {
     });
 
 }
-
-networkView.on('edgeMouseOver', edgeMouseOver);
-networkView.on('edgeMouseOut', edgeMouseOut);
-networkView.on('nodeMouseClick', nodeMouseClick);
-networkView.on('edgeMouseClick', edgeMouseClick);
-timeSlider.on('sliderChange', function(curTime) {
-  networkData.curTime(curTime);
-  networkData.filterNetworkData();
-});
-
-timeSlider.on('stop', function() {
-  d3.select('#playButton').text('Play');
-});
-
-timeSlider.on('start', function() {
-  d3.select('#playButton').text('Stop');
-});
-
-freqSlider.on('sliderChange', function(curFreq) {
-  networkData
-    .curFreq(curFreq)
-    .filterNetworkData();
-});
-
-networkData.on('dataReady', function() {
-  console.log('dataReady');
-});
-
-subjectDropdown.on('click', function() {
-  var curSubjectInfo = d3.select(this).data()[0];
-  networkData
-    .subjectID(curSubjectInfo.subjectID)
-    .aspectRatio(curSubjectInfo.brainXpixels / curSubjectInfo.brainYpixels)
-    .brainXLim(curSubjectInfo.brainXLim)
-    .brainYLim(curSubjectInfo.brainYLim)
-    .loadNetworkData();
-});
-
-edgeStatIDDropdown.on('click', function() {
-  var curEdgeInfo = d3.select(this).data()[0];
-  networkData
-    .edgeStatID(curEdgeInfo.edgeStatID)
-    .isFreq(curEdgeInfo.isFreq)
-    .isWeighted(curEdgeInfo.isWeightedNetwork)
-    .loadNetworkData();
-});
-
-edgeFilterDropdown.on('click', function() {
-  var edgeFilter = d3.select(this).data()[0];
-  networkData
-    .edgeFilterType(edgeFilter.filterType)
-    .filterNetworkData();
-});
-
-networkData.on('networkChange', function() {
-
-  var networkWidth = document.getElementById('NetworkPanel').offsetWidth;
-  var networkHeight = networkWidth / networkData.aspectRatio();
-
-  networkView
-    .width(networkWidth)
-    .height(networkHeight)
-    .xScaleDomain(networkData.brainXLim())
-    .yScaleDomain(networkData.brainYLim())
-    .edgeStatScale(networkData.edgeStatScale())
-    .imageLink(networkData.imageLink())
-    .nodeColorScale(networkData.brainRegionScale());
-
-  d3.select('#NetworkPanel').datum(networkData.networkData())
-      .call(networkView);
-
-  d3.select('#TimeSliderPanel').datum(networkData.curTime()).call(timeSlider);
-  d3.select('#FreqSliderPanel').datum(networkData.curFreq()).call(freqSlider);
-  d3.select('#SubjectPanel').datum(networkData.subjectID()).call(subjectDropdown);
-  d3.select('#EdgeStatTypePanel').datum(networkData.edgeStatID()).call(edgeStatIDDropdown);
-  d3.select('#EdgeFilterPanel').datum(networkData.edgeFilterType()).call(edgeFilterDropdown);
-});
-
-d3.select('#playButton').on('click', function() {
-  timeSlider.running() ? timeSlider.stop() : timeSlider.play();
-});
-
-d3.select('#resetButton').on('click', function() {
-  timeSlider.reset();
-});
-
-var networkViewRadio = d3.select('#NetworkLayoutPanel');
-networkViewRadio.selectAll('input')
-  .on('click', function() {
-    networkViewRadio.selectAll('input')
-      .property('checked', false);
-    d3.select(this).property('checked', true);
-    networkView.networkLayout(this.value);
-    d3.select('#NetworkPanel').datum(networkData.networkData())
-        .call(networkView);
-  });
