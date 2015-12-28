@@ -9,6 +9,7 @@ import playButton from './UI/playButton';
 import resetButton from './UI/resetButton';
 import networkViewRadio from './UI/networkViewRadio';
 import exportButton from './UI/exportButton';
+import {permalinkBox, permalinkButton} from './UI/permalinkButton';
 
 export function init(passedParams) {
   passedParams.curTime = +passedParams.curTime;
