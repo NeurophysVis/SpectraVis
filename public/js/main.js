@@ -1105,14 +1105,207 @@
   });
 
   var networkViewRadio = d3.select('#NetworkLayoutPanel');
-  networkViewRadio.selectAll('input')
-    .on('click', function() {
+  networkViewRadio.selectAll('input').on('click', function() {
       networkViewRadio.selectAll('input')
         .property('checked', false);
       d3.select(this).property('checked', true);
       networkView.networkLayout(this.value);
       d3.selectAll('#NetworkPanel')
           .call(networkView);
+    });
+
+  function download (svgInfo, filename) {
+    window.URL = (window.URL || window.webkitURL);
+    var blob = new Blob(svgInfo.source, {type: 'text\/xml'});
+    var url = window.URL.createObjectURL(blob);
+    var body = document.body;
+    var a = document.createElement('a');
+
+    body.appendChild(a);
+    a.setAttribute('download', filename + '.svg');
+    a.setAttribute('href', url);
+    a.style.display = 'none';
+    a.click();
+    a.parentNode.removeChild(a);
+
+    setTimeout(function() {
+      window.URL.revokeObjectURL(url);
+    }, 10);
+  }
+
+  var prefix = {
+    svg: 'http://www.w3.org/2000/svg',
+    xhtml: 'http://www.w3.org/1999/xhtml',
+    xlink: 'http://www.w3.org/1999/xlink',
+    xml: 'http://www.w3.org/XML/1998/namespace',
+    xmlns: 'http://www.w3.org/2000/xmlns/',
+  };
+
+  function setInlineStyles (svg) {
+
+    // add empty svg element
+    var emptySvg = window.document.createElementNS(prefix.svg, 'svg');
+    window.document.body.appendChild(emptySvg);
+    var emptySvgDeclarationComputed = window.getComputedStyle(emptySvg);
+
+    // hardcode computed css styles inside svg
+    var allElements = traverse(svg);
+    var i = allElements.length;
+    while (i--) {
+      explicitlySetStyle(allElements[i]);
+    }
+
+    emptySvg.parentNode.removeChild(emptySvg);
+
+    function explicitlySetStyle(element) {
+      var cSSStyleDeclarationComputed = window.getComputedStyle(element);
+      var i;
+      var len;
+      var key;
+      var value;
+      var computedStyleStr = '';
+
+      for (i = 0, len = cSSStyleDeclarationComputed.length; i < len; i++) {
+        key = cSSStyleDeclarationComputed[i];
+        value = cSSStyleDeclarationComputed.getPropertyValue(key);
+        if (value !== emptySvgDeclarationComputed.getPropertyValue(key)) {
+          // Don't set computed style of width and height. Makes SVG elmements disappear.
+          if ((key !== 'height') && (key !== 'width')) {
+            computedStyleStr += key + ':' + value + ';';
+          }
+
+        }
+      }
+
+      element.setAttribute('style', computedStyleStr);
+    }
+
+    function traverse(obj) {
+      var tree = [];
+      tree.push(obj);
+      visit(obj);
+      function visit(node) {
+        if (node && node.hasChildNodes()) {
+          var child = node.firstChild;
+          while (child) {
+            if (child.nodeType === 1 && child.nodeName != 'SCRIPT') {
+              tree.push(child);
+              visit(child);
+            }
+
+            child = child.nextSibling;
+          }
+        }
+      }
+
+      return tree;
+    }
+  }
+
+  function preprocess (svg) {
+    svg.setAttribute('version', '1.1');
+
+    // removing attributes so they aren't doubled up
+    svg.removeAttribute('xmlns');
+    svg.removeAttribute('xlink');
+
+    // These are needed for the svg
+    if (!svg.hasAttributeNS(prefix.xmlns, 'xmlns')) {
+      svg.setAttributeNS(prefix.xmlns, 'xmlns', prefix.svg);
+    }
+
+    if (!svg.hasAttributeNS(prefix.xmlns, 'xmlns:xlink')) {
+      svg.setAttributeNS(prefix.xmlns, 'xmlns:xlink', prefix.xlink);
+    }
+
+    setInlineStyles(svg);
+
+    var xmls = new XMLSerializer();
+    var source = xmls.serializeToString(svg);
+    var doctype = '<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">';
+    var rect = svg.getBoundingClientRect();
+    var svgInfo = {
+      top: rect.top,
+      left: rect.left,
+      width: rect.width,
+      height: rect.height,
+      class: svg.getAttribute('class'),
+      id: svg.getAttribute('id'),
+      childElementCount: svg.childElementCount,
+      source: [doctype + source],
+    };
+
+    return svgInfo;
+  }
+
+  function save(svgElement, config) {
+    if (svgElement.nodeName !== 'svg' || svgElement.nodeType !== 1) {
+      throw 'Need an svg element input';
+    }
+
+    var config = config || {};
+    var svgInfo = preprocess(svgElement, config);
+    var defaultFileName = getDefaultFileName(svgInfo);
+    var filename = config.filename || defaultFileName;
+    var svgInfo = preprocess(svgElement);
+    download(svgInfo, filename);
+  }
+
+  function getDefaultFileName(svgInfo) {
+    var defaultFileName = 'untitled';
+    if (svgInfo.id) {
+      defaultFileName = svgInfo.id;
+    } else if (svgInfo.class) {
+      defaultFileName = svgInfo.class;
+    } else if (window.document.title) {
+      defaultFileName = window.document.title.replace(/[^a-z0-9]/gi, '-').toLowerCase();
+    }
+
+    return defaultFileName;
+  }
+
+  var exportButton = d3.select('button#export');
+
+  var curCh1 = ''; // dummy to be removed later
+  var curCh2 = ''; // dummy to be removed later
+
+  exportButton
+    .on('click', function() {
+      var networkSVG = d3.select('#NetworkPanel').select('svg').node();
+      var networkSaveName = 'Network' + '_' +
+        networkData.subjectID() + '_' +
+        networkData.edgeStatID() + '_' +
+        networkView.networkLayout() + '_' +
+        networkData.curTime() + timeSlider.units() + '_' +
+        networkData.curFreq() + freqSlider.units();
+
+      save(networkSVG, {filename: networkSaveName});
+
+      var ch1SaveName = 'Spectra' + '_' +
+        networkData.subjectID() + '_' +
+        'Ch' + curCh1;
+
+      var ch1SVG = d3.select('#SpectraCh1Panel').select('svg').node();
+      save(ch1SVG, {filename: ch1SaveName});
+
+      var ch2SaveName = 'Spectra' + '_' +
+        networkData.subjectID() + '_' +
+        'Ch' + curCh2;
+
+      var ch2SVG = d3.select('#SpectraCh2Panel').select('svg').node();
+      save(ch2SVG, {filename: ch2SaveName});
+
+      var edgeSaveName = networkData.edgeStatID() + '_' +
+        networkData.subjectID() + '_' +
+        'Ch' + curCh1 + '_' +
+        'Ch' + curCh2;
+
+      var edgeSVG = d3.select('#EdgeStatPanel').select('svg').node();
+      save(edgeSVG, {filename: edgeSaveName});
+
+      d3.selectAll('circle.node')[0]
+        .forEach(function(n) {n.setAttribute('style', '');
+      });
     });
 
   function init(passedParams) {

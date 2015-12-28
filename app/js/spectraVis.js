@@ -8,6 +8,7 @@ import edgeFilterDropdown from './UI/edgeFilterDropdown';
 import playButton from './UI/playButton';
 import resetButton from './UI/resetButton';
 import networkViewRadio from './UI/networkViewRadio';
+import exportButton from './UI/exportButton';
 
 export function init(passedParams) {
   passedParams.curTime = +passedParams.curTime;
