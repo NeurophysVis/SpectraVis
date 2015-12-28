@@ -168,15 +168,15 @@
 
           networkData.nodes = channelData.map(function(n) {
             var obj = copyObject(n);
-            allNodesMap.set(obj.channelID, obj);
+            allNodesMap.set(subjectID + '_' + obj.channelID, obj);
             return obj;
           });
 
           // Replace source name by source object
           edgeData = edge.map(function(e) {
-            allEdgesMap.set(e.source + '_' + e.target, e);
-            e.source = allNodesMap.get(e.source);
-            e.target = allNodesMap.get(e.target);
+            allEdgesMap.set(subjectID + '_' + e.source + '_' + e.target, e);
+            e.source = allNodesMap.get(subjectID + '_' + e.source);
+            e.target = allNodesMap.get(subjectID + '_' + e.target);
             networkData.edges.push(copyObject(e));
             return e;
           });
@@ -208,7 +208,7 @@
       curFreq = frequencies[curFreqInd];
 
       networkData.edges.forEach(function(e) {
-        var edgeKey = e.source.channelID + '_' + e.target.channelID;
+        var edgeKey = subjectID + '_' + e.source.channelID + '_' + e.target.channelID;
         e.data = allEdgesMap.get(edgeKey).data[curTimeInd][curFreqInd];
       });
 
@@ -218,7 +218,7 @@
     function setFilteredMaps() {
       filteredEdgesMap = d3.map();
       networkData.edges.forEach(function(e) {
-        filteredEdgesMap.set(e.source.channelID + '_' + e.target.channelID, e);
+        filteredEdgesMap.set(subjectID + '_' + e.source.channelID + '_' + e.target.channelID, e);
       });
     }
 
@@ -234,7 +234,7 @@
       networkData.edges = edgeData
         .filter(edgeFilterByConnection[edgeFilterType])
         .map(function(e) {
-          var edgeKey = e.source.channelID + '_' + e.target.channelID;
+          var edgeKey = subjectID + '_' + e.source.channelID + '_' + e.target.channelID;
           if (filteredEdgesMap.has(edgeKey)) {
             // If object already exists in filtered edges, just return the object
             return filteredEdgesMap.get(edgeKey);
@@ -1001,7 +1001,6 @@
     // mouseFlag = true;
     // svgNetworkMap.select('text#HOLD').remove();
     // loadSpectra();
-    // edgeMouseOut.call(this, e);
   }
 
   var networkData = networkDataManager();
