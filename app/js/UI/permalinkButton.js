@@ -29,4 +29,4 @@ permalinkBox.selectAll('.close')
     permalinkBox.style('display', 'none');
   });
 
-export {permalinkBox, permalinkButton};
+export default permalinkButton;
