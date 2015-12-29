@@ -1336,6 +1336,20 @@
       permalinkBox.style('display', 'none');
     });
 
+  // Set up help overlay
+  var overlay = d3.select('#overlay');
+  var helpButton = d3.select('button#help-button');
+  overlay.selectAll('.close')
+    .on('click', function() {
+      overlay.style('display', 'none');
+    });
+
+  helpButton
+    .on('click', function() {
+      overlay
+        .style('display', 'block');
+    });
+
   function init(passedParams) {
     passedParams.curTime = +passedParams.curTime;
     passedParams.curFreq = +passedParams.curFreq;
