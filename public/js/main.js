@@ -148,14 +148,19 @@
     var dispatch = d3.dispatch('dataReady', 'networkChange');
     var isLoaded = false;
     var allNodesMap = d3.map();
-    var filteredNodesMap = d3.map();
-    var allEdgesMap = d3.map();
-    var filteredEdgesMap = d3.map();
+    var filteredNodesMap = {};
+    var allEdgesMap = {};
+    var filteredEdgesMap = {};
     var dataManager = {};
 
     dataManager.loadNetworkData = function() {
       var edgeFile = 'edges_' + subjectID + '_' + edgeStatID + '.json';
       var channelFile = 'channels_' + subjectID + '.json';
+
+      allEdgesMap = d3.map();
+      filteredEdgesMap = d3.map();
+      allNodesMap = d3.map();
+      filteredNodesMap = d3.map();
 
       // Load subject data
       queue()
@@ -182,8 +187,8 @@
           // Replace source name by source object
           edgeData = edge.map(function(e) {
             allEdgesMap.set(subjectID + '_' + e.source + '_' + e.target, e);
-            e.source = allNodesMap.get(subjectID + '_' + e.source);
-            e.target = allNodesMap.get(subjectID + '_' + e.target);
+            e.source = filteredNodesMap.get(subjectID + '_' + e.source);
+            e.target = filteredNodesMap.get(subjectID + '_' + e.target);
             networkData.edges.push(copyObject(e));
             return e;
           });
@@ -224,8 +229,13 @@
     // Map the filtered edges to the edge name
     function setFilteredMaps() {
       filteredEdgesMap = d3.map();
+      filteredNodesMap = d3.map();
       networkData.edges.forEach(function(e) {
         filteredEdgesMap.set(subjectID + '_' + e.source.channelID + '_' + e.target.channelID, e);
+      });
+
+      networkData.nodes.forEach(function(n) {
+        filteredNodesMap.set(subjectID + '_' + n.channelID, n);
       });
     }
 

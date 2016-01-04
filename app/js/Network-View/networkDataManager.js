@@ -35,15 +35,20 @@ export default function() {
   var brainRegions = [];
   var dispatch = d3.dispatch('dataReady', 'networkChange');
   var isLoaded = false;
-  var filteredNodesMap = d3.map();
-  var filteredNodesMap = d3.map();
-  var allEdgesMap = d3.map();
-  var filteredEdgesMap = d3.map();
+  var allNodesMap = d3.map();
+  var filteredNodesMap = {};
+  var allEdgesMap = {};
+  var filteredEdgesMap = {};
   var dataManager = {};
 
   dataManager.loadNetworkData = function() {
     var edgeFile = 'edges_' + subjectID + '_' + edgeStatID + '.json';
     var channelFile = 'channels_' + subjectID + '.json';
+
+    allEdgesMap = d3.map();
+    filteredEdgesMap = d3.map();
+    allNodesMap = d3.map();
+    filteredNodesMap = d3.map();
 
     // Load subject data
     queue()
