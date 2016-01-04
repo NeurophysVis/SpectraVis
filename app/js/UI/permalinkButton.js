@@ -1,9 +1,6 @@
 import networkView from '../Network-View/networkView';
 import networkData from '../Network-View/networkData';
-
-// dummy placeholder to be removed when spectra are implemented
-var curCh1 = '';
-var curCh2 = '';
+import channelData from '../Electrode-Pair-View/channelData';
 
 var permalinkBox = d3.select('#permalink');
 var permalinkButton = d3.select('button#link');
@@ -18,8 +15,8 @@ permalinkButton
       '&networkLayout=' + networkView.networkLayout() +
       '&curTime=' + networkData.curTime() +
       '&curFreq=' + networkData.curFreq() +
-      '&curCh1=' + curCh1 +
-      '&curCh2=' + curCh2;
+      '&curCh1=' + channelData.channel1ID() +
+      '&curCh2=' + channelData.channel2ID();
     permalinkBox.selectAll('textarea').html(linkString);
     permalinkBox.selectAll('.bookmark').attr('href', linkString);
   });

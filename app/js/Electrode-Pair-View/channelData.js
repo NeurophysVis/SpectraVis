@@ -1,5 +1,6 @@
 import channelDataManager from './individualChDataManger';
 import heatmapChart from './heatmapChart';
+import rectMouseOver from './rectMouseOver';
 
 var channelData = channelDataManager();
 var heatmap = heatmapChart();
@@ -25,5 +26,7 @@ channelData.on('channelDataReady', function() {
   };
 
 });
+
+heatmap.on('rectMouseOver', rectMouseOver);
 
 export default channelData;

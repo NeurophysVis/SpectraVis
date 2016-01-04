@@ -1101,6 +1101,15 @@
     return chart;
   }
 
+  function rectMouseOver(d, freqInd, timeInd) {
+    var curTime = networkData.times()[timeInd];
+    var curFreq = networkData.frequencies()[freqInd];
+    networkData
+      .curTime(curTime)
+      .curFreq(curFreq)
+      .filterNetworkData();
+  }
+
   var channelData = channelDataManager();
   var heatmap = heatmapChart();
 
@@ -1125,6 +1134,8 @@
     };
 
   });
+
+  heatmap.on('rectMouseOver', rectMouseOver);
 
   function highlightElectrodePair() {
     // Highlight selected electrode pair
@@ -1676,10 +1687,6 @@
       });
     });
 
-  // dummy placeholder to be removed when spectra are implemented
-  var curCh1$1 = '';
-  var curCh2$1 = '';
-
   var permalinkBox = d3.select('#permalink');
   var permalinkButton = d3.select('button#link');
   permalinkButton
@@ -1693,8 +1700,8 @@
         '&networkLayout=' + networkView.networkLayout() +
         '&curTime=' + networkData.curTime() +
         '&curFreq=' + networkData.curFreq() +
-        '&curCh1=' + curCh1$1 +
-        '&curCh2=' + curCh2$1;
+        '&curCh1=' + channelData.channel1ID() +
+        '&curCh2=' + channelData.channel2ID();
       permalinkBox.selectAll('textarea').html(linkString);
       permalinkBox.selectAll('.bookmark').attr('href', linkString);
     });
