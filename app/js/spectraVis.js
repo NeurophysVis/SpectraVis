@@ -11,6 +11,7 @@ import networkViewRadio from './UI/networkViewRadio';
 import exportButton from './UI/exportButton';
 import permalinkButton from './UI/permalinkButton';
 import helpButton from './UI/helpButton';
+import channelData from './Electrode-Pair-View/channelData';
 
 export function init(passedParams) {
   passedParams.curTime = +passedParams.curTime;
@@ -19,6 +20,11 @@ export function init(passedParams) {
   passedParams.curCh2 = passedParams.curCh2 || '';
   passedParams.networkLayout = passedParams.networkLayout || 'Anatomical';
   passedParams.edgeFilter = passedParams.edgeFilter || 'All';
+
+  channelData
+    .channel1ID(passedParams.curCh1)
+    .channel2ID(passedParams.curCh2);
+
   queue()
     .defer(d3.json, 'DATA/subjects.json')
     .defer(d3.json, 'DATA/visInfo.json')
@@ -26,9 +32,9 @@ export function init(passedParams) {
     .await(function(error, subjects, visInfo, edgeTypes) {
       subjectDropdown.options(subjects);
       edgeStatIDDropdown.options(edgeTypes);
-      var curSubject = passedParams.curSubject || subjects[0].subjectID;
+      var subjectID = passedParams.subjectID || subjects[0].subjectID;
       var curEdgeStatID = passedParams.edgeStatID || edgeTypes[0].edgeStatID;
-      var curSubjectInfo = subjects.filter(function(s) {return s.subjectID === curSubject;})[0];
+      var curSubjectInfo = subjects.filter(function(s) {return s.subjectID === subjectID;})[0];
 
       var curEdgeInfo = edgeTypes.filter(function(s) {return s.edgeStatID === curEdgeStatID;})[0];
 
@@ -36,7 +42,7 @@ export function init(passedParams) {
         .times(visInfo.tax)
         .frequencies(visInfo.fax)
         .edgeStatID(curEdgeStatID)
-        .subjectID(curSubject)
+        .subjectID(subjectID)
         .brainRegions(visInfo.brainRegions)
         .curTime(passedParams.curTime)
         .curFreq(passedParams.curFreq)
@@ -46,6 +52,11 @@ export function init(passedParams) {
         .brainXLim(curSubjectInfo.brainXLim)
         .brainYLim(curSubjectInfo.brainYLim)
         .edgeFilterType(passedParams.edgeFilter);
+
+      channelData
+        .times(visInfo.tax)
+        .frequencies(visInfo.fax)
+        .subjectID(subjectID);
 
       networkView.networkLayout(passedParams.networkLayout);
 
@@ -58,6 +69,7 @@ export function init(passedParams) {
         .units(visInfo.funits);
 
       networkData.loadNetworkData();
+      channelData.loadChannelData();
     });
 
 }

@@ -6,36 +6,36 @@ import {brainRegionColors} from '../Common/scaleColors';
 
 export default function() {
 
-  var edgeData;
-  var channelData;
+  var edgeData = {};
+  var channelData = {};
   var edgeInd;
   var networkData = {
         nodes: [],
         edges: [],
       };
-  var isWeighted;
+  var isWeighted = false;
   var aspectRatio;
-  var isFixed;
-  var isFreq;
-  var imageLink;
+  var isFixed = false;
+  var isFreq = false;
+  var imageLink = '';
   var curTimeInd;
   var curFreqInd;
-  var edgeStatID;
-  var subjectID;
-  var networkView;
-  var times;
-  var frequencies;
-  var curTime;
-  var curFreq;
+  var edgeStatID = '';
+  var subjectID = '';
+  var networkLayout = '';
+  var times = [];
+  var frequencies = [];
+  var curTime = '';
+  var curFreq = '';
   var edgeStatScale;
-  var edgeFilterType;
+  var edgeFilterType = '';
   var brainXLim;
   var brainYLim;
-  var brainRegionScale;
-  var brainRegions;
+  var brainRegionScale = {};
+  var brainRegions = [];
   var dispatch = d3.dispatch('dataReady', 'networkChange');
   var isLoaded = false;
-  var allNodesMap = d3.map();
+  var filteredNodesMap = d3.map();
   var filteredNodesMap = d3.map();
   var allEdgesMap = d3.map();
   var filteredEdgesMap = d3.map();
@@ -62,15 +62,16 @@ export default function() {
 
         networkData.nodes = channelData.map(function(n) {
           var obj = copyObject(n);
-          allNodesMap.set(subjectID + '_' + obj.channelID, obj);
+          allNodesMap.set(subjectID + '_' + obj.channelID, n);
+          filteredNodesMap.set(subjectID + '_' + obj.channelID, obj);
           return obj;
         });
 
         // Replace source name by source object
         edgeData = edge.map(function(e) {
           allEdgesMap.set(subjectID + '_' + e.source + '_' + e.target, e);
-          e.source = allNodesMap.get(subjectID + '_' + e.source);
-          e.target = allNodesMap.get(subjectID + '_' + e.target);
+          e.source = filteredNodesMap.get(subjectID + '_' + e.source);
+          e.target = filteredNodesMap.get(subjectID + '_' + e.target);
           networkData.edges.push(copyObject(e));
           return e;
         });
@@ -111,8 +112,13 @@ export default function() {
   // Map the filtered edges to the edge name
   function setFilteredMaps() {
     filteredEdgesMap = d3.map();
+    filteredNodesMap = d3.map();
     networkData.edges.forEach(function(e) {
       filteredEdgesMap.set(subjectID + '_' + e.source.channelID + '_' + e.target.channelID, e);
+    });
+
+    networkData.nodes.forEach(function(n) {
+      filteredNodesMap.set(subjectID + '_' + n.channelID, n);
     });
   }
 
@@ -209,9 +215,9 @@ export default function() {
     return dataManager;
   };
 
-  dataManager.networkView = function(value) {
-    if (!arguments.length) return networkView;
-    networkView = value;
+  dataManager.networkLayout = function(value) {
+    if (!arguments.length) return networkLayout;
+    networkLayout = value;
     return dataManager;
   };
 

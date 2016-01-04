@@ -1,10 +1,10 @@
 import {edgeStatColors, NUM_EDGE_COLORS} from '../Common/scaleColors';
-import getEdgeDomain from './getEdgeDomain';
+import getDomain from '../Common/getDomain';
 
 export default function(edgeData, isWeighted) {
   if (isWeighted) {
     var edgeStatScale = d3.scale.linear()
-      .domain(getEdgeDomain(edgeData, NUM_EDGE_COLORS))
+      .domain(getDomain(edgeData, NUM_EDGE_COLORS))
       .range(edgeStatColors);
   } else {
     var edgeStatBinaryColors = [0, (NUM_EDGE_COLORS - 1) / 2, NUM_EDGE_COLORS - 1].map(function(n) { return edgeStatColors[n];});

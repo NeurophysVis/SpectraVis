@@ -1,7 +1,7 @@
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
   typeof define === 'function' && define.amd ? define('spectraVis', ['exports'], factory) :
-  factory((global.spectraVis = {}));
+  (factory((global.spectraVis = {})));
 }(this, function (exports) { 'use strict';
 
   function copyObject(obj) {
@@ -34,12 +34,18 @@
     return e.data !== 0;
   }
 
-  var NUM_EDGE_COLORS = 11;
+  const NUM_EDGE_COLORS = 11;
+  const NUM_CHANNEL_COLORS = 11;
 
   // Reverse the colors
   var edgeStatColors = [];
   colorbrewer.RdBu[NUM_EDGE_COLORS].forEach(function(color) {
     edgeStatColors.unshift(color);
+  });
+
+  var channelStatColors = [];
+  colorbrewer.PiYG[NUM_CHANNEL_COLORS].forEach(function(color) {
+    channelStatColors.unshift(color);
   });
 
   var brainRegionColors = colorbrewer.Pastel1[7];
@@ -74,8 +80,8 @@
     return ret;
   }
 
-  function getEdgeDomain(edgeData, numBins) {
-    var edgeStatMin = d3.min(edgeData, function(d) {
+  function getDomain(data, numBins) {
+    var min = d3.min(data, function(d) {
       return d3.min(d.data, function(e) {
         return d3.min(e, function(f) {
           return f;
@@ -83,7 +89,7 @@
       });
     });
 
-    var edgeStatMax = d3.max(edgeData, function(d) {
+    var max = d3.max(data, function(d) {
       return d3.max(d.data, function(e) {
         return d3.max(e, function(f) {
           return f;
@@ -91,13 +97,13 @@
       });
     });
 
-    return getSymmetricDomain(edgeStatMin, edgeStatMax, numBins);
+    return getSymmetricDomain(min, max, numBins);
   }
 
   function createEdgeScale(edgeData, isWeighted) {
     if (isWeighted) {
       var edgeStatScale = d3.scale.linear()
-        .domain(getEdgeDomain(edgeData, NUM_EDGE_COLORS))
+        .domain(getDomain(edgeData, NUM_EDGE_COLORS))
         .range(edgeStatColors);
     } else {
       var edgeStatBinaryColors = [0, (NUM_EDGE_COLORS - 1) / 2, NUM_EDGE_COLORS - 1].map(function(n) { return edgeStatColors[n];});
@@ -112,33 +118,33 @@
 
   function networkDataManager() {
 
-    var edgeData;
-    var channelData;
+    var edgeData = {};
+    var channelData = {};
     var edgeInd;
     var networkData = {
           nodes: [],
           edges: [],
         };
-    var isWeighted;
+    var isWeighted = false;
     var aspectRatio;
-    var isFixed;
-    var isFreq;
-    var imageLink;
+    var isFixed = false;
+    var isFreq = false;
+    var imageLink = '';
     var curTimeInd;
     var curFreqInd;
-    var edgeStatID;
-    var subjectID;
-    var networkView;
-    var times;
-    var frequencies;
-    var curTime;
-    var curFreq;
+    var edgeStatID = '';
+    var subjectID = '';
+    var networkLayout = '';
+    var times = [];
+    var frequencies = [];
+    var curTime = '';
+    var curFreq = '';
     var edgeStatScale;
-    var edgeFilterType;
+    var edgeFilterType = '';
     var brainXLim;
     var brainYLim;
-    var brainRegionScale;
-    var brainRegions;
+    var brainRegionScale = {};
+    var brainRegions = [];
     var dispatch = d3.dispatch('dataReady', 'networkChange');
     var isLoaded = false;
     var allNodesMap = d3.map();
@@ -168,7 +174,8 @@
 
           networkData.nodes = channelData.map(function(n) {
             var obj = copyObject(n);
-            allNodesMap.set(subjectID + '_' + obj.channelID, obj);
+            allNodesMap.set(subjectID + '_' + obj.channelID, n);
+            filteredNodesMap.set(subjectID + '_' + obj.channelID, obj);
             return obj;
           });
 
@@ -315,9 +322,9 @@
       return dataManager;
     };
 
-    dataManager.networkView = function(value) {
-      if (!arguments.length) return networkView;
-      networkView = value;
+    dataManager.networkLayout = function(value) {
+      if (!arguments.length) return networkLayout;
+      networkLayout = value;
       return dataManager;
     };
 
@@ -1350,6 +1357,332 @@
         .style('display', 'block');
     });
 
+  function createChannelScale(channel1Data, channel2Data) {
+
+    var domain = getDomain([channel1Data, channel2Data], NUM_CHANNEL_COLORS);
+
+    var channelStatScale = d3.scale.linear()
+      .domain(domain)
+      .range(channelStatColors);
+
+    return channelStatScale;
+  }
+
+  function channelDataManager() {
+
+    var subjectID = '';
+    var channel1ID = '';
+    var channel2ID = '';
+    var channel1Data = [];
+    var channel2Data = [];
+    var isFreq = true;
+    var channelStatScale = {};
+    var times = [];
+    var frequencies = [];
+    var dispatch = d3.dispatch('channelDataReady');
+    var dataManager = {};
+
+    dataManager.loadChannelData = function() {
+      if (channel1ID === '' || channel2ID === '' || subjectID === '') return;
+      var channel1File = 'spectrogram_' + subjectID + '_' + channel1ID + '.json';
+      var channel2File = 'spectrogram_' + subjectID + '_' + channel2ID + '.json';
+
+      queue()
+        .defer(d3.json, 'DATA/' + channel1File)
+        .defer(d3.json, 'DATA/' + channel2File)
+        .await(function(error, channel1, channel2) {
+          channel1Data = channel1.data;
+          channel2Data = channel2.data;
+          channelStatScale = createChannelScale(channel1, channel2);
+          dispatch.channelDataReady();
+        });
+    };
+
+    dataManager.times = function(value) {
+      if (!arguments.length) return times;
+      times = value;
+      return dataManager;
+    };
+
+    dataManager.frequencies = function(value) {
+      if (!arguments.length) return frequencies;
+      frequencies = value;
+      return dataManager;
+    };
+
+    dataManager.channelStatScale = function(value) {
+      if (!arguments.length) return channelStatScale;
+      channelStatScale = value;
+      return dataManager;
+    };
+
+    dataManager.channel1Data = function(value) {
+      if (!arguments.length) return channel1Data;
+      channel1Data = value;
+      return dataManager;
+    };
+
+    dataManager.channel2Data = function(value) {
+      if (!arguments.length) return channel2Data;
+      channel2Data = value;
+      return dataManager;
+    };
+
+    dataManager.isFreq = function(value) {
+      if (!arguments.length) return isFreq;
+      isFreq = value;
+      return dataManager;
+    };
+
+    dataManager.subjectID = function(value) {
+      if (!arguments.length) return subjectID;
+      subjectID = value;
+      return dataManager;
+    };
+
+    dataManager.channel1ID = function(value) {
+      if (!arguments.length) return channel1ID;
+      channel1ID = value;
+      return dataManager;
+    };
+
+    dataManager.channel2ID = function(value) {
+      if (!arguments.length) return channel2ID;
+      channel2ID = value;
+      return dataManager;
+    };
+
+    d3.rebind(dataManager, dispatch, 'on');
+
+    return dataManager;
+  }
+
+  function heatmapChart() {
+    var colorScale = function() {return '#888888';};
+
+    var margin = {top: 30, right: 30, bottom: 30, left: 30};
+    var outerWidth = 500;
+    var outerHeight = 500;
+
+    var xScaleDomain = [];
+    var yScaleDomain = [];
+    var xScale = d3.scale.ordinal();
+    var yScale = d3.scale.ordinal();
+    var xLabel = '';
+    var yLabel = '';
+    var chartDispatcher = d3.dispatch('rectMouseOver', 'rectMouseClick');
+
+    function chart(selection) {
+
+      var innerWidth = outerWidth - margin.left - margin.right;
+      var innerHeight = outerHeight - margin.top - margin.bottom;
+
+      selection.each(function(data) {
+        var heatmapG;
+        var heatmapRect;
+        var xAxis;
+        var yAxis;
+        var zeroG;
+        var xAxisG;
+        var yAxisG;
+        var zeroLine;
+
+        var svg = d3.select(this).selectAll('svg').data([data]);
+
+        // Initialize the chart
+        svg.enter()
+          .append('svg')
+            .append('g');
+
+        var curPlot = svg.select('g');
+
+        // Update svg size, drawing area, and scales
+        svg
+          .attr('width', innerWidth + margin.left + margin.right)
+          .attr('height', innerHeight + margin.top + margin.bottom);
+        curPlot
+          .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+
+        xScale.domain(xScaleDomain);
+        xScale.rangeBands([0, innerWidth]);
+
+        yScale.domain(yScaleDomain);
+        yScale.rangeBands([innerHeight, 0]);
+
+        heatmapG = curPlot.selectAll('g.heatmapX').data(data);
+        heatmapG.enter()
+          .append('g')
+          .attr('transform', function(d, i) {
+            return 'translate(' + xScale(xScale.domain()[i]) + ', 0)';
+          })
+          .attr('class', 'heatmapX');
+        heatmapG.exit()
+          .remove();
+        heatmapRect = heatmapG.selectAll('rect').data(function(d) {
+          return d;
+        });
+
+        heatmapRect.enter()
+          .append('rect')
+          .attr('x', 0)
+          .attr('y', function(d, i) {
+            return yScale(yScale.domain()[i]);
+          })
+          .attr('height', yScale.rangeBand())
+          .attr('width', xScale.rangeBand())
+          .style('fill', 'white');
+        heatmapRect
+          .style('fill', function(d) {
+            return colorScale(d);
+          })
+          .style('stroke', function(d) {
+            return colorScale(d);
+          })
+          .on('mouseover', chartDispatcher.rectMouseOver)
+          .on('click', chartDispatcher.rectMouseClick);
+        heatmapRect.exit()
+          .remove();
+
+        xAxis = d3.svg.axis()
+          .scale(xScale)
+          .orient('bottom')
+          .ticks(3)
+          .tickValues([d3.min(xScale.domain()), 0, d3.max(xScale.domain())])
+          .tickSize(0, 0, 0);
+        yAxis = d3.svg.axis()
+          .scale(yScale)
+          .orient('left')
+          .tickValues(['10', '20', '40', '60', '90', '150', '200'])
+          .tickSize(0, 0, 0);
+
+        xAxisG = curPlot.selectAll('g.axis#x').data([{}]);
+        xAxisG.enter()
+          .append('g')
+          .attr('class', 'axis')
+          .attr('id', 'x')
+          .attr('transform', 'translate(0,' + innerHeight + ')')
+          .append('text')
+          .attr('x', xScale(0))
+          .attr('y', 0)
+          .attr('text-anchor', 'middle')
+          .attr('dy', 2 + 'em')
+          .text(xLabel);
+        xAxisG.call(xAxis);
+
+        yAxisG = curPlot.selectAll('g.axis#y').data([{}]);
+        yAxisG.enter()
+          .append('g')
+          .attr('class', 'axis')
+          .attr('id', 'y')
+          .append('text')
+          .attr('x', -innerHeight / 2)
+          .attr('dy', -2 + 'em')
+          .attr('transform', 'rotate(-90)')
+          .attr('text-anchor', 'middle')
+          .text(yLabel);
+        yAxisG.call(yAxis);
+
+        zeroG = curPlot.selectAll('g.zeroLine').data([
+          [
+            [0, innerHeight],
+          ],
+        ]);
+        zeroG.enter()
+          .append('g')
+          .attr('class', 'zeroLine');
+        zeroLine = zeroG.selectAll('path').data(function(d) {
+          return d;
+        });
+
+        zeroLine.enter()
+          .append('path');
+        zeroLine
+          .attr('d', d3.svg.line()
+            .x(xScale(0))
+            .y(function(d) {
+              return d;
+            })
+            .interpolate('linear'))
+          .attr('stroke', 'black')
+          .attr('stroke-width', 2)
+          .attr('fill', 'none')
+          .style('opacity', 0.7);
+      });
+    }
+
+    chart.colorScale = function(scale) {
+      if (!arguments.length) return colorScale;
+      colorScale = scale;
+      return chart;
+    };
+
+    chart.xScaleDomain = function(scale) {
+      if (!arguments.length) return xScaleDomain;
+      xScaleDomain = scale;
+      return chart;
+    };
+
+    chart.yScaleDomain = function(scale) {
+      if (!arguments.length) return yScaleDomain;
+      yScaleDomain = scale;
+      return chart;
+    };
+
+    chart.width = function(value) {
+      if (!arguments.length) return outerWidth;
+      outerWidth = value;
+      return chart;
+    };
+
+    chart.height = function(value) {
+      if (!arguments.length) return outerHeight;
+      outerHeight = value;
+      return chart;
+    };
+
+    chart.yLabel = function(value) {
+      if (!arguments.length) return yLabel;
+      yLabel = value;
+      return chart;
+    };
+
+    chart.xLabel = function(value) {
+      if (!arguments.length) return xLabel;
+      xLabel = value;
+      return chart;
+    };
+
+    d3.rebind(chart, chartDispatcher, 'on');
+
+    return chart;
+  }
+
+  var channelData = channelDataManager();
+  var heatmap = heatmapChart();
+
+  channelData.on('channelDataReady', function() {
+    if (channelData.channel1ID() === '' || channelData.channel2ID() === '') {
+      d3.selectAll('.electrode-pair').style('display', 'none');
+    } else {
+      var panelWidth = document.getElementById('Ch1Panel').offsetWidth;
+      var panelHeight = panelWidth * (4 / 5);
+
+      d3.selectAll('.electrode-pair').style('display', 'block');
+
+      heatmap
+        .width(panelWidth)
+        .height(panelHeight)
+        .xScaleDomain(channelData.times())
+        .yScaleDomain(channelData.frequencies())
+        .colorScale(channelData.channelStatScale());
+
+      d3.selectAll('.individual')
+        .data([channelData.channel1Data(), channelData.channel2Data()])
+        .call(heatmap);
+    };
+
+  });
+
   function init(passedParams) {
     passedParams.curTime = +passedParams.curTime;
     passedParams.curFreq = +passedParams.curFreq;
@@ -1357,6 +1690,11 @@
     passedParams.curCh2 = passedParams.curCh2 || '';
     passedParams.networkLayout = passedParams.networkLayout || 'Anatomical';
     passedParams.edgeFilter = passedParams.edgeFilter || 'All';
+
+    channelData
+      .channel1ID(passedParams.curCh1)
+      .channel2ID(passedParams.curCh2);
+
     queue()
       .defer(d3.json, 'DATA/subjects.json')
       .defer(d3.json, 'DATA/visInfo.json')
@@ -1364,9 +1702,9 @@
       .await(function(error, subjects, visInfo, edgeTypes) {
         subjectDropdown.options(subjects);
         edgeStatIDDropdown.options(edgeTypes);
-        var curSubject = passedParams.curSubject || subjects[0].subjectID;
+        var subjectID = passedParams.subjectID || subjects[0].subjectID;
         var curEdgeStatID = passedParams.edgeStatID || edgeTypes[0].edgeStatID;
-        var curSubjectInfo = subjects.filter(function(s) {return s.subjectID === curSubject;})[0];
+        var curSubjectInfo = subjects.filter(function(s) {return s.subjectID === subjectID;})[0];
 
         var curEdgeInfo = edgeTypes.filter(function(s) {return s.edgeStatID === curEdgeStatID;})[0];
 
@@ -1374,7 +1712,7 @@
           .times(visInfo.tax)
           .frequencies(visInfo.fax)
           .edgeStatID(curEdgeStatID)
-          .subjectID(curSubject)
+          .subjectID(subjectID)
           .brainRegions(visInfo.brainRegions)
           .curTime(passedParams.curTime)
           .curFreq(passedParams.curFreq)
@@ -1384,6 +1722,11 @@
           .brainXLim(curSubjectInfo.brainXLim)
           .brainYLim(curSubjectInfo.brainYLim)
           .edgeFilterType(passedParams.edgeFilter);
+
+        channelData
+          .times(visInfo.tax)
+          .frequencies(visInfo.fax)
+          .subjectID(subjectID);
 
         networkView.networkLayout(passedParams.networkLayout);
 
@@ -1396,6 +1739,7 @@
           .units(visInfo.funits);
 
         networkData.loadNetworkData();
+        channelData.loadChannelData();
       });
 
   }

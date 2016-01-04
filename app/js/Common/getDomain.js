@@ -1,7 +1,7 @@
 import getSymmetricDomain from '../Common/getSymmetricDomain';
 
-export default function(edgeData, numBins) {
-  var edgeStatMin = d3.min(edgeData, function(d) {
+export default function(data, numBins) {
+  var min = d3.min(data, function(d) {
     return d3.min(d.data, function(e) {
       return d3.min(e, function(f) {
         return f;
@@ -9,7 +9,7 @@ export default function(edgeData, numBins) {
     });
   });
 
-  var edgeStatMax = d3.max(edgeData, function(d) {
+  var max = d3.max(data, function(d) {
     return d3.max(d.data, function(e) {
       return d3.max(e, function(f) {
         return f;
@@ -17,5 +17,5 @@ export default function(edgeData, numBins) {
     });
   });
 
-  return getSymmetricDomain(edgeStatMin, edgeStatMax, numBins);
+  return getSymmetricDomain(min, max, numBins);
 }
