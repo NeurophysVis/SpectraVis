@@ -8,10 +8,9 @@ channelData.on('channelDataReady', function() {
   if (channelData.channel1ID() === '' || channelData.channel2ID() === '') {
     d3.selectAll('.electrode-pair').style('display', 'none');
   } else {
+    d3.selectAll('.electrode-pair').style('display', 'block');
     var panelWidth = document.getElementById('Ch1Panel').offsetWidth;
     var panelHeight = panelWidth * (4 / 5);
-
-    d3.selectAll('.electrode-pair').style('display', 'block');
 
     heatmap
       .width(panelWidth)

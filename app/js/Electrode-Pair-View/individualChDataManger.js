@@ -15,7 +15,11 @@ export default function() {
   var dataManager = {};
 
   dataManager.loadChannelData = function() {
-    if (channel1ID === '' || channel2ID === '' || subjectID === '') return;
+    if (channel1ID === '' || channel2ID === '' || subjectID === '') {
+      dispatch.channelDataReady();
+      return;
+    }
+
     var channel1File = 'spectrogram_' + subjectID + '_' + channel1ID + '.json';
     var channel2File = 'spectrogram_' + subjectID + '_' + channel2ID + '.json';
 

@@ -5,6 +5,7 @@ import timeSlider from '../UI/timeSlider';
 import subjectDropdown from '../UI/subjectDropdown';
 import edgeStatIDDropdown from '../UI/edgeStatIDDropdown';
 import edgeFilterDropdown from '../UI/edgeFilterDropdown';
+import highlightElectrodePair from './highlightElectrodePair';
 
 var networkData = networkDataManager();
 
@@ -29,10 +30,8 @@ networkData.on('networkChange', function() {
   d3.select('#SubjectPanel').datum(networkData.subjectID()).call(subjectDropdown);
   d3.select('#EdgeStatTypePanel').datum(networkData.edgeStatID()).call(edgeStatIDDropdown);
   d3.select('#EdgeFilterPanel').datum(networkData.edgeFilterType()).call(edgeFilterDropdown);
-});
 
-networkData.on('dataReady', function() {
-  console.log('dataReady');
+  highlightElectrodePair();
 });
 
 export default networkData;

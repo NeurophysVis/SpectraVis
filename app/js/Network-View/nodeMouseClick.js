@@ -1,3 +1,6 @@
+import channelData from '../Electrode-Pair-View/channelData';
+import highlightElectrodePair from './highlightElectrodePair';
+
 export default function(n) {
   var curNode = d3.select(this);
   curNode.classed('node-clicked', !curNode.classed('node-clicked'));
@@ -10,7 +13,12 @@ export default function(n) {
 
     var curCh1 = channelIDs[0];
     var curCh2 = channelIDs[1];
-    console.log('load spectra: Ch' + curCh1 + ', Ch' + curCh2);
+    channelData
+      .channel1ID(curCh1)
+      .channel2ID(curCh2)
+      .loadChannelData();
+
+    highlightElectrodePair();
 
     d3.selectAll('.node-clicked').classed('node-clicked', false);
     d3.selectAll('.gnode').selectAll('circle').attr('transform', 'scale(1)');

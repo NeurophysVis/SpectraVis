@@ -797,576 +797,6 @@
       .attr('transform', 'scale(1)');
   }
 
-  function nodeMouseClick(n) {
-    var curNode = d3.select(this);
-    curNode.classed('node-clicked', !curNode.classed('node-clicked'));
-    d3.selectAll('.gnode').selectAll('circle').attr('transform', 'scale(1)');
-    d3.selectAll('.node-clicked').selectAll('circle').attr('transform', 'scale(1.2)');
-
-    var numClicked = d3.selectAll('.node-clicked')[0].length;
-    if (numClicked >= 2) {
-      var channelIDs = d3.selectAll('.node-clicked').data().map(function(d) {return d.channelID;});
-
-      var curCh1 = channelIDs[0];
-      var curCh2 = channelIDs[1];
-      console.log('load spectra: Ch' + curCh1 + ', Ch' + curCh2);
-
-      d3.selectAll('.node-clicked').classed('node-clicked', false);
-      d3.selectAll('.gnode').selectAll('circle').attr('transform', 'scale(1)');
-    }
-  }
-
-  function edgeMouseClick(e) {
-    var re = /\d+/;
-    var curCh1 = re.exec(e.source.channelID)[0];
-    var curCh2 = re.exec(e.target.channelID)[0];
-    console.log('load spectra: Ch' + curCh1 + ', Ch' + curCh2);
-
-    // mouseFlag = true;
-    // svgNetworkMap.select('text#HOLD').remove();
-    // loadSpectra();
-  }
-
-  var networkView = networkChart();
-
-  networkView.on('edgeMouseOver', edgeMouseOver);
-  networkView.on('edgeMouseOut', edgeMouseOut);
-  networkView.on('nodeMouseClick', nodeMouseClick);
-  networkView.on('edgeMouseClick', edgeMouseClick);
-
-  function createSlider() {
-
-    var stepSize;
-    var domain;
-    var maxStepInd;
-    var units;
-    var curValue;
-    var minValue;
-    var maxValue;
-    var running = false;
-    var delay = 200;
-    var dispatch = d3.dispatch('sliderChange', 'start', 'stop');
-
-    function slider(selection) {
-      selection.each(function(value) {
-        var input = d3.select(this).selectAll('input');
-        var output = d3.select(this).selectAll('output');
-        stepSize = d3.round(domain[1] - domain[0], 4);
-        maxStepInd = domain.length - 1;
-        curValue = value;
-        minValue = d3.min(domain);
-        maxValue = d3.max(domain);
-
-        input.property('min', minValue);
-        input.property('max', maxValue);
-        input.property('step', stepSize);
-        input.property('value', value);
-        input.on('input', function() {
-          dispatch.sliderChange(+this.value);
-        });
-
-        output.text(value + ' ' + units);
-      });
-    };
-
-    slider.stepSize = function(value) {
-      if (!arguments.length) return stepSize;
-      stepSize = value;
-      return slider;
-    };
-
-    slider.running = function(value) {
-      if (!arguments.length) return running;
-      running = value;
-      return slider;
-    };
-
-    slider.delay = function(value) {
-      if (!arguments.length) return delay;
-      delay = value;
-      return slider;
-    };
-
-    slider.domain = function(value) {
-      if (!arguments.length) return domain;
-      domain = value;
-      return slider;
-    };
-
-    slider.units = function(value) {
-      if (!arguments.length) return units;
-      units = value;
-      return slider;
-    };
-
-    slider.maxStepInd = function(value) {
-      if (!arguments.length) return maxStepInd;
-      maxStepInd = value;
-      return slider;
-    };
-
-    slider.curValue = function(value) {
-      if (!arguments.length) return curValue;
-      curValue = value;
-      return slider;
-    };
-
-    slider.play = function() {
-      running = true;
-      dispatch.start();
-
-      var t = setInterval(step, delay);
-
-      function step() {
-        if (curValue < maxValue && running) {
-          curValue += stepSize;
-          dispatch.sliderChange(curValue);
-        } else {
-          dispatch.stop();
-          running = false;
-          clearInterval(t);
-        }
-      }
-    };
-
-    slider.stop = function() {
-      running = false;
-      dispatch.stop();
-    };
-
-    slider.reset = function() {
-      running = false;
-      dispatch.sliderChange(minValue);
-      dispatch.stop();
-    };
-
-    d3.rebind(slider, dispatch, 'on');
-
-    return slider;
-
-  }
-
-  var freqSlider = createSlider();
-  freqSlider.on('sliderChange', function(curFreq) {
-    networkData
-      .curFreq(curFreq)
-      .filterNetworkData();
-  });
-
-  var timeSlider = createSlider();
-  timeSlider.on('sliderChange', function(curTime) {
-    networkData.curTime(curTime);
-    networkData.filterNetworkData();
-  });
-
-  timeSlider.on('stop', function() {
-    d3.select('#playButton').text('Play');
-  });
-
-  timeSlider.on('start', function() {
-    d3.select('#playButton').text('Stop');
-  });
-
-  function createDropdown() {
-    var key;
-    var displayName;
-    var options;
-    var dispatch = d3.dispatch('click');
-
-    function button(selection) {
-      selection.each(function(data) {
-        var menu = d3.select(this).selectAll('ul').selectAll('li').data(options, function(d) {
-          return d[key];
-        });
-
-        displayName = (typeof displayName === 'undefined') ? key : displayName;
-
-        menu.enter()
-          .append('li')
-            .attr('id', function(d) {
-              return d[key];
-            })
-            .attr('role', 'presentation')
-            .append('a')
-              .attr('role', 'menuitem')
-              .attr('tabindex', -1)
-              .text(function(d) {
-                return d[displayName];
-              });
-
-        menu.on('click', dispatch.click);
-
-        menu.exit().remove();
-
-        var curText = options.filter(function(d) {return d[key] === data;})
-          .map(function(d) {return d[displayName];})[0];
-
-        d3.select(this).selectAll('button')
-          .text(curText)
-          .append('span')
-          .attr('class', 'caret');
-      });
-
-    }
-
-    button.key = function(value) {
-      if (!arguments.length) return key;
-      key = value;
-      return button;
-    };
-
-    button.options = function(value) {
-      if (!arguments.length) return options;
-      options = value;
-      return button;
-    };
-
-    button.displayName = function(value) {
-      if (!arguments.length) return displayName;
-      displayName = value;
-      return button;
-    };
-
-    d3.rebind(button, dispatch, 'on');
-
-    return button;
-
-  }
-
-  var subjectDropdown = createDropdown().key('subjectID');
-  subjectDropdown.on('click', function() {
-    var curSubjectInfo = d3.select(this).data()[0];
-    networkData
-      .subjectID(curSubjectInfo.subjectID)
-      .aspectRatio(curSubjectInfo.brainXpixels / curSubjectInfo.brainYpixels)
-      .brainXLim(curSubjectInfo.brainXLim)
-      .brainYLim(curSubjectInfo.brainYLim)
-      .loadNetworkData();
-  });
-
-  var edgeStatIDDropdown = createDropdown().key('edgeStatID').displayName('edgeStatName');
-  edgeStatIDDropdown.on('click', function() {
-    var curEdgeInfo = d3.select(this).data()[0];
-    networkData
-      .edgeStatID(curEdgeInfo.edgeStatID)
-      .isFreq(curEdgeInfo.isFreq)
-      .isWeighted(curEdgeInfo.isWeightedNetwork)
-      .loadNetworkData();
-  });
-
-  var filterTypes = [
-  	{
-      filterName: 'All Edges',
-      filterType: 'All',
-    },
-    {
-      filterName: 'Within Area Edges',
-      filterType: 'Within',
-    },
-    {
-      filterName: 'Between Area Edges',
-      filterType: 'Between',
-    },
-  ];
-
-  var edgeFilterDropdown = createDropdown()
-    .key('filterType')
-    .displayName('filterName')
-    .options(filterTypes);
-
-  edgeFilterDropdown.on('click', function() {
-    var edgeFilter = d3.select(this).data()[0];
-    networkData
-      .edgeFilterType(edgeFilter.filterType)
-      .filterNetworkData();
-  });
-
-  var networkData = networkDataManager();
-
-  networkData.on('networkChange', function() {
-    var networkWidth = document.getElementById('NetworkPanel').offsetWidth;
-    var networkHeight = networkWidth / networkData.aspectRatio();
-
-    networkView
-      .width(networkWidth)
-      .height(networkHeight)
-      .xScaleDomain(networkData.brainXLim())
-      .yScaleDomain(networkData.brainYLim())
-      .edgeStatScale(networkData.edgeStatScale())
-      .imageLink(networkData.imageLink())
-      .nodeColorScale(networkData.brainRegionScale());
-
-    d3.select('#NetworkPanel').datum(networkData.networkData())
-        .call(networkView);
-
-    d3.select('#TimeSliderPanel').datum(networkData.curTime()).call(timeSlider);
-    d3.select('#FreqSliderPanel').datum(networkData.curFreq()).call(freqSlider);
-    d3.select('#SubjectPanel').datum(networkData.subjectID()).call(subjectDropdown);
-    d3.select('#EdgeStatTypePanel').datum(networkData.edgeStatID()).call(edgeStatIDDropdown);
-    d3.select('#EdgeFilterPanel').datum(networkData.edgeFilterType()).call(edgeFilterDropdown);
-  });
-
-  networkData.on('dataReady', function() {
-    console.log('dataReady');
-  });
-
-  var playButton = d3.select('#playButton');
-  playButton.on('click', function() {
-    timeSlider.running() ? timeSlider.stop() : timeSlider.play();
-  });
-
-  var resetButton = d3.select('#resetButton');
-
-  resetButton.on('click', function() {
-    timeSlider.reset();
-  });
-
-  var networkViewRadio = d3.select('#NetworkLayoutPanel');
-  networkViewRadio.selectAll('input').on('click', function() {
-      networkViewRadio.selectAll('input')
-        .property('checked', false);
-      d3.select(this).property('checked', true);
-      networkView.networkLayout(this.value);
-      d3.selectAll('#NetworkPanel')
-          .call(networkView);
-    });
-
-  function download (svgInfo, filename) {
-    window.URL = (window.URL || window.webkitURL);
-    var blob = new Blob(svgInfo.source, {type: 'text\/xml'});
-    var url = window.URL.createObjectURL(blob);
-    var body = document.body;
-    var a = document.createElement('a');
-
-    body.appendChild(a);
-    a.setAttribute('download', filename + '.svg');
-    a.setAttribute('href', url);
-    a.style.display = 'none';
-    a.click();
-    a.parentNode.removeChild(a);
-
-    setTimeout(function() {
-      window.URL.revokeObjectURL(url);
-    }, 10);
-  }
-
-  var prefix = {
-    svg: 'http://www.w3.org/2000/svg',
-    xhtml: 'http://www.w3.org/1999/xhtml',
-    xlink: 'http://www.w3.org/1999/xlink',
-    xml: 'http://www.w3.org/XML/1998/namespace',
-    xmlns: 'http://www.w3.org/2000/xmlns/',
-  };
-
-  function setInlineStyles (svg) {
-
-    // add empty svg element
-    var emptySvg = window.document.createElementNS(prefix.svg, 'svg');
-    window.document.body.appendChild(emptySvg);
-    var emptySvgDeclarationComputed = window.getComputedStyle(emptySvg);
-
-    // hardcode computed css styles inside svg
-    var allElements = traverse(svg);
-    var i = allElements.length;
-    while (i--) {
-      explicitlySetStyle(allElements[i]);
-    }
-
-    emptySvg.parentNode.removeChild(emptySvg);
-
-    function explicitlySetStyle(element) {
-      var cSSStyleDeclarationComputed = window.getComputedStyle(element);
-      var i;
-      var len;
-      var key;
-      var value;
-      var computedStyleStr = '';
-
-      for (i = 0, len = cSSStyleDeclarationComputed.length; i < len; i++) {
-        key = cSSStyleDeclarationComputed[i];
-        value = cSSStyleDeclarationComputed.getPropertyValue(key);
-        if (value !== emptySvgDeclarationComputed.getPropertyValue(key)) {
-          // Don't set computed style of width and height. Makes SVG elmements disappear.
-          if ((key !== 'height') && (key !== 'width')) {
-            computedStyleStr += key + ':' + value + ';';
-          }
-
-        }
-      }
-
-      element.setAttribute('style', computedStyleStr);
-    }
-
-    function traverse(obj) {
-      var tree = [];
-      tree.push(obj);
-      visit(obj);
-      function visit(node) {
-        if (node && node.hasChildNodes()) {
-          var child = node.firstChild;
-          while (child) {
-            if (child.nodeType === 1 && child.nodeName != 'SCRIPT') {
-              tree.push(child);
-              visit(child);
-            }
-
-            child = child.nextSibling;
-          }
-        }
-      }
-
-      return tree;
-    }
-  }
-
-  function preprocess (svg) {
-    svg.setAttribute('version', '1.1');
-
-    // removing attributes so they aren't doubled up
-    svg.removeAttribute('xmlns');
-    svg.removeAttribute('xlink');
-
-    // These are needed for the svg
-    if (!svg.hasAttributeNS(prefix.xmlns, 'xmlns')) {
-      svg.setAttributeNS(prefix.xmlns, 'xmlns', prefix.svg);
-    }
-
-    if (!svg.hasAttributeNS(prefix.xmlns, 'xmlns:xlink')) {
-      svg.setAttributeNS(prefix.xmlns, 'xmlns:xlink', prefix.xlink);
-    }
-
-    setInlineStyles(svg);
-
-    var xmls = new XMLSerializer();
-    var source = xmls.serializeToString(svg);
-    var doctype = '<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">';
-    var rect = svg.getBoundingClientRect();
-    var svgInfo = {
-      top: rect.top,
-      left: rect.left,
-      width: rect.width,
-      height: rect.height,
-      class: svg.getAttribute('class'),
-      id: svg.getAttribute('id'),
-      childElementCount: svg.childElementCount,
-      source: [doctype + source],
-    };
-
-    return svgInfo;
-  }
-
-  function save(svgElement, config) {
-    if (svgElement.nodeName !== 'svg' || svgElement.nodeType !== 1) {
-      throw 'Need an svg element input';
-    }
-
-    var config = config || {};
-    var svgInfo = preprocess(svgElement, config);
-    var defaultFileName = getDefaultFileName(svgInfo);
-    var filename = config.filename || defaultFileName;
-    var svgInfo = preprocess(svgElement);
-    download(svgInfo, filename);
-  }
-
-  function getDefaultFileName(svgInfo) {
-    var defaultFileName = 'untitled';
-    if (svgInfo.id) {
-      defaultFileName = svgInfo.id;
-    } else if (svgInfo.class) {
-      defaultFileName = svgInfo.class;
-    } else if (window.document.title) {
-      defaultFileName = window.document.title.replace(/[^a-z0-9]/gi, '-').toLowerCase();
-    }
-
-    return defaultFileName;
-  }
-
-  var exportButton = d3.select('button#export');
-
-  var curCh1 = ''; // dummy to be removed later
-  var curCh2 = ''; // dummy to be removed later
-
-  exportButton
-    .on('click', function() {
-      var networkSVG = d3.select('#NetworkPanel').select('svg').node();
-      var networkSaveName = 'Network' + '_' +
-        networkData.subjectID() + '_' +
-        networkData.edgeStatID() + '_' +
-        networkView.networkLayout() + '_' +
-        networkData.curTime() + timeSlider.units() + '_' +
-        networkData.curFreq() + freqSlider.units();
-
-      save(networkSVG, {filename: networkSaveName});
-
-      var ch1SaveName = 'Spectra' + '_' +
-        networkData.subjectID() + '_' +
-        'Ch' + curCh1;
-
-      var ch1SVG = d3.select('#SpectraCh1Panel').select('svg').node();
-      save(ch1SVG, {filename: ch1SaveName});
-
-      var ch2SaveName = 'Spectra' + '_' +
-        networkData.subjectID() + '_' +
-        'Ch' + curCh2;
-
-      var ch2SVG = d3.select('#SpectraCh2Panel').select('svg').node();
-      save(ch2SVG, {filename: ch2SaveName});
-
-      var edgeSaveName = networkData.edgeStatID() + '_' +
-        networkData.subjectID() + '_' +
-        'Ch' + curCh1 + '_' +
-        'Ch' + curCh2;
-
-      var edgeSVG = d3.select('#EdgeStatPanel').select('svg').node();
-      save(edgeSVG, {filename: edgeSaveName});
-
-      d3.selectAll('circle.node')[0]
-        .forEach(function(n) {n.setAttribute('style', '');
-      });
-    });
-
-  // dummy placeholder to be removed when spectra are implemented
-  var curCh1$1 = '';
-  var curCh2$1 = '';
-
-  var permalinkBox = d3.select('#permalink');
-  var permalinkButton = d3.select('button#link');
-  permalinkButton
-    .on('click', function() {
-      permalinkBox
-        .style('display', 'block');
-      var linkString = window.location.origin + window.location.pathname + '?' +
-        'curSubject=' + networkData.subjectID() +
-        '&edgeStatID=' + networkData.edgeStatID() +
-        '&edgeFilter=' + networkData.edgeFilterType() +
-        '&networkLayout=' + networkView.networkLayout() +
-        '&curTime=' + networkData.curTime() +
-        '&curFreq=' + networkData.curFreq() +
-        '&curCh1=' + curCh1$1 +
-        '&curCh2=' + curCh2$1;
-      permalinkBox.selectAll('textarea').html(linkString);
-      permalinkBox.selectAll('.bookmark').attr('href', linkString);
-    });
-
-  permalinkBox.selectAll('.close')
-    .on('click', function() {
-      permalinkBox.style('display', 'none');
-    });
-
-  // Set up help overlay
-  var overlay = d3.select('#overlay');
-  var helpButton = d3.select('button#help-button');
-  overlay.selectAll('.close')
-    .on('click', function() {
-      overlay.style('display', 'none');
-    });
-
-  helpButton
-    .on('click', function() {
-      overlay
-        .style('display', 'block');
-    });
-
   function createChannelScale(channel1Data, channel2Data) {
 
     var domain = getDomain([channel1Data, channel2Data], NUM_CHANNEL_COLORS);
@@ -1393,7 +823,11 @@
     var dataManager = {};
 
     dataManager.loadChannelData = function() {
-      if (channel1ID === '' || channel2ID === '' || subjectID === '') return;
+      if (channel1ID === '' || channel2ID === '' || subjectID === '') {
+        dispatch.channelDataReady();
+        return;
+      }
+
       var channel1File = 'spectrogram_' + subjectID + '_' + channel1ID + '.json';
       var channel2File = 'spectrogram_' + subjectID + '_' + channel2ID + '.json';
 
@@ -1674,10 +1108,9 @@
     if (channelData.channel1ID() === '' || channelData.channel2ID() === '') {
       d3.selectAll('.electrode-pair').style('display', 'none');
     } else {
+      d3.selectAll('.electrode-pair').style('display', 'block');
       var panelWidth = document.getElementById('Ch1Panel').offsetWidth;
       var panelHeight = panelWidth * (4 / 5);
-
-      d3.selectAll('.electrode-pair').style('display', 'block');
 
       heatmap
         .width(panelWidth)
@@ -1692,6 +1125,598 @@
     };
 
   });
+
+  function highlightElectrodePair() {
+    // Highlight selected electrode pair
+    d3.selectAll('circle.node').style('stroke', 'white');
+    d3.selectAll('circle.node').filter(function(n) {
+        return (n.channelID === channelData.channel1ID()) || (n.channelID === channelData.channel2ID());
+      })
+      .style('stroke', 'black');
+  }
+
+  function nodeMouseClick(n) {
+    var curNode = d3.select(this);
+    curNode.classed('node-clicked', !curNode.classed('node-clicked'));
+    d3.selectAll('.gnode').selectAll('circle').attr('transform', 'scale(1)');
+    d3.selectAll('.node-clicked').selectAll('circle').attr('transform', 'scale(1.2)');
+
+    var numClicked = d3.selectAll('.node-clicked')[0].length;
+    if (numClicked >= 2) {
+      var channelIDs = d3.selectAll('.node-clicked').data().map(function(d) {return d.channelID;});
+
+      var curCh1 = channelIDs[0];
+      var curCh2 = channelIDs[1];
+      channelData
+        .channel1ID(curCh1)
+        .channel2ID(curCh2)
+        .loadChannelData();
+
+      highlightElectrodePair();
+
+      d3.selectAll('.node-clicked').classed('node-clicked', false);
+      d3.selectAll('.gnode').selectAll('circle').attr('transform', 'scale(1)');
+    }
+  }
+
+  function edgeMouseClick(e) {
+    var re = /\d+/;
+    var curCh1 = re.exec(e.source.channelID)[0];
+    var curCh2 = re.exec(e.target.channelID)[0];
+    channelData
+      .channel1ID(curCh1)
+      .channel2ID(curCh2)
+      .loadChannelData();
+
+    highlightElectrodePair();
+
+    // mouseFlag = true;
+    // svgNetworkMap.select('text#HOLD').remove();
+  }
+
+  var networkView = networkChart();
+
+  networkView.on('edgeMouseOver', edgeMouseOver);
+  networkView.on('edgeMouseOut', edgeMouseOut);
+  networkView.on('nodeMouseClick', nodeMouseClick);
+  networkView.on('edgeMouseClick', edgeMouseClick);
+
+  function createSlider() {
+
+    var stepSize;
+    var domain;
+    var maxStepInd;
+    var units;
+    var curValue;
+    var minValue;
+    var maxValue;
+    var running = false;
+    var delay = 200;
+    var dispatch = d3.dispatch('sliderChange', 'start', 'stop');
+
+    function slider(selection) {
+      selection.each(function(value) {
+        var input = d3.select(this).selectAll('input');
+        var output = d3.select(this).selectAll('output');
+        stepSize = d3.round(domain[1] - domain[0], 4);
+        maxStepInd = domain.length - 1;
+        curValue = value;
+        minValue = d3.min(domain);
+        maxValue = d3.max(domain);
+
+        input.property('min', minValue);
+        input.property('max', maxValue);
+        input.property('step', stepSize);
+        input.property('value', value);
+        input.on('input', function() {
+          dispatch.sliderChange(+this.value);
+        });
+
+        output.text(value + ' ' + units);
+      });
+    };
+
+    slider.stepSize = function(value) {
+      if (!arguments.length) return stepSize;
+      stepSize = value;
+      return slider;
+    };
+
+    slider.running = function(value) {
+      if (!arguments.length) return running;
+      running = value;
+      return slider;
+    };
+
+    slider.delay = function(value) {
+      if (!arguments.length) return delay;
+      delay = value;
+      return slider;
+    };
+
+    slider.domain = function(value) {
+      if (!arguments.length) return domain;
+      domain = value;
+      return slider;
+    };
+
+    slider.units = function(value) {
+      if (!arguments.length) return units;
+      units = value;
+      return slider;
+    };
+
+    slider.maxStepInd = function(value) {
+      if (!arguments.length) return maxStepInd;
+      maxStepInd = value;
+      return slider;
+    };
+
+    slider.curValue = function(value) {
+      if (!arguments.length) return curValue;
+      curValue = value;
+      return slider;
+    };
+
+    slider.play = function() {
+      running = true;
+      dispatch.start();
+
+      var t = setInterval(step, delay);
+
+      function step() {
+        if (curValue < maxValue && running) {
+          curValue += stepSize;
+          dispatch.sliderChange(curValue);
+        } else {
+          dispatch.stop();
+          running = false;
+          clearInterval(t);
+        }
+      }
+    };
+
+    slider.stop = function() {
+      running = false;
+      dispatch.stop();
+    };
+
+    slider.reset = function() {
+      running = false;
+      dispatch.sliderChange(minValue);
+      dispatch.stop();
+    };
+
+    d3.rebind(slider, dispatch, 'on');
+
+    return slider;
+
+  }
+
+  var freqSlider = createSlider();
+  freqSlider.on('sliderChange', function(curFreq) {
+    networkData
+      .curFreq(curFreq)
+      .filterNetworkData();
+  });
+
+  var timeSlider = createSlider();
+  timeSlider.on('sliderChange', function(curTime) {
+    networkData.curTime(curTime);
+    networkData.filterNetworkData();
+  });
+
+  timeSlider.on('stop', function() {
+    d3.select('#playButton').text('Play');
+  });
+
+  timeSlider.on('start', function() {
+    d3.select('#playButton').text('Stop');
+  });
+
+  function createDropdown() {
+    var key;
+    var displayName;
+    var options;
+    var dispatch = d3.dispatch('click');
+
+    function button(selection) {
+      selection.each(function(data) {
+        var menu = d3.select(this).selectAll('ul').selectAll('li').data(options, function(d) {
+          return d[key];
+        });
+
+        displayName = (typeof displayName === 'undefined') ? key : displayName;
+
+        menu.enter()
+          .append('li')
+            .attr('id', function(d) {
+              return d[key];
+            })
+            .attr('role', 'presentation')
+            .append('a')
+              .attr('role', 'menuitem')
+              .attr('tabindex', -1)
+              .text(function(d) {
+                return d[displayName];
+              });
+
+        menu.on('click', dispatch.click);
+
+        menu.exit().remove();
+
+        var curText = options.filter(function(d) {return d[key] === data;})
+          .map(function(d) {return d[displayName];})[0];
+
+        d3.select(this).selectAll('button')
+          .text(curText)
+          .append('span')
+          .attr('class', 'caret');
+      });
+
+    }
+
+    button.key = function(value) {
+      if (!arguments.length) return key;
+      key = value;
+      return button;
+    };
+
+    button.options = function(value) {
+      if (!arguments.length) return options;
+      options = value;
+      return button;
+    };
+
+    button.displayName = function(value) {
+      if (!arguments.length) return displayName;
+      displayName = value;
+      return button;
+    };
+
+    d3.rebind(button, dispatch, 'on');
+
+    return button;
+
+  }
+
+  var subjectDropdown = createDropdown().key('subjectID');
+  subjectDropdown.on('click', function() {
+    var curSubjectInfo = d3.select(this).data()[0];
+    channelData
+      .subjectID(curSubjectInfo.subjectID)
+      .channel1ID('')
+      .channel2ID('')
+      .loadChannelData();
+
+    networkData
+      .subjectID(curSubjectInfo.subjectID)
+      .aspectRatio(curSubjectInfo.brainXpixels / curSubjectInfo.brainYpixels)
+      .brainXLim(curSubjectInfo.brainXLim)
+      .brainYLim(curSubjectInfo.brainYLim)
+      .loadNetworkData();
+  });
+
+  var edgeStatIDDropdown = createDropdown().key('edgeStatID').displayName('edgeStatName');
+  edgeStatIDDropdown.on('click', function() {
+    var curEdgeInfo = d3.select(this).data()[0];
+    networkData
+      .edgeStatID(curEdgeInfo.edgeStatID)
+      .isFreq(curEdgeInfo.isFreq)
+      .isWeighted(curEdgeInfo.isWeightedNetwork)
+      .loadNetworkData();
+  });
+
+  var filterTypes = [
+  	{
+      filterName: 'All Edges',
+      filterType: 'All',
+    },
+    {
+      filterName: 'Within Area Edges',
+      filterType: 'Within',
+    },
+    {
+      filterName: 'Between Area Edges',
+      filterType: 'Between',
+    },
+  ];
+
+  var edgeFilterDropdown = createDropdown()
+    .key('filterType')
+    .displayName('filterName')
+    .options(filterTypes);
+
+  edgeFilterDropdown.on('click', function() {
+    var edgeFilter = d3.select(this).data()[0];
+    networkData
+      .edgeFilterType(edgeFilter.filterType)
+      .filterNetworkData();
+  });
+
+  var networkData = networkDataManager();
+
+  networkData.on('networkChange', function() {
+    var networkWidth = document.getElementById('NetworkPanel').offsetWidth;
+    var networkHeight = networkWidth / networkData.aspectRatio();
+
+    networkView
+      .width(networkWidth)
+      .height(networkHeight)
+      .xScaleDomain(networkData.brainXLim())
+      .yScaleDomain(networkData.brainYLim())
+      .edgeStatScale(networkData.edgeStatScale())
+      .imageLink(networkData.imageLink())
+      .nodeColorScale(networkData.brainRegionScale());
+
+    d3.select('#NetworkPanel').datum(networkData.networkData())
+        .call(networkView);
+
+    d3.select('#TimeSliderPanel').datum(networkData.curTime()).call(timeSlider);
+    d3.select('#FreqSliderPanel').datum(networkData.curFreq()).call(freqSlider);
+    d3.select('#SubjectPanel').datum(networkData.subjectID()).call(subjectDropdown);
+    d3.select('#EdgeStatTypePanel').datum(networkData.edgeStatID()).call(edgeStatIDDropdown);
+    d3.select('#EdgeFilterPanel').datum(networkData.edgeFilterType()).call(edgeFilterDropdown);
+
+    highlightElectrodePair();
+  });
+
+  var playButton = d3.select('#playButton');
+  playButton.on('click', function() {
+    timeSlider.running() ? timeSlider.stop() : timeSlider.play();
+  });
+
+  var resetButton = d3.select('#resetButton');
+
+  resetButton.on('click', function() {
+    timeSlider.reset();
+  });
+
+  var networkViewRadio = d3.select('#NetworkLayoutPanel');
+  networkViewRadio.selectAll('input').on('click', function() {
+      networkViewRadio.selectAll('input')
+        .property('checked', false);
+      d3.select(this).property('checked', true);
+      networkView.networkLayout(this.value);
+      d3.selectAll('#NetworkPanel')
+          .call(networkView);
+    });
+
+  function download (svgInfo, filename) {
+    window.URL = (window.URL || window.webkitURL);
+    var blob = new Blob(svgInfo.source, {type: 'text\/xml'});
+    var url = window.URL.createObjectURL(blob);
+    var body = document.body;
+    var a = document.createElement('a');
+
+    body.appendChild(a);
+    a.setAttribute('download', filename + '.svg');
+    a.setAttribute('href', url);
+    a.style.display = 'none';
+    a.click();
+    a.parentNode.removeChild(a);
+
+    setTimeout(function() {
+      window.URL.revokeObjectURL(url);
+    }, 10);
+  }
+
+  var prefix = {
+    svg: 'http://www.w3.org/2000/svg',
+    xhtml: 'http://www.w3.org/1999/xhtml',
+    xlink: 'http://www.w3.org/1999/xlink',
+    xml: 'http://www.w3.org/XML/1998/namespace',
+    xmlns: 'http://www.w3.org/2000/xmlns/',
+  };
+
+  function setInlineStyles (svg) {
+
+    // add empty svg element
+    var emptySvg = window.document.createElementNS(prefix.svg, 'svg');
+    window.document.body.appendChild(emptySvg);
+    var emptySvgDeclarationComputed = window.getComputedStyle(emptySvg);
+
+    // hardcode computed css styles inside svg
+    var allElements = traverse(svg);
+    var i = allElements.length;
+    while (i--) {
+      explicitlySetStyle(allElements[i]);
+    }
+
+    emptySvg.parentNode.removeChild(emptySvg);
+
+    function explicitlySetStyle(element) {
+      var cSSStyleDeclarationComputed = window.getComputedStyle(element);
+      var i;
+      var len;
+      var key;
+      var value;
+      var computedStyleStr = '';
+
+      for (i = 0, len = cSSStyleDeclarationComputed.length; i < len; i++) {
+        key = cSSStyleDeclarationComputed[i];
+        value = cSSStyleDeclarationComputed.getPropertyValue(key);
+        if (value !== emptySvgDeclarationComputed.getPropertyValue(key)) {
+          // Don't set computed style of width and height. Makes SVG elmements disappear.
+          if ((key !== 'height') && (key !== 'width')) {
+            computedStyleStr += key + ':' + value + ';';
+          }
+
+        }
+      }
+
+      element.setAttribute('style', computedStyleStr);
+    }
+
+    function traverse(obj) {
+      var tree = [];
+      tree.push(obj);
+      visit(obj);
+      function visit(node) {
+        if (node && node.hasChildNodes()) {
+          var child = node.firstChild;
+          while (child) {
+            if (child.nodeType === 1 && child.nodeName != 'SCRIPT') {
+              tree.push(child);
+              visit(child);
+            }
+
+            child = child.nextSibling;
+          }
+        }
+      }
+
+      return tree;
+    }
+  }
+
+  function preprocess (svg) {
+    svg.setAttribute('version', '1.1');
+
+    // removing attributes so they aren't doubled up
+    svg.removeAttribute('xmlns');
+    svg.removeAttribute('xlink');
+
+    // These are needed for the svg
+    if (!svg.hasAttributeNS(prefix.xmlns, 'xmlns')) {
+      svg.setAttributeNS(prefix.xmlns, 'xmlns', prefix.svg);
+    }
+
+    if (!svg.hasAttributeNS(prefix.xmlns, 'xmlns:xlink')) {
+      svg.setAttributeNS(prefix.xmlns, 'xmlns:xlink', prefix.xlink);
+    }
+
+    setInlineStyles(svg);
+
+    var xmls = new XMLSerializer();
+    var source = xmls.serializeToString(svg);
+    var doctype = '<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">';
+    var rect = svg.getBoundingClientRect();
+    var svgInfo = {
+      top: rect.top,
+      left: rect.left,
+      width: rect.width,
+      height: rect.height,
+      class: svg.getAttribute('class'),
+      id: svg.getAttribute('id'),
+      childElementCount: svg.childElementCount,
+      source: [doctype + source],
+    };
+
+    return svgInfo;
+  }
+
+  function save(svgElement, config) {
+    if (svgElement.nodeName !== 'svg' || svgElement.nodeType !== 1) {
+      throw 'Need an svg element input';
+    }
+
+    var config = config || {};
+    var svgInfo = preprocess(svgElement, config);
+    var defaultFileName = getDefaultFileName(svgInfo);
+    var filename = config.filename || defaultFileName;
+    var svgInfo = preprocess(svgElement);
+    download(svgInfo, filename);
+  }
+
+  function getDefaultFileName(svgInfo) {
+    var defaultFileName = 'untitled';
+    if (svgInfo.id) {
+      defaultFileName = svgInfo.id;
+    } else if (svgInfo.class) {
+      defaultFileName = svgInfo.class;
+    } else if (window.document.title) {
+      defaultFileName = window.document.title.replace(/[^a-z0-9]/gi, '-').toLowerCase();
+    }
+
+    return defaultFileName;
+  }
+
+  var exportButton = d3.select('button#export');
+
+  var curCh1 = ''; // dummy to be removed later
+  var curCh2 = ''; // dummy to be removed later
+
+  exportButton
+    .on('click', function() {
+      var networkSVG = d3.select('#NetworkPanel').select('svg').node();
+      var networkSaveName = 'Network' + '_' +
+        networkData.subjectID() + '_' +
+        networkData.edgeStatID() + '_' +
+        networkView.networkLayout() + '_' +
+        networkData.curTime() + timeSlider.units() + '_' +
+        networkData.curFreq() + freqSlider.units();
+
+      save(networkSVG, {filename: networkSaveName});
+
+      var ch1SaveName = 'Spectra' + '_' +
+        networkData.subjectID() + '_' +
+        'Ch' + curCh1;
+
+      var ch1SVG = d3.select('#SpectraCh1Panel').select('svg').node();
+      save(ch1SVG, {filename: ch1SaveName});
+
+      var ch2SaveName = 'Spectra' + '_' +
+        networkData.subjectID() + '_' +
+        'Ch' + curCh2;
+
+      var ch2SVG = d3.select('#SpectraCh2Panel').select('svg').node();
+      save(ch2SVG, {filename: ch2SaveName});
+
+      var edgeSaveName = networkData.edgeStatID() + '_' +
+        networkData.subjectID() + '_' +
+        'Ch' + curCh1 + '_' +
+        'Ch' + curCh2;
+
+      var edgeSVG = d3.select('#EdgeStatPanel').select('svg').node();
+      save(edgeSVG, {filename: edgeSaveName});
+
+      d3.selectAll('circle.node')[0]
+        .forEach(function(n) {n.setAttribute('style', '');
+      });
+    });
+
+  // dummy placeholder to be removed when spectra are implemented
+  var curCh1$1 = '';
+  var curCh2$1 = '';
+
+  var permalinkBox = d3.select('#permalink');
+  var permalinkButton = d3.select('button#link');
+  permalinkButton
+    .on('click', function() {
+      permalinkBox
+        .style('display', 'block');
+      var linkString = window.location.origin + window.location.pathname + '?' +
+        'curSubject=' + networkData.subjectID() +
+        '&edgeStatID=' + networkData.edgeStatID() +
+        '&edgeFilter=' + networkData.edgeFilterType() +
+        '&networkLayout=' + networkView.networkLayout() +
+        '&curTime=' + networkData.curTime() +
+        '&curFreq=' + networkData.curFreq() +
+        '&curCh1=' + curCh1$1 +
+        '&curCh2=' + curCh2$1;
+      permalinkBox.selectAll('textarea').html(linkString);
+      permalinkBox.selectAll('.bookmark').attr('href', linkString);
+    });
+
+  permalinkBox.selectAll('.close')
+    .on('click', function() {
+      permalinkBox.style('display', 'none');
+    });
+
+  // Set up help overlay
+  var overlay = d3.select('#overlay');
+  var helpButton = d3.select('button#help-button');
+  overlay.selectAll('.close')
+    .on('click', function() {
+      overlay.style('display', 'none');
+    });
+
+  helpButton
+    .on('click', function() {
+      overlay
+        .style('display', 'block');
+    });
 
   function init(passedParams) {
     passedParams.curTime = +passedParams.curTime;
