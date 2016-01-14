@@ -10,3 +10,4 @@ public/DATA/brainImages/*
 *.log
 
 *.zip
+*.editorconfig
