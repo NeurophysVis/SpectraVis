@@ -1,7 +1,7 @@
 SpectraVis
 ==========
 
-An interactive network visualization tool for exploring [functional brain connectivity](http://www.scholarpedia.org/article/Brain_connectivity) using [d3.js](http://d3js.org/).
+An interactive network visualization tool for exploring [functional brain connectivity](http://www.scholarpedia.org/article/Brain_connectivity) using [d3.js](http://d3js.org/). See [this](http://ericdeno.com/research/SpectraVis/) for an example of SpectraVis in action.
 
 ![](./SpectraVis-Demo.gif)
 
@@ -12,8 +12,6 @@ SpectraVis allows you to:
 + compare between different subjects.
 + examine only within- or between-brain area connections
 + switch between multiple network views for better understanding of the network structure
-
-See [this](http://ericdeno.com/research/SpectraVis/) for an example of SpectraVis in action.
 
 ## Installation
 To install SpectraVis, download the latest release:
