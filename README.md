@@ -1,3 +1,7 @@
+
+[![DOI](https://zenodo.org/badge/21773434.svg)](https://zenodo.org/badge/latestdoi/21773434)
+
+
 SpectraVis
 ==========
 
