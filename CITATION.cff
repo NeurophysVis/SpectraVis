@@ -1,0 +1,18 @@
+# YAML 1.2
+# Metadata for citation of this software according to the CFF format (https://citation-file-format.github.io/)
+cff-version: 1.0.3
+message: If you use this software, please cite it using these metadata.
+# FIXME title as repository name might not be the best name, please make human readable
+title: 'NeurophysVis/SpectraVis: v1.1.0'
+doi: 10.5281/zenodo.1218014
+# FIXME splitting of full names is error prone, please check if given/family name are correct
+authors:
+- given-names: Eric
+  family-names: Denovellis
+  affiliation: Boston University
+- given-names: Emily
+  family-names: Stephen
+version: 1.1.1
+date-released: 2018-04-13
+repository-code: https://github.com/NeurophysVis/SpectraVis
+license: other-open
