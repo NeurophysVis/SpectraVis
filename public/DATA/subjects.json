@@ -1,0 +1,18 @@
+[
+	{
+		"subjectID": "SIM03_B0.00T0.63",
+		"brainpath": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [0,0],
+			"_ArrayData_": null
+		}
+	},
+	{
+		"subjectID": "SIM03_B1.00T1.00",
+		"brainpath": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [0,0],
+			"_ArrayData_": null
+		}
+	}
+]

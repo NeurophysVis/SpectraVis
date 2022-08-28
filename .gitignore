@@ -5,8 +5,10 @@ node_modules/
 app/components/
 app/DATA/*
 app/DATA/brainImages/*
-public/DATA/*
-public/DATA/brainImages/*
 *.log
+
+*.json
+!*_B0*.json
+!subjects.json
 
 *.zip
